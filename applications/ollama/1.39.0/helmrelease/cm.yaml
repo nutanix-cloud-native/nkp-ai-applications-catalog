@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    ollama:
+      models:
+        pull:
+          - llama3.2
+    persistentVolume:
+      enabled: true
+      size: 30Gi
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

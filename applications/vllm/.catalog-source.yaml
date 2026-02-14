@@ -1,0 +1,4 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: vllm/vllm
+helmrepoUrl: https://open-source-ai-dev.github.io/vllm-helm-chart
+ocipush: oci://ghcr.io/nutanix-cloud-native/vllm

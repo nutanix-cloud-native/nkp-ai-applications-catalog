@@ -1,0 +1,54 @@
+# Exposes kagent UI via Traefik with NKP's built-in forwardauth middleware (SSO).
+# Launch URL: https://<traefik-lb>/kagent/
+#
+# The kagent Next.js UI serves at / and references assets at /_next/static/...
+# Since we mount the app at /kagent, we need:
+#   1. Strip /kagent prefix for the main route so the UI sees /
+#   2. Proxy /_next and /icon requests directly (assets use absolute paths in HTML)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ${releaseName}-stripprefix
+  namespace: ${releaseNamespace}
+spec:
+  stripPrefix:
+    prefixes:
+      - /kagent
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${releaseNamespace}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Main UI route — auth + strip /kagent prefix
+    - match: PathPrefix(`/kagent`)
+      kind: Rule
+      middlewares:
+        - name: forwardauth
+        - name: ${releaseName}-stripprefix
+      services:
+        - name: kagent-ui
+          port: 8080
+          namespace: kagent
+          kind: Service
+    # Next.js static assets (JS/CSS/fonts) — no auth, no strip
+    - match: PathPrefix(`/_next`)
+      kind: Rule
+      services:
+        - name: kagent-ui
+          port: 8080
+          namespace: kagent
+          kind: Service
+    # Favicon and other root-level assets
+    - match: PathPrefix(`/icon`)
+      kind: Rule
+      services:
+        - name: kagent-ui
+          port: 8080
+          namespace: kagent
+          kind: Service
+---

@@ -1,0 +1,79 @@
+# Post-install Job: discovers Traefik LoadBalancer URL and patches openwebui-ui
+# ConfigMap with dashboardLink so the NKP Launch button opens Open WebUI via
+# Traefik (with forward-auth SSO). Requires Traefik + traefik-forward-auth in cluster.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${releaseName}-postinstall-12.0.1
+  namespace: ${workspaceNamespace}
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 300
+  activeDeadlineSeconds: 600
+  template:
+    spec:
+      serviceAccountName: ${releaseName}-postinstall
+      restartPolicy: OnFailure
+      containers:
+        - name: patch-dashboard-link
+          image: bitnami/kubectl:1.32
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORKSPACE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # Traefik in NKP/Kommander is usually kommander-traefik in workspace ns
+            - name: TRAEFIK_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: TRAEFIK_SERVICE_NAME
+              value: "kommander-traefik"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting post-install (ns=$WORKSPACE_NAMESPACE, traefik=$TRAEFIK_SERVICE_NAME in $TRAEFIK_NAMESPACE)"
+              sleep 15
+              echo "Waiting for openwebui-ui ConfigMap..."
+              for i in $(seq 1 60); do
+                if kubectl get configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
+                  echo "ConfigMap openwebui-ui found."
+                  break
+                fi
+                echo "Waiting for ConfigMap... ($i/60)"; sleep 5
+              done
+              if ! kubectl get configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
+                echo "ERROR: openwebui-ui ConfigMap not found after 5min"; exit 1
+              fi
+
+              echo "Waiting for Traefik LoadBalancer..."
+              IP=""; HOSTNAME=""
+              for SVC in "$TRAEFIK_SERVICE_NAME" "traefik"; do
+                for i in $(seq 1 30); do
+                  IP=$(kubectl get svc -n "$TRAEFIK_NAMESPACE" "$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+                  HOSTNAME=$(kubectl get svc -n "$TRAEFIK_NAMESPACE" "$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                  if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                    echo "Using Traefik service: $SVC"
+                    break 2
+                  fi
+                  echo "Waiting for $SVC... ($i/30)"; sleep 5
+                done
+              done
+
+              if [ -z "$IP" ] && [ -z "$HOSTNAME" ]; then
+                echo "ERROR: Traefik LoadBalancer not found"; kubectl get svc -n "$TRAEFIK_NAMESPACE" 2>/dev/null || true; exit 1
+              fi
+
+              if [ -n "$IP" ]; then
+                ENDPOINT="https://$IP/open-webui/"
+              else
+                ENDPOINT="https://$HOSTNAME/open-webui/"
+              fi
+
+              PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")
+              kubectl patch configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" --type=merge -p "$PAYLOAD"
+              echo "Dashboard link updated: $ENDPOINT"
+---

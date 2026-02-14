@@ -1,0 +1,15 @@
+# NKP CLI binary
+nkp
+
+# Local env (registry credentials, etc.)
+.env.local
+.envrc.local
+
+# Downloaded tools (just nkp-cli)
+.local/
+
+# Catalog bundle artifacts
+*.tar
+
+# Personal dev notes
+dev-commands.md

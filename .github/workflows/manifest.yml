@@ -1,0 +1,33 @@
+# Copyright 2025 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Manifest validation
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+  push:
+    branches:
+      - main
+      - "v*"
+
+jobs:
+  manifest-validation:
+    name: Manifest validation
+    runs-on:
+      - self-hosted-nutanix-medium
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NIX
+        uses: cachix/install-nix-action@v31
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+          skip-nix-installation: true
+
+      - name: Run catalog validation
+        if: ${{ hashFiles('applications/**') != '' }}
+        run: devbox run -- just validate
