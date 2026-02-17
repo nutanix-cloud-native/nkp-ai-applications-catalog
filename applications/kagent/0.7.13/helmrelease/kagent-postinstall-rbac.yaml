@@ -1,0 +1,57 @@
+# RBAC for post-install Job: patch kagent-ui ConfigMap and read Traefik services.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "patch"]
+    resourceNames: ["kagent-ui"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${releaseName}-postinstall
+subjects:
+  - kind: ServiceAccount
+    name: ${releaseName}-postinstall
+    namespace: ${workspaceNamespace}
+---
+# Role + RoleBinding in workspace ns so Job can read Traefik LB (kommander-traefik).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${releaseName}-postinstall-traefik
+  namespace: ${workspaceNamespace}
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${releaseName}-postinstall-traefik
+  namespace: ${workspaceNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${releaseName}-postinstall-traefik
+subjects:
+  - kind: ServiceAccount
+    name: ${releaseName}-postinstall
+    namespace: ${workspaceNamespace}
+---

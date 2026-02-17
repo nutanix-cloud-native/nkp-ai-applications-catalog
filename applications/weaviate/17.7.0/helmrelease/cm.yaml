@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    replicas: 1
+    storage:
+      size: 32Gi
+    service:
+      type: ClusterIP
+    grpcService:
+      enabled: true
+      type: ClusterIP
+    authentication:
+      anonymous_access:
+        enabled: true
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

@@ -1,0 +1,3 @@
+# Kubernetes versions (match https://github.com/yannh/kubernetes-json-schema)
+k8s_versions:
+  - 1.34.0

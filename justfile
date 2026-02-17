@@ -1,0 +1,79 @@
+# NKP AI Applications Catalog — task runner
+# Install just: https://github.com/casey/just
+#
+# Run `just` to list all recipes, or `just <recipe>` to run one.
+
+import 'just/tools.just'
+import 'just/validate.just'
+import 'just/release.just'
+
+# Default: list available recipes
+default:
+    @just --list
+
+# ---------- Scaffold ----------
+
+# Generate the application scaffold for a new app
+# Usage: just generate-app <appname> <version>
+generate-app appname version: nkp-cli
+  "{{ NKP_CLI }}" generate catalog-repository --apps={{ appname }}={{ version }}
+
+# Pull a Helm chart, push to OCI, and generate the app scaffold — all in one
+# Usage: just add-app <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+add-app app repo-name repo-url chart version oci-registry:
+    just push-helm-to-oci {{ app }} {{ repo-name }} {{ repo-url }} {{ chart }} {{ version }} {{ oci-registry }}
+    just generate-app {{ app }} {{ version }}
+
+# ---------- Checks ----------
+
+# Run pre-commit hooks and gitlint
+pre-commit:
+    env VIRTUALENV_PIP=24.0 pre-commit install-hooks
+    pre-commit run -a --show-diff-on-failure
+    git fetch origin main
+    pre-commit run --hook-stage manual gitlint-ci
+
+# Quick check: pre-commit only (no nkp CLI needed)
+check: pre-commit
+
+# Full check: pre-commit + catalog validation (ready to push)
+check-all: pre-commit validate
+
+# ---------- OCI registry ----------
+
+# Login to GHCR (reads .env.local)
+login:
+    ./scripts/login-oci-registry.sh
+
+# ---------- Helm → OCI ----------
+
+# Pull a Helm chart and push it to an OCI registry, then generate .catalog-source.yaml
+# Usage: just push-helm-to-oci <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+push-helm-to-oci app repo-name repo-url chart version oci-registry:
+    ./scripts/push-helm-to-oci.sh {{app}} {{repo-name}} {{repo-url}} {{chart}} {{version}} {{oci-registry}}
+
+# Shortcut: push ollama chart to OCI
+push-ollama version="1.39.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/ollama-helm/ollama":
+    just push-helm-to-oci ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
+
+# Shortcut: push vllm chart to OCI
+push-vllm version="0.1.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/vllm":
+    just push-helm-to-oci vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
+
+# Shortcut: push open-webui chart to OCI
+push-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/open-webui":
+    just push-helm-to-oci openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
+
+# Shortcut: push weaviate chart to OCI
+push-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate":
+    just push-helm-to-oci weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
+
+# ---------- Add App (push + generate) ----------
+
+# Shortcut: push open-webui chart and generate scaffold in one step
+add-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/open-webui":
+    just add-app openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
+
+# Shortcut: push weaviate chart and generate scaffold in one step
+add-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate":
+    just add-app weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}

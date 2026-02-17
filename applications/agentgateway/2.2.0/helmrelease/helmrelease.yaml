@@ -1,0 +1,41 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: v2.2.0
+  url: oci://cr.agentgateway.dev/charts/agentgateway
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: agentgateway
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  dependsOn:
+  - name: ${releaseName}-crds
+    namespace: ${releaseNamespace}
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: 30
+    timeout: 10m0s
+  interval: 15s
+  targetNamespace: agentgateway-system
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+    timeout: 10m0s
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+---

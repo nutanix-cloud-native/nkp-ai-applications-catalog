@@ -1,29 +1,301 @@
-# [[github_repo_name]]
-[[github_repo_description]]
+# NKP AI Applications Catalog
 
-# Welcome to your new service
-We've created an empty service structure to show you the setup and workflow with Canaveral.
+This repository serves as the catalog for AI applications available on the **Nutanix Kubernetes Platform (NKP)**. It contains the manifests, metadata, and Kustomize configurations required to deploy AI-focused applications through NKP using a GitOps workflow powered by Flux CD.
 
-### Directory Structure
-The top level directory of your repository should be set up like this:
-  1. `README.md`: this file contains a textual description of the repository.
-  2. `.circleci/`: this directory contains CircleCI's `config.yml` file.
-  3. `hooks/`: this directory, if present, can contain *ad hoc* scripts that customize your build.
-  4. `package/`:  add your `Dockerfile` under `package/docker/` to build a docker image.  (Note:  You can refer to files and folders directly in your `Dockerfile` because all files and folders under `services/` will be copied into the same folder as the `Dockerfile` during build.)
-  5. `services/`: this directory should have a subdirectory for each `service`, *e.g.* `services/my-service/`.  Each subdirectory (often there is only one) would contain the definition (source and tests) for the service.
-  6. `blueprint.json`: this file, if present, contains instructions for Canaveral to deploy the service.
+## Prerequisites
 
-### Build
-Canaveral uses CircleCI for building, packaging, and alerting its Deployment Engine. Your repository should have been registered with CircleCI when it was provisioned.  Here are some additional steps you should follow to ensure proper builds:
+This project uses [Devbox](https://www.jetify.com/devbox) to provide a reproducible development environment with all required tools. Alternatively, install the tools manually.
 
-##### Ensure `.circleci/config.yml` has the correct variables (docker image only)
-  1. Specify your preferred `CANAVERAL_BUILD_SYSTEM` (default is noop)
-  2. Specify your preferred `CANAVERAL_PACKAGE_TOOLS` (use "docker" if deploying a docker image, use "noop" if no packaging is needed)
-  3. **[OPTIONAL]** Specify the target `DOCKERFILE_NAME` to use  (default is Dockerfile)
+### Quick Start with Devbox
 
-You'll be able to monitor the build at [circleci.canaveral-corp.us-west-2.aws](https://circleci.canaveral-corp.us-west-2.aws/)
+```bash
+# Install devbox (one-time)
+curl -fsSL https://get.jetify.com/devbox | bash
 
-### Deployment
-To use Canaveral for deployment, `blueprint.json` should be placed at the top level of the repo.  Spec for the blueprint can be found at [Canaveral Blueprint Spec](https://confluence.eng.nutanix.com:8443/x/5kbdBQ).
+# Enter the devbox shell (installs all tools automatically)
+devbox shell
 
-__Questions, issues or suggestions? Reach us at https://nutanix.slack.com/messages/canaveral-onboarding/.__
+# Or, if you use direnv, just allow it and tools activate on cd
+direnv allow
+```
+
+### Included Tools
+
+| Tool | Purpose |
+|------|---------|
+| `just` | Task runner ([justfile](https://github.com/casey/just)) |
+| `helm` | Helm chart pull/push |
+| `git` | Version control |
+| `gettext` | `envsubst` for variable substitution |
+| `shfmt` | Shell script formatting |
+| `shellcheck` | Shell script linting |
+| `yq` | YAML querying/editing |
+| `pre-commit` | Git hook framework |
+
+> **Without Devbox:** install `just`, `helm`, `pre-commit`, `shfmt`, `shellcheck`, and `yq` manually. The `nkp` CLI is auto-downloaded by `just nkp-cli`.
+
+## Repository Structure
+
+```
+.
+├── README.md
+├── devbox.json                # Devbox package list
+├── devbox.lock                # Devbox lockfile
+├── .envrc                     # direnv integration for devbox
+├── .pre-commit-config.yaml    # Pre-commit hook configuration
+├── .gitlint                   # Conventional commit message rules
+├── .bloodhound.yml            # Kubernetes validation configuration
+├── justfile                   # Task runner (install: https://github.com/casey/just)
+├── just/                      # Modular just recipe files
+│   ├── tools.just             # nkp CLI download + clean
+│   ├── validate.just          # Catalog validation
+│   └── release.just           # Bundle create, push, deploy, release pipeline
+├── scripts/                   # Helper scripts
+│   ├── login-oci-registry.sh  # Docker login to GHCR
+│   └── push-helm-to-oci.sh   # Pull Helm chart → push to OCI + generate .catalog-source.yaml
+└── applications/              # Application catalog entries
+    └── <app-name>/
+        ├── .catalog-source.yaml       # Helm repo source info (auto-generated)
+        └── <version>/
+            ├── metadata.yaml          # Application metadata
+            ├── .bloodhound.yaml       # Per-app validation overrides (optional)
+            ├── kustomization.yaml     # Top-level Kustomize config
+            ├── helmrelease.yaml       # Flux Kustomization resource
+            └── helmrelease/
+                ├── kustomization.yaml # Kustomize config for manifests
+                ├── cm.yaml            # ConfigMap for default values (optional)
+                └── helmrelease.yaml   # OCIRepository + HelmRelease resources
+```
+
+### Key Files
+
+| File | Description |
+|------|-------------|
+| `metadata.yaml` | Defines application display name, description, categories, licensing, scope, and other metadata following the `catalog.nkp.nutanix.com/v1/application-metadata` schema. |
+| `kustomization.yaml` | Kustomize configuration that references the Flux resources for the application. |
+| `helmrelease.yaml` | Flux `Kustomization` resource that points to the `helmrelease/` subdirectory. |
+| `.bloodhound.yaml` | Optional per-version validation config (e.g., `strict: false`, `skip_types` for CRDs). |
+| `helmrelease/` | Contains the actual Kubernetes manifests including OCIRepository, HelmRelease, and ConfigMap resources. |
+
+## Adding a New Application
+
+### Step 1: Generate the Application Scaffold
+
+Use the `nkp` CLI to generate the catalog entry for your application. Provide the application name and version:
+
+```bash
+nkp generate catalog-repository --apps=<app-name>=<version>
+```
+
+**Example:**
+
+```bash
+nkp generate catalog-repository --apps=kagent=0.7.13
+```
+
+This will create the directory structure and required files under `applications/<app-name>/<version>/`.
+
+### Step 2: Customize the Generated Files
+
+After generation, review and update the following as needed:
+
+- **`metadata.yaml`** -- Fill in the application metadata:
+  - `displayName` -- Human-readable name
+  - `description` -- Short description of the application
+  - `category` -- Array of categories (e.g., `artificial-intelligence`, `networking`, `ai-ml`)
+  - `licensing` -- Supported license tiers (e.g., `["Pro", "Ultimate"]`)
+  - `scope` -- Deployment scope (e.g., `["workspace", "project"]`)
+  - `overview` -- Detailed markdown overview of the application
+  - `supportLink` -- Link to documentation or support
+
+- **`helmrelease/helmrelease.yaml`** -- Configure the OCI chart reference:
+  - Set the `url` to the OCI registry containing the Helm chart
+  - Set the `tag` to the chart version
+  - Define any default values in a ConfigMap (`cm.yaml`)
+
+- **`.bloodhound.yaml`** (optional) -- Add per-version validation overrides:
+  - Set `strict: false` if the chart emits resources with extra fields
+  - Add custom resource types to `skip_types` (e.g., `kagent.dev/v1alpha2/Agent`)
+
+### Step 3: Validate the Catalog Repository
+
+Run the validation command to ensure all manifests are correctly structured and valid:
+
+```bash
+just validate
+# or: nkp validate catalog-repository --repo-dir=.
+```
+
+This validates:
+- Kubernetes manifest correctness
+- Required file structure
+- Kustomize configuration integrity
+- Metadata schema compliance
+
+Fix any reported errors before committing your changes.
+
+### Step 4: Create the Catalog Bundle
+
+Package the catalog into a distributable bundle:
+
+```bash
+just create-bundle v0.1.0
+# or: nkp create catalog-bundle --collection-tag v0.1.0
+```
+
+This creates an OCI-compatible bundle (e.g., `nkp-ai-applications-catalog.tar`) containing all applications and metadata.
+
+### Step 5: Push the Bundle to a Registry
+
+Push the bundle to an OCI registry so it can be consumed by NKP clusters:
+
+```bash
+just push-bundle
+# or: nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>
+```
+
+> **Tip:** Steps 3-5 can be combined into a single command: `just release v0.1.0`
+
+### Step 6: Commit and Push
+
+Once validation passes, commit your changes and open a pull request:
+
+```bash
+git add applications/<app-name>/
+git commit -m "Add <app-name> <version> to AI applications catalog"
+git push origin <your-branch>
+```
+
+## Using the Catalog on a Cluster
+
+To deploy the catalog collection on an NKP cluster:
+
+```bash
+just add-to-cluster <workspace-name> v0.1.0
+
+# or directly:
+nkp create catalog-collection \
+  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection \
+  --tag v0.1.0 \
+  --workspace <workspace-name>
+```
+
+This makes all applications in the catalog available for deployment in the specified workspace.
+
+## Handling Helm Repository Charts (non-OCI)
+
+If the application Helm chart is hosted in a traditional Helm repository (not OCI), you need to pull it locally and push it to an OCI-compliant registry before adding it to the catalog. Any OCI artifact-compliant registry works, including **ghcr.io**, **Harbor**, **Docker Hub**, **Amazon ECR**, **Azure ACR**, **Google Artifact Registry**, etc.
+
+> **Note:** This may be required for licensing or distribution reasons (TBD).
+
+The `push-helm-to-oci` script automates the entire process -- pulling the chart, pushing it to OCI, and generating the `.catalog-source.yaml`:
+
+```bash
+# Using just (recommended)
+just push-helm-to-oci <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+
+# Or directly
+./scripts/push-helm-to-oci.sh <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+```
+
+**Examples:**
+
+```bash
+# Ollama
+just push-ollama 1.39.0
+
+# vLLM
+just push-vllm 0.1.1
+
+# Any chart (generic)
+just push-helm-to-oci myapp myrepo https://charts.example.com myapp 1.0.0 oci://ghcr.io/my-org/myapp
+```
+
+This will:
+1. Add the Helm repo and pull the chart
+2. Push the `.tgz` to the OCI registry
+3. Generate `applications/<app>/.catalog-source.yaml` with the source metadata
+
+Then in the application's `helmrelease/helmrelease.yaml`, reference the OCI registry URL:
+
+```yaml
+spec:
+  ref:
+    tag: <version>
+  url: oci://<registry>/<your-org>/<chart-name>
+```
+
+## Existing Applications
+
+| Application | Version | Chart | Description |
+|-------------|---------|-------|-------------|
+| agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
+| kagent | 0.7.13 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
+| vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/vllm/vllm` | High-throughput inference and serving engine for large language models |
+
+## Scripts & Justfile
+
+All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](https://github.com/casey/just). Run `just` to see all available recipes.
+
+### Quick Reference
+
+| Recipe | Description |
+|--------|-------------|
+| `just check` | Quick check: run pre-commit hooks only |
+| `just check-all` | Full check: pre-commit + catalog validation (ready to push) |
+| `just pre-commit` | Run pre-commit hooks and gitlint |
+| `just validate` | Validate catalog manifests (auto-downloads `nkp` CLI) |
+| `just login` | Docker login to GHCR (reads `.env.local`) |
+| `just push-helm-to-oci <app> <repo> <url> <chart> <ver> <oci>` | Pull Helm chart and push to OCI, generate `.catalog-source.yaml` |
+| `just push-ollama [version]` | Shortcut for ollama (default: `1.39.0`) |
+| `just push-vllm [version]` | Shortcut for vllm (default: `0.1.1`) |
+| `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
+| `just push-bundle [registry]` | Push bundle to OCI registry |
+| `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |
+| `just release [tag] [registry]` | Full pipeline: validate, bundle, push |
+| `just nkp-cli` | Download `nkp` CLI to `.local/bin/` |
+| `just clean` | Remove downloaded tools (`.local/`) |
+
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
+| `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI + generate `.catalog-source.yaml` |
+
+### Typical Workflow
+
+```bash
+# 0. Enter dev environment (all tools available)
+devbox shell
+
+# 1. Login to OCI registry
+just login
+
+# 2. Push a Helm chart to OCI (e.g. ollama 1.39.0)
+just push-ollama
+
+# 3. Run all checks before committing (pre-commit + validation)
+just check-all
+
+# 4. Validate, bundle, and push the catalog
+just release v0.1.0
+
+# 5. Deploy to a cluster
+just add-to-cluster dm-dev-workspace v0.1.0
+```
+
+## Common Patterns
+
+All applications in this catalog follow these conventions:
+
+- **Flux CD** is used for GitOps-based deployment and reconciliation.
+- **Kustomize** organizes and overlays Kubernetes resources.
+- **Variable substitution** uses `${releaseName}` and `${releaseNamespace}` for dynamic configuration.
+- **HelmRelease + OCIRepository** is the standard pattern for deploying charts via Flux.
+
+## Validation
+
+The repository uses `.bloodhound.yml` for Kubernetes manifest validation with strict mode enabled against Kubernetes v1.34.0. Substitution variables (`releaseNamespace`, `workspaceNamespace`) are configured to allow Flux variable references to pass validation.
+
+Individual applications can override validation settings with a `.bloodhound.yaml` file in their version directory (e.g., to set `strict: false` or add `skip_types` for custom CRDs).

@@ -1,0 +1,48 @@
+# Copyright 2025 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish OCI Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      COLLECTION_TAG:
+        description: "Tag for the collection to publish"
+        required: true
+        type: string
+      REGISTRY:
+        description: "OCI registry URL (e.g. oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog)"
+        required: false
+        type: string
+        default: "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
+
+jobs:
+  publish-oci-artifacts:
+    name: Publish OCI Artifacts
+    runs-on:
+      - self-hosted-nutanix-medium
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NIX
+        uses: cachix/install-nix-action@v31
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+          skip-nix-installation: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and publish catalog bundle
+        run: devbox run -- just publish-artifacts ${{ inputs.REGISTRY }} ${{ inputs.COLLECTION_TAG }}

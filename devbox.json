@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.0/.schema/devbox.schema.json",
+  "packages": [
+    "git@latest",
+    "just@latest",
+    "kubernetes-helm@latest",
+    "gettext@latest",
+    "shfmt@latest",
+    "yq-go@latest",
+    "pre-commit@latest",
+    "shellcheck@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "export PATH=$(pwd)/.local/bin:$PATH"
+    ]
+  }
+}
