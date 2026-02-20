@@ -4,7 +4,6 @@ resources:
 - cm.yaml
 - helmrelease.yaml
 - openwebui-ui-dashboard-cm.yaml
-- traefik-ingressroute.yaml
 - openwebui-postinstall-rbac.yaml
 - openwebui-postinstall-job.yaml
 ---
