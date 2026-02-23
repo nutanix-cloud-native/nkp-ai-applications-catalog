@@ -30,12 +30,12 @@ subjects:
     name: ${releaseName}-postinstall
     namespace: ${workspaceNamespace}
 ---
-# Role + RoleBinding in workspace ns so Job can read Traefik LB (kommander-traefik).
+# Role + RoleBinding in open-webui ns so Job can read open-webui LoadBalancer (external IP).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: ${releaseName}-postinstall-traefik
-  namespace: ${workspaceNamespace}
+  name: ${releaseName}-postinstall-app-svc
+  namespace: open-webui
 rules:
   - apiGroups: [""]
     resources: ["services"]
@@ -44,12 +44,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: ${releaseName}-postinstall-traefik
-  namespace: ${workspaceNamespace}
+  name: ${releaseName}-postinstall-app-svc
+  namespace: open-webui
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ${releaseName}-postinstall-traefik
+  name: ${releaseName}-postinstall-app-svc
 subjects:
   - kind: ServiceAccount
     name: ${releaseName}-postinstall

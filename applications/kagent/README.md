@@ -22,27 +22,36 @@ service at `ollama.${releaseNamespace}.svc.cluster.local:11434`.
 To use a different provider, override the values via the NKP app
 configuration UI or update `helmrelease/cm.yaml`.
 
-## Dashboard and SSO (Launch button)
+## Dashboard (Launch button)
 
-- **Traefik + forward-auth (recommended for SSO):** This catalog exposes the
-  kagent UI via Traefik with a forward-auth middleware so the NKP Launch
-  button opens a URL that goes through **traefik-forward-auth** (SSO). A
-  post-install Job discovers the Traefik LoadBalancer and patches the
-  `kagent-ui` ConfigMap with `dashboardLink` (e.g. `https://<traefik-lb>/kagent/`).
-  Requires Traefik and **traefik-forward-auth** running in the cluster (e.g.
-  service `traefik-forward-auth` in namespace `traefik` on port 4181). If your
-  Traefik service or namespace differ, set env in the Job or adjust the RBAC
-  and Job script.
-- **Plain service URL (no SSO):** In-cluster only:
-  `http://<releaseName>-ui.<releaseNamespace>.svc.cluster.local:8080`. Use
-  `kubectl port-forward -n <ns> svc/<releaseName>-ui 8080:8080` and open
-  http://localhost:8080; no SSO.
+This catalog does **not** include a Traefik IngressRoute or Middleware. The kagent UI is exposed via a **LoadBalancer** service
+(`ui.service.type: LoadBalancer` in the default values).
+
+- **Launch URL:** A post-install Job discovers the **kagent-ui** LoadBalancer
+  external IP in the `kagent` namespace and patches the `kagent-ui` ConfigMap
+  with `dashboardLink` (e.g. `http://<lb-ip>:8080/`). The NKP Launch button
+  uses that URL.
+- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
+  `http://kagent-ui.kagent.svc.cluster.local:8080` or
+  `kubectl port-forward -n kagent svc/kagent-ui 8080:8080` and open
+  http://localhost:8080.
 
 ## Dependencies
 
 | Dependency | Type | Notes |
 |------------|------|-------|
 | `ollama` | soft (`dependencies`) | Recommended LLM backend; not required if using a cloud provider |
+
+## Observability agent
+
+The **observability-agent** (Prometheus/Grafana/Kubernetes monitoring) is enabled
+in the catalog defaults (`agents.observability-agent.enabled: true`). If it shows
+**unavailable** in the UI at `/agents/new?name=observability-agent&...`, either the
+agent deployment was not created (upgrade the Helm release with the catalog values)
+or its tools cannot reach Grafana/Prometheus. The agent expects Grafana at
+`grafana-mcp.grafana.url` (default: `grafana.kagent:3000/api`). Install Grafana (and
+optionally Prometheus) in the cluster or point `grafana-mcp.grafana.url` to an
+existing instance for the agent to become available.
 
 ## Icon
 

@@ -1,6 +1,5 @@
-# Post-install Job: discovers Traefik LoadBalancer URL and patches openwebui-ui
-# ConfigMap with dashboardLink so the NKP Launch button opens Open WebUI via
-# Traefik (with forward-auth SSO). Requires Traefik + traefik-forward-auth in cluster.
+# Post-install Job: discovers open-webui LoadBalancer (external IP) in open-webui namespace
+# and patches openwebui-ui ConfigMap with dashboardLink so the NKP Launch button opens Open WebUI.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -23,19 +22,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            # Traefik in NKP/Kommander is usually kommander-traefik in workspace ns
-            - name: TRAEFIK_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: TRAEFIK_SERVICE_NAME
-              value: "kommander-traefik"
+            - name: APP_NAMESPACE
+              value: "open-webui"
+            - name: APP_SERVICE
+              value: "open-webui"
+            - name: APP_PORT
+              value: "80"
           command:
             - /bin/sh
             - -c
             - |
               set -e
-              echo "Starting post-install (ns=$WORKSPACE_NAMESPACE, traefik=$TRAEFIK_SERVICE_NAME in $TRAEFIK_NAMESPACE)"
+              echo "Starting post-install (ns=$WORKSPACE_NAMESPACE, app=$APP_SERVICE in $APP_NAMESPACE)"
               sleep 15
               echo "Waiting for openwebui-ui ConfigMap..."
               for i in $(seq 1 60); do
@@ -49,28 +47,25 @@ spec:
                 echo "ERROR: openwebui-ui ConfigMap not found after 5min"; exit 1
               fi
 
-              echo "Waiting for Traefik LoadBalancer..."
+              echo "Waiting for $APP_SERVICE LoadBalancer in $APP_NAMESPACE..."
               IP=""; HOSTNAME=""
-              for SVC in "$TRAEFIK_SERVICE_NAME" "traefik"; do
-                for i in $(seq 1 30); do
-                  IP=$(kubectl get svc -n "$TRAEFIK_NAMESPACE" "$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-                  HOSTNAME=$(kubectl get svc -n "$TRAEFIK_NAMESPACE" "$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-                  if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
-                    echo "Using Traefik service: $SVC"
-                    break 2
-                  fi
-                  echo "Waiting for $SVC... ($i/30)"; sleep 5
-                done
+              for i in $(seq 1 60); do
+                IP=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+                HOSTNAME=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                  break
+                fi
+                echo "Waiting... ($i/60)"; sleep 5
               done
 
               if [ -z "$IP" ] && [ -z "$HOSTNAME" ]; then
-                echo "ERROR: Traefik LoadBalancer not found"; kubectl get svc -n "$TRAEFIK_NAMESPACE" 2>/dev/null || true; exit 1
+                echo "ERROR: $APP_SERVICE LoadBalancer not found"; kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o yaml 2>/dev/null || true; exit 1
               fi
 
               if [ -n "$IP" ]; then
-                ENDPOINT="https://$IP/open-webui/"
+                ENDPOINT="http://$IP:$APP_PORT/"
               else
-                ENDPOINT="https://$HOSTNAME/open-webui/"
+                ENDPOINT="http://$HOSTNAME:$APP_PORT/"
               fi
 
               PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")

@@ -2,6 +2,14 @@ apiVersion: v1
 data:
   values.yaml: |
     fullnameOverride: "kagent"
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
+    ui.service.type: LoadBalancer
+    # Ensure observability-agent is deployed (uses Prometheus/Grafana tools).
+    # For it to show "available" in the UI, Grafana (and optionally Prometheus)
+    # should be reachable; see grafana-mcp.grafana.url (default: grafana.kagent:3000/api).
+    agents:
+      observability-agent:
+        enabled: true
     providers:
       default: ollama
       ollama:
