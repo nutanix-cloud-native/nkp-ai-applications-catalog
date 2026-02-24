@@ -1,0 +1,31 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Katib
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: |
+  Katib is Kubernetes-native hyperparameter tuning and neural architecture search.
+  It supports multiple ML frameworks and search algorithms to automate model
+  optimization and architecture search for Kubeflow and other Kubernetes ML workloads.
+dependencies: []
+icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **What it is** — Katib is the Kubeflow project for automated hyperparameter tuning and neural architecture search (NAS) on Kubernetes, so you can optimize model training without manual trial-and-error.
+
+  **Highlights**
+  - Distributed hyperparameter tuning with multiple search algorithms (e.g. Bayesian, grid, random)
+  - Neural architecture search; supports PyTorch, TensorFlow, XGBoost, and more
+  - Kubernetes CRDs (Experiment, Trial) for GitOps and integration with ML pipelines
+  - Part of the Kubeflow ecosystem; works with KServe and training operators
+
+  **Documentation:** [Katib docs](https://www.kubeflow.org/docs/components/hyperparameter-tuning/overview/) | **Project:** [GitHub](https://github.com/kubeflow/katib)
+scope:
+  - workspace
+  - project
+supportLink: https://github.com/kubeflow/katib
+nkpVersionSupport: ">=2.16.0"
+type: custom
+---

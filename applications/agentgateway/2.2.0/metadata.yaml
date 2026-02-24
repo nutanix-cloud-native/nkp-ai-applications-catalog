@@ -3,7 +3,6 @@ displayName: Agentgateway
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-  - networking
 description: |
   Agentgateway is the AI-focused gateway from agentgateway.dev that provides security,
   observability, and traffic management for AI/LLM workloads. Works alongside

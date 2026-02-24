@@ -1,0 +1,41 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-0.16.0-chart
+  namespace: ${releaseNamespace}
+spec:
+  url: oci://ghcr.io/kserve/charts/kserve
+  ref:
+    tag: v0.16.0
+  interval: 10m
+  layerSelector:
+    mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+    operation: copy
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kserve
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-0.16.0-chart
+    namespace: ${releaseNamespace}
+  dependsOn:
+    - name: kserve-crd
+  interval: 15s
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  upgrade:
+    remediation:
+      retries: 30
+  releaseName: kserve
+  targetNamespace: kserve
+  valuesFrom:
+    - kind: ConfigMap
+      name: kserve-0.16.0-nkp-defaults
+      namespace: ${releaseNamespace}
+---

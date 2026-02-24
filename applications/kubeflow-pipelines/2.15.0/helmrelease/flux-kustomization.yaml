@@ -1,0 +1,17 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-kustomize
+  namespace: ${releaseNamespace}
+spec:
+  interval: 10m
+  path: ./applications/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: ${releaseName}-manifests
+    namespace: ${releaseNamespace}
+  targetNamespace: ${releaseNamespace}
+  timeout: 5m
+  wait: true
+---
