@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-2.30.2-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: ""
+---

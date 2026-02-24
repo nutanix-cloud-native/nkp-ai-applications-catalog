@@ -1,0 +1,40 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Coder
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: |
+  Coder is an AI-enabled remote development platform that provides cloud-based
+  development environments on your infrastructure. Deploy on Kubernetes for
+  secure, scalable dev environments with AI coding assistants.
+dependencies: []
+icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Coder provides remote development environments (IDEs) on Kubernetes with AI coding assistant integration. Teams can run VS Code, JetBrains, and other IDEs in the cloud with GPU support for AI workloads.
+
+  **Key capabilities**
+
+  - **Remote dev environments** — VS Code, JetBrains, Jupyter on Kubernetes
+  - **AI coding assistants** — Integrate AI agents into development workflows
+  - **Self-hosted** — Full control over your infrastructure and data
+  - **PostgreSQL required** — Coder needs an external PostgreSQL database
+
+  **Prerequisites**
+
+  - PostgreSQL database (managed or in-cluster)
+  - Configure `CODER_PG_CONNECTION_URL` and `CODER_ACCESS_URL` in Helm values
+
+  **Resources**
+
+  [Documentation](https://coder.com/docs) · [Helm chart](https://helm.coder.com/v2)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.16.0"
+supportLink: https://coder.com/docs
+type: custom
+---
