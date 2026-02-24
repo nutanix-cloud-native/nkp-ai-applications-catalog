@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${workspaceNamespace}
+  labels:
+    kommander.d2iq.io/application: ${releaseName}
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Merge
+data:
+  name: ${releaseName}
+  dashboardLink: /jupyter/
+  docsLink: "https://z2jh.jupyter.org/en/stable/"
+  version: 4.3.2
+---
+
