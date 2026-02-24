@@ -1,0 +1,49 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: JupyterHub brings the power of notebooks to groups of users.
+displayName: JupyterHub
+icon: yA1LjA4ODc4IDAuMjE0ODAzQyA1LjU1NTI2IDAuMzc5NDkgNS45ODQ3MyAwLjYzNDQ3IDYuMzUyNjQgMC45NjUxNzlDIDYuNzIwNTUgMS4yOTU4OSA3LjAxOTcxIDEuNjk1ODQgNy4yMzMgMi4xNDIyQyA3LjQ0NjMgMi41ODg1NSA3LjU2OTU3IDMuMDcyNTYgNy41OTU3NiAzLjU2NjU2TCA3LjU5NTc2IDMuNTY2NTZaIi8+CjxwYXRoIGlkPSJwYXRoMTFfZmlsbCIgZD0iTSAyLjI1MDYxIDQuMzc5NDNDIDEuODE4ODYgNC4zOTEzNSAxLjM5MzIyIDQuMjc1MzUgMS4wMjcyMiA0LjA0NjAyQyAwLjY2MTIyNCAzLjgxNjY4IDAuMzcxMjA2IDMuNDg0MjQgMC4xOTM2NDEgMy4wOTA1MkMgMC4wMTYwNzYyIDIuNjk2NzkgLTAuMDQxMTA3OCAyLjI1OTM1IDAuMDI5MjgwNCAxLjgzMzIxQyAwLjA5OTY2ODYgMS40MDcwNyAwLjI5NDQ4NiAxLjAxMTI1IDAuNTg5MjMzIDAuNjk1NTQyQyAwLjg4Mzk4MSAwLjM3OTgzIDEuMjY1NSAwLjE1ODMxNiAxLjY4NTgxIDAuMDU4ODU3N0MgMi4xMDYxMSAtMC4wNDA2MDA1IDIuNTQ2NDQgLTAuMDEzNTYyMiAyLjk1MTQzIDAuMTM2NTcyQyAzLjM1NjQxIDAuMjg2NzA3IDMuNzA3OTYgMC41NTMyMzQgMy45NjE4NiAwLjkwMjYzNkMgNC4yMTU3NyAxLjI1MjA0IDQuMzYwNyAxLjY2ODcyIDQuMzc4NDIgMi4xMDAyN0MgNC4zOTUyOSAyLjY4MzggNC4xODEzMSAzLjI1MDQ0IDMuNzgyOTMgMy42NzcxNUMgMy4zODQ1NSA0LjEwMzg3IDIuODMzOTIgNC4zNTYyMyAyLjI1MDYxIDQuMzc5NDNaIi8+CjwvZGVmcz4KPC9zdmc+Cg==
+licensing:
+  - Pro
+  - Ultimate
+overview: |-
+  ## Overview
+
+  JupyterHub brings the power of notebooks to groups of users. It gives users access to computational environments and resources without burdening the users with installation and maintenance tasks.
+
+  ## Access
+
+  - You can access JupyterHub using the application dashboard available on the cluster **Application Dashboards** tab
+  - Also accessible by using your NKP Dashboard URL with the path `/jupyter/`
+
+  ### Credentials
+
+  - Username: admin
+  - Password: nutanix/4u
+
+  To overwrite the credentials, use the **Workspace Configuration** when enabling the application:
+
+  ```yaml
+  hub:
+    config:
+      Authenticator:
+        admin_users:
+          - admin
+      DummyAuthenticator:
+        password: nutanix/4u
+  ```
+
+  ## More Information
+
+  - [jupyter.org](https://jupyter.org/hub)
+  - [Jupyter Documentation](https://docs.jupyter.org/en/latest/)
+  - [JupyterHub for Kubernetes](https://z2jh.jupyter.org/en/stable/)
+  - [List of Helm values](https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/main/jupyterhub/values.yaml)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://jupyter.org/hub
+---
+
