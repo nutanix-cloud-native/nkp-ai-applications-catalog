@@ -13,3 +13,6 @@ nkp
 
 # Personal dev notes
 dev-commands.md
+
+# Cursor IDE rules (local)
+.cursor/
