@@ -1,4 +1,4 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: open-webui/open-webui
 helmrepoUrl: https://helm.openwebui.com/
-ocipush: oci://ghcr.io/deepak-muley/open-webui
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/open-webui
