@@ -1,0 +1,4 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: jupyterhub/jupyterhub
+helmrepoUrl: https://hub.jupyter.org/helm-chart/
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/jupyterhub
