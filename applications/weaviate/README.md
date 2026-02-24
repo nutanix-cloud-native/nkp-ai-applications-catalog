@@ -13,7 +13,7 @@ Source metadata is stored in `.catalog-source.yaml`:
 ```yaml
 helmrepo: weaviate/weaviate
 helmrepoUrl: https://weaviate.github.io/weaviate-helm/
-ocipush: oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/weaviate
 ```
 
 ### How to push the chart to your OCI registry
@@ -27,7 +27,7 @@ helm repo update
 helm pull weaviate/weaviate --version 17.7.0
 
 # 3. Push to your OCI registry
-helm push weaviate-17.7.0.tgz oci://<your-oci-registry>/weaviate-helm/weaviate
+helm push weaviate-17.7.0.tgz oci://ghcr.io/nutanix-cloud-native/charts
 ```
 
 After pushing, update the OCI URL in `helmrelease/helmrelease.yaml` and

@@ -7,11 +7,15 @@ on:
   workflow_dispatch:
     inputs:
       chart_repo:
-        description: 'Source repository URL for the chart (e.g., https://mesosphere.github.io/charts/staging)'
+        description: 'Source Helm repository URL (e.g., https://weaviate.github.io/weaviate-helm/)'
+        type: string
+        required: true
+      repo_name:
+        description: 'Helm repo alias for helm repo add / helm pull (e.g., weaviate, ollama-helm)'
         type: string
         required: true
       chart_name:
-        description: 'Helm chart name (e.g., ndk, nutanix-ai, kserve, envoy-gateway etc.)'
+        description: 'Helm chart name in the repo (e.g., weaviate, ollama)'
         type: string
         required: true
       chart_version:
@@ -19,10 +23,10 @@ on:
         type: string
         required: true
       target_oci_registry:
-        description: 'Target OCI registry (e.g., oci://ghcr.io/nutanix-cloud-native/nkp-ai-charts)'
+        description: 'Target OCI registry (e.g., oci://ghcr.io/nutanix-cloud-native/charts)'
         type: string
         required: false
-        default: 'oci://ghcr.io/nutanix-cloud-native/nkp-ai-charts'
+        default: 'oci://ghcr.io/nutanix-cloud-native/charts'
 
 jobs:
   push-chart:
@@ -52,9 +56,9 @@ jobs:
       - name: Pull Helm chart
         run: |
           set -euo pipefail
-          helm repo add "${{ github.event.inputs.chart_name }}" "${{ github.event.inputs.chart_repo }}"
+          helm repo add "${{ github.event.inputs.repo_name }}" "${{ github.event.inputs.chart_repo }}"
           helm repo update
-          helm pull ${{ github.event.inputs.chart_name }}/${{ github.event.inputs.chart_name }} --version ${{ github.event.inputs.chart_version }}
+          helm pull ${{ github.event.inputs.repo_name }}/${{ github.event.inputs.chart_name }} --version ${{ github.event.inputs.chart_version }}
 
       - name: Push chart to GHCR
         run: |

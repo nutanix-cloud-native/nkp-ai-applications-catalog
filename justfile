@@ -53,27 +53,27 @@ push-helm-to-oci app repo-name repo-url chart version oci-registry:
     ./scripts/push-helm-to-oci.sh {{app}} {{repo-name}} {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
 # Shortcut: push ollama chart to OCI
-push-ollama version="1.39.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/ollama-helm/ollama":
+push-ollama version="1.39.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just push-helm-to-oci ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
 
 # Shortcut: push vllm chart to OCI
-push-vllm version="0.1.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/vllm":
+push-vllm version="0.1.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just push-helm-to-oci vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
 
 # Shortcut: push open-webui chart to OCI
-push-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/open-webui":
+push-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just push-helm-to-oci openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart to OCI
-push-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate":
+push-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just push-helm-to-oci weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
 
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
-add-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/open-webui":
+add-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just add-app openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart and generate scaffold in one step
-add-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate":
+add-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
     just add-app weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}

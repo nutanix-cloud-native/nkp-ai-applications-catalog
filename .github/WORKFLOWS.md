@@ -65,10 +65,11 @@ Triggered from the Actions tab with inputs:
 
 Triggered from the Actions tab to publish a Helm chart from a Helm repo to an OCI registry (e.g. GHCR). Inputs:
 
-- **chart_repo** (required): Source repository URL for the chart (e.g., https://mesosphere.github.io/charts/staging)
-- **chart_name** (required): Helm chart name (e.g., ndk, nutanix-ai, kserve, envoy-gateway etc.)
+- **chart_repo** (required): Source Helm repository URL (e.g., https://weaviate.github.io/weaviate-helm/)
+- **repo_name** (required): Helm repo alias for `helm repo add` / `helm pull` (e.g., weaviate, ollama-helm)
+- **chart_name** (required): Helm chart name in the repo (e.g., weaviate, ollama)
 - **chart_version** (required): Helm chart version
-- **target_oci_registry** (optional): Target OCI registry; default `oci://ghcr.io/nutanix-cloud-native/nkp-ai-charts`
+- **target_oci_registry** (optional): Target OCI registry; default `oci://ghcr.io/nutanix-cloud-native/charts`
 
 | Step | What it does |
 |------|-------------------------------|

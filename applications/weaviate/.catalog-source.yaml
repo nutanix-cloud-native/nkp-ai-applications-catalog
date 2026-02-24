@@ -1,4 +1,4 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: weaviate/weaviate
 helmrepoUrl: https://weaviate.github.io/weaviate-helm/
-ocipush: oci://ghcr.io/nutanix-cloud-native/weaviate-helm/weaviate
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/weaviate

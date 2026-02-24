@@ -6,10 +6,10 @@
 #   ./scripts/push-helm-to-oci.sh <app-name> <repo-name> <repo-url> <chart> <version> <oci-registry>
 #
 # Example (ollama):
-#   ./scripts/push-helm-to-oci.sh ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama 1.12.3 oci://ghcr.io/nutanix-cloud-native/ollama-helm/ollama
+#   ./scripts/push-helm-to-oci.sh ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama 1.12.3 oci://ghcr.io/nutanix-cloud-native/charts
 #
 # Example (vllm):
-#   ./scripts/push-helm-to-oci.sh vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm 0.1.1 oci://ghcr.io/nutanix-cloud-native/vllm
+#   ./scripts/push-helm-to-oci.sh vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm 0.1.1 oci://ghcr.io/nutanix-cloud-native/charts
 
 set -e
 

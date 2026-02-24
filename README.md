@@ -175,7 +175,7 @@ just add-to-cluster <workspace-name> v0.1.0
 
 # or directly:
 nkp create catalog-collection \
-  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection \
+  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection \
   --tag v0.1.0 \
   --workspace <workspace-name>
 ```
@@ -231,7 +231,7 @@ spec:
 |-------------|---------|-------|-------------|
 | agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
 | kagent | 0.7.13 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
-| vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/vllm/vllm` | High-throughput inference and serving engine for large language models |
+| vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
 
 ## Scripts & Justfile
 

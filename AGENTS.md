@@ -52,7 +52,7 @@ nkp push bundle --bundle ./nkp-ai-app-catalog.tar --to-registry <registry>
 
 ```bash
 nkp create catalog-collection \
-  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection \
+  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection \
   --tag v0.1.0 \
   --workspace <workspace-name>
 ```
@@ -180,7 +180,7 @@ Required fields:
 - Validate with: `nkp validate catalog-repository --repo-dir=.`
 - Create bundle with: `nkp create catalog-bundle --collection-tag v0.1.0`
 - Push bundle with: `nkp push bundle --bundle ./nkp-ai-app-catalog.tar --to-registry <registry>`
-- Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
+- Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
 
 ## Common Pitfalls
