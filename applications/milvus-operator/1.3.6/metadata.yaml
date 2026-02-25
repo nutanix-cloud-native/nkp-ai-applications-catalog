@@ -19,7 +19,7 @@ overview: |-
   Milvus is engineered for exceptional scalability and elasticity, accommodating the dynamic demands of modern applications. It achieves this through service-oriented design, decoupling storage, coordinators, and workers, allowing for component-wise scaling. This modular approach ensures that different computational tasks can scale independently according to varying workloads, providing fine-grained resource allocation and isolation.
 
   ### Diverse Index Support
-  Milvus supports an extensive array of over 10 index types, including widely-used ones such as HNSW, IVF, Product Quantization, and GPU-based indexing. This variety empowers developers to optimize searches according to specific performance and accuracy requirements, ensuring that the database can adapt to a wide range of applications and data characteristics. Continuous expansion of its index offerings, e.g. GPU index, further enhances Milvus's adaptability and effectiveness in handling complex search tasks. 
+  Milvus supports an extensive array of over 10 index types, including widely-used ones such as HNSW, IVF, Product Quantization, and GPU-based indexing. This variety empowers developers to optimize searches according to specific performance and accuracy requirements, ensuring that the database can adapt to a wide range of applications and data characteristics. Continuous expansion of its index offerings, e.g. GPU index, further enhances Milvus's adaptability and effectiveness in handling complex search tasks.
 
   ### Versatile Search Capabilities
   Milvus offers a wide range of search types, including top-K Approximate Nearest Neighbor (ANN), Range ANN, and search with metadata filtering, and upcoming hybrid dense and sparse vector search. This diversity enables unmatched query flexibility and precision, granting developers the ability to customize data retrieval strategies to meet specific application demands, thereby optimizing both the relevance and efficiency of search results.
@@ -41,4 +41,3 @@ scope:
 supportLink: https://milvus.io/docs
 type: custom
 ---
-
