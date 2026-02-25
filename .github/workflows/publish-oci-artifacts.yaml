@@ -9,6 +9,16 @@ on:
       COLLECTION_TAG:
         description: "Tag for the collection to publish"
         required: true
+        type: choice
+        options:
+          - v2.16.0
+          - v2.17.0
+          - v2.18.0
+          - v2.19.0
+          - custom
+      CUSTOM_TAG:
+        description: "Use when 'custom' is selected above. Enter the tag (e.g. v2.20.0)"
+        required: false
         type: string
       REGISTRY:
         description: "OCI registry URL (e.g. oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog)"
@@ -45,4 +55,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and publish catalog bundle
-        run: devbox run -- just publish-artifacts ${{ inputs.REGISTRY }} ${{ inputs.COLLECTION_TAG }}
+        run: |
+          if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
+            if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
+              echo "::error::CUSTOM_TAG is required when COLLECTION_TAG is 'custom'"
+              exit 1
+            fi
+            TAG="${{ inputs.CUSTOM_TAG }}"
+          else
+            TAG="${{ inputs.COLLECTION_TAG }}"
+          fi
+          devbox run -- just publish-artifacts ${{ inputs.REGISTRY }} "$TAG"

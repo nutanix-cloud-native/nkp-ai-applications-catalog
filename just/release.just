@@ -30,5 +30,6 @@ release tag=DEFAULT_TAG registry=DEFAULT_REGISTRY:
 # Create bundle and push to registry (for CI workflow_dispatch)
 # Usage: just publish-artifacts <registry> <tag>
 publish-artifacts registry tag:
+  just validate
   just create-bundle {{ tag }}
   just push-bundle {{ tag }} {{ registry }}
