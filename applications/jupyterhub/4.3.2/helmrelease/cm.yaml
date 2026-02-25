@@ -30,4 +30,3 @@ metadata:
   name: ${releaseName}-config-defaults
   namespace: ${releaseNamespace}
 ---
-
