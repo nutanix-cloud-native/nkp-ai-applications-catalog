@@ -34,7 +34,7 @@ nkp push bundle \
   --to-registry oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog
 ```
 
-**OCI URL used for catalog collection:** `oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection`  
+**OCI URL used for catalog collection:** `oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection`
 **Tag:** `v0.1.0`
 
 ---
