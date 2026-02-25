@@ -1,0 +1,21 @@
+# Bloodhound config for KServe 0.16.0
+# The Helm chart renders cert-manager and KServe CRs; skip these types when
+# CRD schemas are not loaded so validation does not fail with "unknown type".
+k8s_versions:
+  - 1.34.0
+
+strict: true
+
+# Types rendered by the KServe chart that are not in the default K8s schema
+skip_types:
+  - cert-manager.io/v1/Certificate
+  - cert-manager.io/v1/Issuer
+  - serving.kserve.io/v1alpha1/ClusterServingRuntime
+  - serving.kserve.io/v1alpha1/ClusterStorageContainer
+
+additional_crds: []
+
+substitution_vars:
+  releaseNamespace: kommander
+  releaseName: kserve
+  workspaceNamespace: workspace

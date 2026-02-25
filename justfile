@@ -27,9 +27,10 @@ add-app app repo-name repo-url chart version oci-registry:
 # ---------- Checks ----------
 
 # Run pre-commit hooks and gitlint
+# SKIP=git-dirty: allow running with uncommitted changes (validation run, not commit)
 pre-commit:
     env VIRTUALENV_PIP=24.0 pre-commit install-hooks
-    pre-commit run -a --show-diff-on-failure
+    env SKIP=git-dirty pre-commit run -a --show-diff-on-failure
     git fetch origin main
     pre-commit run --hook-stage manual gitlint-ci
 

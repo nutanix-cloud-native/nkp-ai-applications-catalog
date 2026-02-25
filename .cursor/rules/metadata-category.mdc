@@ -1,0 +1,36 @@
+---
+description: metadata.yaml requirements for catalog apps (category, icon, nkpVersionSupport)
+globs: applications/**/metadata.yaml
+alwaysApply: true
+---
+
+# metadata.yaml requirements
+
+All applications in this catalog must have these fields. Apply to every new or edited app.
+
+## category
+
+Must be `artificial-intelligence` only. Do not use `ai-ml` or other categories:
+
+```yaml
+category:
+  - artificial-intelligence
+```
+
+## icon
+
+Required. Use base64-encoded SVG/PNG (preferred) or `""` if none available:
+
+```yaml
+icon: PHN2Zy4uLj4=   # base64-encoded SVG
+# or
+icon: ""
+```
+
+## nkpVersionSupport
+
+Required. NKP version constraint (e.g. `>=2.16.0`):
+
+```yaml
+nkpVersionSupport: ">=2.16.0"
+```
