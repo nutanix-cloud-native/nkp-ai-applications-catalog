@@ -53,7 +53,7 @@ Triggered from the Actions tab with inputs:
 | Checkout | Current ref (usually `main`). |
 | Install Nix + devbox | Same as manifest workflow. |
 | Login to GHCR | So the bundle can be pushed. |
-| Create and publish | `just publish-artifacts <REGISTRY> <COLLECTION_TAG>` → `create-bundle` then `push-bundle` (builds the catalog tarball and pushes it to the OCI registry). |
+| Create and publish | `just publish-artifacts <REGISTRY> <COLLECTION_TAG>` → `validate` then `create-bundle` then `push-bundle` (validates the catalog, builds the tarball, and pushes it to the OCI registry). |
 
 **Sequence:** One job. You choose the tag and optionally the registry; the workflow builds the bundle and publishes it.
 
@@ -81,6 +81,21 @@ Triggered from the Actions tab to publish a Helm chart from a Helm repo to an OC
 
 ---
 
+## 5. Manual Black Duck security scan (workflow_dispatch)
+
+**Workflow: [synopsys-schedule.yaml](workflows/synopsys-schedule.yaml)**
+
+Triggered manually from the Actions tab. Runs a full Black Duck (Synopsys) security scan on the repository.
+
+| Step | What it does |
+|------|-------------------------------|
+| Checkout | Current ref. |
+| Black Duck Full Scan | Uses `synopsys-sig/synopsys-action` to run a full scan; fails on BLOCKER and CRITICAL severities. |
+
+**Required secrets:** `BLACKDUCK_URL`, `BLACKDUCK_API_TOKEN` (configure in repo Settings → Secrets and variables → Actions).
+
+---
+
 ## Summary
 
 | Trigger | Workflows that run |
@@ -90,5 +105,6 @@ Triggered from the Actions tab to publish a Helm chart from a Helm repo to an OC
 | Merge group (e.g. merge queue) | **checks** (lint-gha + pre-commit). |
 | Manual “Publish OCI Artifacts” | **publish-oci-artifacts** only. |
 | Manual "Publish Chart to GHCR" | **publish-chart-oci** only. |
+| Manual "Black Duck Daily Policy Check" | **synopsys-schedule** only. |
 
 All workflows use **self-hosted Nutanix runners** as defined in [actionlint.yaml](actionlint.yaml).

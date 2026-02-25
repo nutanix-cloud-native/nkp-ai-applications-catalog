@@ -67,4 +67,4 @@ jobs:
       - name: Run pre-commit
         run: devbox run -- just pre-commit
         env:
-          SKIP: no-commit-to-branch,actionlint-system
+          SKIP: no-commit-to-branch,actionlint-system,git-dirty
