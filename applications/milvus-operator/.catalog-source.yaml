@@ -1,0 +1,4 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: milvus-operator/milvus-operator
+helmrepoUrl: https://zilliztech.github.io/milvus-operator/
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
