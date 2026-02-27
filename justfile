@@ -48,33 +48,45 @@ login:
 
 # ---------- Helm → OCI ----------
 
+# Base OCI registry for Helm chart pushes. Override for testing:
+#   OCI_REGISTRY=oci://my-registry.com/charts just push-ollama
+OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/charts')
+
 # Pull a Helm chart and push it to an OCI registry, then generate .catalog-source.yaml
 # Usage: just push-helm-to-oci <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
 push-helm-to-oci app repo-name repo-url chart version oci-registry:
     ./scripts/push-helm-to-oci.sh {{app}} {{repo-name}} {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
 # Shortcut: push ollama chart to OCI
-push-ollama version="1.39.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+push-ollama version="1.39.0" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
 
 # Shortcut: push vllm chart to OCI
-push-vllm version="0.1.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+push-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
 
 # Shortcut: push open-webui chart to OCI
-push-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+push-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart to OCI
-push-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+push-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
+
+# Shortcut: push coder chart to OCI
+push-coder version="2.30.2" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
 
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
-add-openwebui version="12.0.1" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+add-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
     just add-app openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart and generate scaffold in one step
-add-weaviate version="17.7.0" oci-registry="oci://ghcr.io/nutanix-cloud-native/charts":
+add-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
     just add-app weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
+
+# Shortcut: push coder chart and generate scaffold in one step
+add-coder version="2.30.2" oci-registry=OCI_REGISTRY:
+    just add-app coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}

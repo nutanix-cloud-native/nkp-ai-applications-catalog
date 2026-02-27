@@ -29,6 +29,6 @@ spec:
       retries: 30
   valuesFrom:
   - kind: ConfigMap
-    name: ${releaseName}-2.30.2-defaults
+    name: ${releaseName}-${appVersion}-defaults
     namespace: ${releaseNamespace}
 ---

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kserve-0.16.0-nkp-defaults
+  name: ${releaseName}-${appVersion}-nkp-defaults
   namespace: ${releaseNamespace}
 data:
   values.yaml: |-

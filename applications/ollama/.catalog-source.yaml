@@ -1,4 +1,4 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: ollama-helm/ollama
 helmrepoUrl: https://otwld.github.io/ollama-helm/
-ocipush: oci://ghcr.io/nutanix-cloud-native/charts/ollama
+ocipush: oci://ghcr.io/deepak-muley/charts

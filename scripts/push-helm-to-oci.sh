@@ -27,9 +27,14 @@ helm repo update "$REPO_NAME"
 echo "==> Pulling $REPO_NAME/$CHART version $VERSION"
 helm pull "$REPO_NAME/$CHART" --version "$VERSION"
 
+# Chart tarball name may vary (e.g. coder produces coder_helm_2.30.2.tgz)
 TARBALL="${CHART}-${VERSION}.tgz"
 if [ ! -f "$TARBALL" ]; then
-  echo "ERROR: Expected tarball $TARBALL not found"
+  TARBALL="$(ls -1 *-${VERSION}.tgz *_${VERSION}.tgz 2>/dev/null | head -1)"
+fi
+if [ -z "$TARBALL" ] || [ ! -f "$TARBALL" ]; then
+  echo "ERROR: Expected tarball ${CHART}-${VERSION}.tgz (or *${VERSION}.tgz) not found"
+  ls -la *.tgz 2>/dev/null || true
   exit 1
 fi
 

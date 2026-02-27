@@ -18,6 +18,8 @@ echo $GITHUB_TOKEN | helm registry login ghcr.io -u YOUR_GITHUB_USERNAME --passw
 
 **Workflow:** [Publish OCI Artifacts](https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog/actions/workflows/publish-oci-artifacts.yaml)
 
+The workflow runs `just publish-artifacts`, which validates the catalog, creates the bundle, and pushes to OCI.
+
 **Job values:**
 
 | Input           | Value                                                          |
@@ -28,11 +30,32 @@ echo $GITHUB_TOKEN | helm registry login ghcr.io -u YOUR_GITHUB_USERNAME --passw
 **Manual push (optional):**
 
 ```bash
+# Validate first, then bundle and push
+just validate
 nkp create catalog-bundle --collection-tag v0.1.0
 nkp push bundle \
   --bundle ./nkp-ai-applications-catalog-v0.1.0.tar \
   --to-registry oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog
 ```
+
+Or use the full pipeline: `just release v0.1.0` (validate → bundle → push).
+
+**Using a custom Helm chart registry (for testing):**
+
+To build a bundle that points helmreleases to your own OCI registry instead of `oci://ghcr.io/nutanix-cloud-native/charts`:
+
+```bash
+# Build bundle with your registry (substitutes chart URLs before bundling)
+CHART_REGISTRY=oci://ghcr.io/deepak-muley/charts just create-bundle v0.1.0
+
+# Or pass as argument
+just create-bundle v0.1.0 "" "oci://ghcr.io/deepak-muley/charts"
+
+# Full pipeline: create bundle with custom registry, then push
+CHART_REGISTRY=oci://ghcr.io/deepak-muley/charts just push-bundle v0.1.0 oci://ghcr.io/deepak-muley/nkp-ai-applications-catalog
+```
+
+Ensure you have pushed the Helm charts to your registry first (e.g. `OCI_REGISTRY=oci://ghcr.io/deepak-muley/charts just push-ollama` etc.).
 
 **OCI URL used for catalog collection:** `oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection`
 **Tag:** `v0.1.0`
@@ -47,14 +70,15 @@ The workflow defaults to `oci://ghcr.io/nutanix-cloud-native/charts`. Charts are
 
 ## Job values for each chart
 
-| Chart       | chart_repo                                              | repo_name   | chart_name   | chart_version | target_oci_registry (optional, uses default)        |
-|-------------|---------------------------------------------------------|-------------|--------------|---------------|-----------------------------------------------------|
-| Weaviate   | `https://weaviate.github.io/weaviate-helm/`             | `weaviate`  | `weaviate`   | `17.7.0`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
-| vLLM       | `https://open-source-ai-dev.github.io/vllm-helm-chart`  | `vllm`      | `vllm`       | `0.1.1`       | `oci://ghcr.io/nutanix-cloud-native/charts`         |
-| Open WebUI | `https://helm.openwebui.com/`                           | `open-webui`| `open-webui` | `12.0.1`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
-| Ollama     | `https://otwld.github.io/ollama-helm/`                  | `ollama-helm` | `ollama`   | `1.39.0`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
+| Chart       | chart_repo                                              | repo_name    | chart_name   | chart_version | target_oci_registry (optional, uses default)        |
+|-------------|---------------------------------------------------------|--------------|--------------|---------------|-----------------------------------------------------|
+| Weaviate   | `https://weaviate.github.io/weaviate-helm/`             | `weaviate`   | `weaviate`   | `17.7.0`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
+| vLLM       | `https://open-source-ai-dev.github.io/vllm-helm-chart`  | `vllm`       | `vllm`       | `0.1.1`       | `oci://ghcr.io/nutanix-cloud-native/charts`         |
+| Open WebUI | `https://helm.openwebui.com/`                           | `open-webui` | `open-webui` | `12.0.1`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
+| Ollama     | `https://otwld.github.io/ollama-helm/`                  | `ollama-helm`| `ollama`     | `1.39.0`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
+| Coder      | `https://helm.coder.com/v2`                             | `coder-v2`   | `coder`      | `2.30.2`      | `oci://ghcr.io/nutanix-cloud-native/charts`         |
 
-**Note:** `repo_name` is the Helm repo alias used in `helm repo add` and `helm pull <repo_name>/<chart_name>`. It must match the repo index (e.g. Weaviate uses `weaviate`, Ollama uses `ollama-helm`).
+**Note:** `repo_name` is the Helm repo alias used in `helm repo add` and `helm pull <repo_name>/<chart_name>`. It must match the repo index (e.g. Weaviate uses `weaviate`, Ollama uses `ollama-helm`, Coder uses `coder-v2`).
 
 ## Manual push (all charts)
 
@@ -85,9 +109,15 @@ helm repo add ollama-helm https://otwld.github.io/ollama-helm/
 helm repo update
 helm pull ollama-helm/ollama --version 1.39.0
 helm push ollama-1.39.0.tgz oci://ghcr.io/nutanix-cloud-native/charts
+
+# 6. Coder 2.30.2 (repo_name=coder-v2, chart_name=coder)
+helm repo add coder-v2 https://helm.coder.com/v2
+helm repo update
+helm pull coder-v2/coder --version 2.30.2
+helm push coder-2.30.2.tgz oci://ghcr.io/nutanix-cloud-native/charts
 ```
 
-**OCI URLs used in Flux:** `oci://ghcr.io/nutanix-cloud-native/charts/weaviate`, `oci://ghcr.io/nutanix-cloud-native/charts/vllm`, etc.
+**OCI URLs used in Flux:** `oci://ghcr.io/nutanix-cloud-native/charts/weaviate`, `oci://ghcr.io/nutanix-cloud-native/charts/vllm`, `oci://ghcr.io/nutanix-cloud-native/charts/coder`, etc.
 
 ---
 
