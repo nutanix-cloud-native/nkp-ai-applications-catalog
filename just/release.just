@@ -39,3 +39,4 @@ publish-artifacts registry tag:
   just validate
   just create-bundle {{ tag }}
   just push-bundle {{ tag }} {{ registry }}
+
