@@ -3,10 +3,7 @@ displayName: KServe
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  KServe provides a standard, Kubernetes-native way to deploy and serve ML models
-  with autoscaling, canary rollouts, and multi-framework support (PyTorch, TensorFlow,
-  scikit-learn, XGBoost, etc.) behind a single InferenceService API.
+description: Kubernetes-native ML model serving with autoscaling and multi-framework support.
 dependencies:
   - cert-manager
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
@@ -14,7 +11,7 @@ licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — KServe is a model-serving layer on Kubernetes that turns trained models into scalable, production-ready inference services with a consistent API.
+  **What it is** — KServe provides a standard, Kubernetes-native way to deploy and serve ML models with autoscaling, canary rollouts, and multi-framework support (PyTorch, TensorFlow, scikit-learn, XGBoost, etc.) behind a single InferenceService API. Turns trained models into scalable, production-ready inference services.
 
   **Highlights**
   - Single InferenceService CRD for multiple frameworks (PyTorch, TensorFlow, SKLearn, XGBoost, etc.)

@@ -3,16 +3,14 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other
-  Kubeflow components. This overlay uses oauth2-proxy for auth; deploys via Flux from kubeflow/manifests.
+description: Single UI for Pipelines, Notebooks, Katib, and other Kubeflow components.
 displayName: Kubeflow Central Dashboard
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Central Dashboard is the main entry point for the Kubeflow UI (Pipelines, Notebooks, Katib, etc.).
+  **What it is** — Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other Kubeflow components. This overlay uses oauth2-proxy for auth; deploys via Flux from kubeflow/manifests. The main entry point for the Kubeflow UI.
 
   **Highlights**
   - Single UI for discovering and using Kubeflow components

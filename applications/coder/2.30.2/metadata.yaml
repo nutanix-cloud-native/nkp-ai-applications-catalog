@@ -3,10 +3,7 @@ displayName: Coder
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  Coder is an AI-enabled remote development platform that provides cloud-based
-  development environments on your infrastructure. Deploy on Kubernetes for
-  secure, scalable dev environments with AI coding assistants.
+description: AI-enabled remote development platform with cloud-based dev environments on Kubernetes.
 dependencies: []
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
 licensing:
@@ -15,7 +12,7 @@ licensing:
 overview: |
   **Overview**
 
-  Coder provides remote development environments (IDEs) on Kubernetes with AI coding assistant integration. Teams can run VS Code, JetBrains, and other IDEs in the cloud with GPU support for AI workloads.
+  Coder is an AI-enabled remote development platform that provides cloud-based development environments on your infrastructure. Deploy on Kubernetes for secure, scalable dev environments with AI coding assistants. Teams can run VS Code, JetBrains, and other IDEs in the cloud with GPU support for AI workloads.
 
   **Key capabilities**
 

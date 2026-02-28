@@ -3,16 +3,14 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  TensorBoard Controller exposes TensorBoard for training run visualization on Kubernetes.
-  Part of Kubeflow; deploys via Flux from kubeflow/manifests.
+description: TensorBoard for ML training run visualization on Kubernetes.
 displayName: TensorBoard Controller
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The TensorBoard Controller manages TensorBoard instances for visualizing ML training runs (metrics, graphs, histograms).
+  **What it is** — The TensorBoard Controller exposes TensorBoard for training run visualization on Kubernetes. Part of Kubeflow; deploys via Flux from kubeflow/manifests. Manages TensorBoard instances for visualizing ML training runs (metrics, graphs, histograms).
 
   **Highlights**
   - Kubernetes CRD for TensorBoard; pairs with Training Operator and Pipelines

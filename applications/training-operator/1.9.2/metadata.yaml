@@ -3,16 +3,14 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  Training Operator runs distributed ML training (PyTorch, TensorFlow, XGBoost, etc.)
-  on Kubernetes via custom resources. Part of Kubeflow; deploys via Flux from kubeflow/manifests.
+description: Runs distributed ML training (PyTorch, TensorFlow, XGBoost) on Kubernetes via custom resources.
 displayName: Training Operator
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Kubeflow Training Operator provides Kubernetes CRDs and controllers for distributed training jobs (PyTorchJob, TFJob, XGBoostJob, etc.).
+  **What it is** — The Kubeflow Training Operator runs distributed ML training (PyTorch, TensorFlow, XGBoost, etc.) on Kubernetes via custom resources. Part of Kubeflow; deploys via Flux from kubeflow/manifests. Provides Kubernetes CRDs and controllers for distributed training jobs (PyTorchJob, TFJob, XGBoostJob, etc.).
 
   **Highlights**
   - Native K8s APIs for training; works with Katib and Pipelines

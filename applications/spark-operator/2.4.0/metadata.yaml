@@ -3,17 +3,14 @@ displayName: Spark Operator
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  The Kubernetes operator for Apache Spark: run Spark applications as native
-  Kubernetes resources. Manages driver and executor pods, submission, and
-  lifecycle. Part of the Kubeflow ecosystem for data and ML workloads.
+description: Kubernetes operator for Apache Spark; run Spark apps as native K8s resources.
 dependencies: []
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Spark on Kubernetes operator lets you run Apache Spark jobs and applications as Kubernetes-native workloads, with drivers and executors as pods.
+  **What it is** — The Kubernetes operator for Apache Spark runs Spark applications as native Kubernetes resources. Manages driver and executor pods, submission, and lifecycle. Part of the Kubeflow ecosystem for data and ML workloads. Lets you run Apache Spark jobs as Kubernetes-native workloads.
 
   **Highlights**
   - Submit Spark applications via custom resources (SparkApplication); no need to manage pods manually

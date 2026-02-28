@@ -3,10 +3,7 @@ displayName: Open WebUI
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  Open WebUI is an extensible, self-hosted web interface for interacting with
-  large language models. It provides an intuitive chat UI with support for
-  multiple LLM backends including Ollama, OpenAI-compatible APIs, and more.
+description: Self-hosted web interface for LLMs with support for Ollama and OpenAI-compatible APIs.
 dependencies:
   - ollama
   - vllm
@@ -17,7 +14,7 @@ licensing:
 overview: |
   **Overview**
 
-  Open WebUI is a self-hosted, open-source web interface for AI chat. It provides a ChatGPT-like experience on your own infrastructure by connecting to one or more LLM backends (Ollama, vLLM, or any OpenAI-compatible API). Deploy it from this catalog and use the Launch button to open the UI via Traefik with optional SSO.
+  Open WebUI is an extensible, self-hosted web interface for interacting with large language models. It provides an intuitive chat UI with support for multiple LLM backends including Ollama, OpenAI-compatible APIs, and more. ChatGPT-like experience on your own infrastructure. Deploy from this catalog and use the Launch button to open the UI via Traefik with optional SSO.
 
   **Key capabilities**
 
