@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    env:
+      - name: WEAVIATE_URL
+        value: "http://weaviate.weaviate.svc.cluster.local:80"
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

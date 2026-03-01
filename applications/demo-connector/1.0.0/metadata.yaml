@@ -1,0 +1,31 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Demo Connector (Sample)
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: Minimal sample app that verifies connectivity to Weaviate. Demonstrates catalog dependency flow.
+dependencies: []
+requiredDependencies:
+  - weaviate
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  This is a **sample application** for demonstrating NKP catalog dependency flow. Enable Weaviate in the workspace first, then enable this app. It connects to Weaviate via Kubernetes DNS and displays a simple status page. Use the **Launch** button in the NKP UI to open the app.
+
+  **Source**
+
+  [github.com/deepak-muley/nkp-demo-connector](https://github.com/deepak-muley/nkp-demo-connector)
+
+  **Dependencies**
+
+  - **Weaviate** (required) — Vector database. Must be enabled in the same workspace first.
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://github.com/deepak-muley/nkp-demo-connector
+type: custom
+---

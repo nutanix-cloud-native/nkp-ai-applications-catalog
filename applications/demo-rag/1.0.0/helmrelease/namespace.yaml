@@ -1,0 +1,6 @@
+# Create demo-rag namespace before RBAC (Role in demo-rag ns) and HelmRelease.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-rag
+---

@@ -70,6 +70,10 @@ helm push <chart>-<version>.tgz oci://<your-oci-registry>/<chart>
 
 Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
+### justfile and dev-commands.md
+
+When adding a Helm-based app whose chart comes from a public Helm repo and must be pushed to OCI: add `push-<app>` and `add-<app>` shortcuts to the justfile, and document them in `dev-commands.md`. See `.cursor/rules/justfile-dev-commands.mdc`.
+
 ### Required files
 
 1. **`applications/<app>/<version>/metadata.yaml`** — must use schema `catalog.nkp.nutanix.com/v1/application-metadata` with fields: `displayName`, `description`, `category`, `licensing`, `scope`, `overview`, `supportLink`, `type`, `dependencies`, `icon`, `allowMultipleInstances`.
@@ -168,7 +172,8 @@ Required fields:
 | `type` | string | Usually `custom` |
 | `overview` | string | Markdown overview; use **Overview**, **Key capabilities**, **Dependencies** (if any), **Prerequisites** (if any), and **Resources** (docs/project/chart links). Keep concise and production-oriented. |
 | `supportLink` | string | URL to documentation or support |
-| `dependencies` | list | List of dependency app names (empty `[]` if none) |
+| `dependencies` | list | Soft dependencies (empty `[]` if none) |
+| `requiredDependencies` | list | Hard dependencies — platform or catalog apps that must be installed first. Use names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications) for platform apps (e.g. `istio`, `gateway-api-crds`). Do not disable features to avoid crashes; add the dependency instead. |
 | `icon` | string | URL to an SVG/PNG icon (empty `""` if none) |
 | `allowMultipleInstances` | bool | Whether multiple instances can be deployed |
 | `nkpVersionSupport` | string | NKP version constraint, e.g. `">=2.17.0"` for 2.17 and above (optional) |
@@ -187,6 +192,13 @@ Required fields:
 
 Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
+**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Helm's `install.createNamespace: true` is what creates namespaces; Kustomize-based apps never use that. The target namespace must exist before the Kustomization runs. Document this in `metadata.yaml` under **Prerequisites** — e.g. "The namespace `<app-namespace>` must exist before deployment. Create it with `kubectl create namespace <app-namespace>`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, jupyter-notebook-controller, tensorboard-controller, training-operator, spark-operator.
+
+## Dependencies
+
+- **requiredDependencies** — Hard deps (Istio, Gateway API, other apps). NKP installs first. Use platform app names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications). Never disable features (e.g. USE_ISTIO) to "fix" crashes; add the dependency.
+- **dependencies** — Soft deps (recommended but optional).
+
 ## Common Pitfalls
 
 - Forgetting the trailing `---` at the end of YAML documents.
@@ -194,6 +206,8 @@ Every application must deploy workloads to its **own dedicated namespace** (e.g.
 - Not listing a new resource file in the corresponding `kustomization.yaml`.
 - Using `strict: true` validation for Helm charts that emit extra/unknown fields — override with a per-app `.bloodhound.yaml`.
 - Missing required fields in `metadata.yaml`.
+- For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to document the namespace prerequisite in `metadata.yaml` overview — Flux does not create the target namespace.
+- For Helm-based apps that need charts pushed to OCI: forgetting to add `push-<app>` and `add-<app>` to the justfile and dev-commands.md.
 
 ## Commit Messages
 

@@ -18,6 +18,9 @@ overview: |
   - Kubernetes CRDs (Experiment, Trial) for GitOps and integration with ML pipelines
   - Part of the Kubeflow ecosystem; works with KServe and training operators
 
+  **Prerequisites**
+  - **Namespace** — This app deploys via Flux Kustomization (Kustomize from Git), not Helm. Flux Kustomization's targetNamespace only rewrites the namespace in manifests; it does not create the namespace. The namespace `katib` must exist before deployment. Create it with `kubectl create namespace katib`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way.
+
   **Documentation:** [Katib docs](https://www.kubeflow.org/docs/components/hyperparameter-tuning/overview/) | **Project:** [GitHub](https://github.com/kubeflow/katib)
 scope:
   - workspace

@@ -18,6 +18,9 @@ overview: |
   - Used by Kubeflow Pipelines and other ML/data workflows on Kubernetes
   - Community-driven; part of the Kubeflow manifests and ecosystem
 
+  **Prerequisites**
+  - **Namespace** — This app deploys via Flux Kustomization (Kustomize from Git), not Helm. Flux Kustomization's targetNamespace only rewrites the namespace in manifests; it does not create the namespace. The namespace `spark-operator` must exist before deployment. Create it with `kubectl create namespace spark-operator`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way.
+
   **Documentation:** [Spark on K8s](https://spark.apache.org/docs/latest/running-on-kubernetes.html) | **Project:** [Kubeflow Spark](https://github.com/kubeflow/manifests/tree/master/applications/spark/spark-operator)
 scope:
   - workspace

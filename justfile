@@ -3,6 +3,8 @@
 #
 # Run `just` to list all recipes, or `just <recipe>` to run one.
 
+set unstable
+
 import 'just/tools.just'
 import 'just/validate.just'
 import 'just/release.just'
@@ -61,9 +63,17 @@ push-helm-to-oci app repo-name repo-url chart version oci-registry:
 push-ollama version="1.39.0" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
 
+# Shortcut: push ollama chart and generate scaffold in one step
+add-ollama version="1.39.0" oci-registry=OCI_REGISTRY:
+    just add-app ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
+
 # Shortcut: push vllm chart to OCI
 push-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
+
+# Shortcut: push vllm chart and generate scaffold in one step
+add-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
+    just add-app vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
 
 # Shortcut: push open-webui chart to OCI
 push-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:

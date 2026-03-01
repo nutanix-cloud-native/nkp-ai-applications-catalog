@@ -3,6 +3,8 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
+requiredDependencies:
+  - istio
 description: Single UI for Pipelines, Notebooks, Katib, and other Kubeflow components.
 displayName: Kubeflow Central Dashboard
 icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
@@ -16,6 +18,10 @@ overview: |
   - Single UI for discovering and using Kubeflow components
   - OAuth2-proxy overlay for authentication
   - GitOps deployment via Flux
+
+  **Prerequisites**
+  - **Istio** (required) — Uses VirtualService CRD for routing. Declare `istio` as requiredDependencies; NKP installs it first.
+  - **Namespace** — This app deploys via Flux Kustomization (Kustomize from Git), not Helm. Flux Kustomization's targetNamespace only rewrites the namespace in manifests; it does not create the namespace. The namespace `kubeflow-central-dashboard` must exist before deployment. Create it with `kubectl create namespace kubeflow-central-dashboard`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way.
 
   **Documentation:** [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:
