@@ -37,31 +37,31 @@ OUTPUT_FILE=""
 # Parse args
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --list-only)
-      LIST_ONLY=true
-      shift
-      ;;
-    --output-file)
-      OUTPUT_FILE="${2:?--output-file requires path}"
-      shift 2
-      ;;
-    --push)
-      TARGET_REGISTRY="${2:?--push requires registry (e.g. ghcr.io/deepak-muley)}"
-      shift 2
-      ;;
-    --app)
-      APP_FILTER="${2:?--app requires app name}"
-      shift 2
-      ;;
-    *)
-      echo "Unknown option: $1"
-      echo "Usage: $0 [--list-only] [--push REGISTRY] [--app APP_NAME]"
-      exit 1
-      ;;
+  --list-only)
+    LIST_ONLY=true
+    shift
+    ;;
+  --output-file)
+    OUTPUT_FILE="${2:?--output-file requires path}"
+    shift 2
+    ;;
+  --push)
+    TARGET_REGISTRY="${2:?--push requires registry (e.g. ghcr.io/deepak-muley)}"
+    shift 2
+    ;;
+  --app)
+    APP_FILTER="${2:?--app requires app name}"
+    shift 2
+    ;;
+  *)
+    echo "Unknown option: $1"
+    echo "Usage: $0 [--list-only] [--push REGISTRY] [--app APP_NAME]"
+    exit 1
+    ;;
   esac
 done
 
-if [[ -z "$TARGET_REGISTRY" && "$LIST_ONLY" != "true" ]]; then
+if [[ -z $TARGET_REGISTRY && $LIST_ONLY != "true" ]]; then
   echo "Usage: $0 --list-only | $0 --push REGISTRY [--app APP_NAME]"
   exit 1
 fi
@@ -109,12 +109,13 @@ process_app() {
   local path="$4"
 
   # PATH_OVERRIDE overrides the path for the current app
-  if [[ -n "${PATH_OVERRIDE:-}" ]]; then
+  if [[ -n ${PATH_OVERRIDE:-} ]]; then
     path="$PATH_OVERRIDE"
   fi
 
-  local clone_dir="$WORK_DIR/$(echo "$repo" | sed 's|https://||;s|/|_|g')"
-  if [[ ! -d "$clone_dir" ]]; then
+  local clone_dir
+  clone_dir="$WORK_DIR/$(echo "$repo" | sed 's|https://||;s|/|_|g')"
+  if [[ ! -d $clone_dir ]]; then
     echo "==> Cloning $repo (ref=$ref) into $clone_dir"
     git clone --depth 1 --branch "$ref" "$repo" "$clone_dir" 2>/dev/null || \
       git clone --depth 1 "$repo" "$clone_dir" && cd "$clone_dir" && git checkout "$ref" 2>/dev/null
@@ -124,7 +125,7 @@ process_app() {
   # Normalize path: ./foo/bar -> foo/bar
   local path_norm="${path#./}"
   local kustomize_path="$clone_dir/$path_norm"
-  if [[ ! -d "$kustomize_path" ]]; then
+  if [[ ! -d $kustomize_path ]]; then
     echo "ERROR: Path not found: $kustomize_path"
     return 1
   fi
@@ -132,32 +133,32 @@ process_app() {
   echo "==> $app ($path)"
   local images
   images=$(extract_images "$kustomize_path")
-  if [[ -z "$images" ]]; then
+  if [[ -z $images ]]; then
     echo "    (no images found)"
     return 0
   fi
 
   while IFS= read -r img; do
-    [[ -z "$img" ]] && continue
+    [[ -z $img ]] && continue
     echo "    $img"
-    if [[ -n "$OUTPUT_FILE" ]]; then
-      echo "$img" >> "$OUTPUT_FILE"
+    if [[ -n $OUTPUT_FILE ]]; then
+      echo "$img" >>"$OUTPUT_FILE"
     fi
-    if [[ -n "$TARGET_REGISTRY" ]]; then
+    if [[ -n $TARGET_REGISTRY ]]; then
       local dst
       dst=$(map_to_target "$img" "$TARGET_REGISTRY")
       echo "      -> $dst"
       push_image "$img" "$dst"
     fi
-  done <<< "$images"
+  done <<<"$images"
 }
 
 # Main
 mkdir -p "$WORK_DIR"
-[[ -n "$OUTPUT_FILE" ]] && : > "$OUTPUT_FILE"
+[[ -n $OUTPUT_FILE ]] && : >"$OUTPUT_FILE"
 echo "Config: $CONFIG"
 echo "Work dir: $WORK_DIR"
-[[ -n "$OUTPUT_FILE" ]] && echo "Output file: $OUTPUT_FILE"
+[[ -n $OUTPUT_FILE ]] && echo "Output file: $OUTPUT_FILE"
 echo ""
 
 # Ensure we're in repo root for relative paths
@@ -172,7 +173,7 @@ if [[ -n "$APP_FILTER" ]]; then
 fi
 
 for app in $(yq -r '.apps | keys[]' "$CONFIG"); do
-  [[ -n "$APP_FILTER" && "$app" != "$APP_FILTER" ]] && continue
+  [[ -n $APP_FILTER && $app != "$APP_FILTER" ]] && continue
 
   repo=$(yq -r ".apps[\"$app\"].repo" "$CONFIG")
   ref=$(yq -r ".apps[\"$app\"].ref" "$CONFIG")

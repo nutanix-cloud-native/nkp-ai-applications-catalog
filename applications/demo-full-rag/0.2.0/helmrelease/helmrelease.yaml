@@ -1,0 +1,34 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 0.2.0
+  url: oci://ghcr.io/deepak-muley/charts/demo-full-rag
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: demo-full-rag
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  targetNamespace: demo-full-rag
+  upgrade:
+    remediation:
+      retries: 30
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-defaults
+---
