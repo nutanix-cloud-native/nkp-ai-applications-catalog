@@ -25,24 +25,24 @@ mkdir -p "$BIN_DIR"
 raw_os="$(uname -s)"
 os=""
 case "$raw_os" in
-  Linux)  os="linux" ;;
-  Darwin) os="darwin" ;;
-  *)
-    echo "error: unsupported OS '$raw_os'. Only Linux and macOS (darwin) are supported."
-    echo "Install nkp on PATH (e.g. build from nkp-catalog-cli) and re-run."
-    exit 1
-    ;;
+Linux) os="linux" ;;
+Darwin) os="darwin" ;;
+*)
+  echo "error: unsupported OS '$raw_os'. Only Linux and macOS (darwin) are supported."
+  echo "Install nkp on PATH (e.g. build from nkp-catalog-cli) and re-run."
+  exit 1
+  ;;
 esac
 
 raw_arch="$(uname -m)"
 arch=""
 case "$raw_arch" in
-  x86_64)  arch="amd64" ;;
-  aarch64|arm64) arch="arm64" ;;
-  *)
-    echo "error: unsupported arch '$raw_arch'. Only x86_64, amd64, aarch64, arm64 are supported."
-    exit 1
-    ;;
+x86_64) arch="amd64" ;;
+aarch64 | arm64) arch="arm64" ;;
+*)
+  echo "error: unsupported arch '$raw_arch'. Only x86_64, amd64, aarch64, arm64 are supported."
+  exit 1
+  ;;
 esac
 
 asset="nkp_v${NKP_CLI_VERSION}_${os}_${arch}"

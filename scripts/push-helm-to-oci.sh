@@ -30,11 +30,11 @@ helm pull "$REPO_NAME/$CHART" --version "$VERSION"
 # Chart tarball name may vary (e.g. coder produces coder_helm_2.30.2.tgz)
 TARBALL="${CHART}-${VERSION}.tgz"
 if [ ! -f "$TARBALL" ]; then
-  TARBALL="$(ls -1 *-${VERSION}.tgz *_${VERSION}.tgz 2>/dev/null | head -1)"
+  TARBALL="$(find . -maxdepth 1 \( -name '*-'"${VERSION}"'.tgz' -o -name '*_'"${VERSION}"'.tgz' \) 2>/dev/null | head -1)"
 fi
 if [ -z "$TARBALL" ] || [ ! -f "$TARBALL" ]; then
   echo "ERROR: Expected tarball ${CHART}-${VERSION}.tgz (or *${VERSION}.tgz) not found"
-  ls -la *.tgz 2>/dev/null || true
+  ls -la ./*.tgz 2>/dev/null || true
   exit 1
 fi
 

@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
+    image:
+      tag: "0.2.0"
+    service:
+      type: LoadBalancer
+    env:
+      - name: WEAVIATE_URL
+        value: "http://weaviate.weaviate.svc.cluster.local:80"
+      - name: OLLAMA_URL
+        value: "http://ollama.ollama.svc.cluster.local:11434"
+      - name: OLLAMA_EMBED_MODEL
+        value: "nomic-embed-text"
+      - name: OLLAMA_LLM_MODEL
+        value: "llama3.2"
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

@@ -231,6 +231,7 @@ spec:
 |-------------|---------|-------------|
 | **demo-connector** | 1.0.0 | Minimal sample that verifies connectivity to Weaviate. Depends on Weaviate. |
 | **demo-rag** | 1.0.0 | Sample RAG app that indexes docs into Weaviate and provides a query UI. Depends on Weaviate. |
+| **demo-full-rag** | 0.2.0 | Complete RAG app using Weaviate (vector DB) and Ollama (embeddings + LLM). Depends on Weaviate and Ollama. |
 
 These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
 
