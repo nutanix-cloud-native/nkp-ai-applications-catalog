@@ -111,4 +111,4 @@ list-kubeflow-images:
 # Usage: just mirror-kubeflow-images ghcr.io/deepak-muley
 #        just mirror-kubeflow-images ghcr.io/deepak-muley katib
 mirror-kubeflow-images registry app="":
-    ./scripts/mirror-kubeflow-images.sh --push {{registry}} {{'--app ' + app if app else ''}}
+    bash -c 'if [ -n "{{app}}" ]; then ./scripts/mirror-kubeflow-images.sh --push {{registry}} --app {{app}}; else ./scripts/mirror-kubeflow-images.sh --push {{registry}}; fi'
