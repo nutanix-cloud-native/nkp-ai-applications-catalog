@@ -11,7 +11,7 @@ spec:
     kind: GitRepository
     name: ${releaseName}-manifests
     namespace: ${releaseNamespace}
-  targetNamespace: ${releaseNamespace}
+  targetNamespace: kubeflow-central-dashboard
   timeout: 5m
   wait: true
 ---

@@ -111,7 +111,7 @@ Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
 4. **`applications/<app>/<version>/helmrelease/kustomization.yaml`** — lists all resources in the directory.
 
-5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables.
+5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables. **Each app must deploy to its own dedicated namespace** via `targetNamespace: <app-namespace>` and `install.createNamespace: true` (see `.cursor/rules/app-namespace.mdc`).
 
 6. **`applications/<app>/<version>/helmrelease/cm.yaml`** — ConfigMap for default Helm values:
    ```yaml
@@ -182,6 +182,10 @@ Required fields:
 - Push bundle with: `nkp push bundle --bundle ./nkp-ai-app-catalog.tar --to-registry <registry>`
 - Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
+
+## App namespace convention
+
+Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
 ## Common Pitfalls
 
