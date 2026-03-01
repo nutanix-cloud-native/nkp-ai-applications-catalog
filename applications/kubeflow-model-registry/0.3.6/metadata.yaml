@@ -10,14 +10,21 @@ licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — Kubeflow Model Registry provides central model versioning and lineage. Ties into Pipelines and KServe; deploys via Flux from kubeflow/manifests. Stores and versions ML models with lineage, linking pipeline runs and serving.
+  **What it is** — Kubeflow Model Registry provides central model versioning and lineage. Ties into Pipelines and KServe; deploys via Flux from kubeflow/model-registry. Stores and versions ML models with lineage, linking pipeline runs and serving.
 
   **Highlights**
   - Model versioning and metadata; integrates with Pipelines and KServe
   - Part of the Kubeflow ecosystem
   - GitOps deployment via Flux
 
-  **Documentation:** [Kubeflow Model Registry](https://github.com/kubeflow/model-registry) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
+  **Prerequisites**
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access**
+  - **UI** — The Model Registry web UI is accessed via the [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/) (install that component). From the Central Dashboard, select the Model Registry component to register, view, and manage models.
+  - **API** — Port-forward to `model-registry-service:8080` exposes the REST API, not a full UI. For programmatic use: in-cluster `http://model-registry-service.kubeflow-model-registry.svc.cluster.local:8080`, or use the [Python client](https://github.com/kubeflow/model-registry#python-client).
+
+  **Documentation:** [Kubeflow Model Registry](https://github.com/kubeflow/model-registry) | **Project:** [kubeflow/model-registry](https://github.com/kubeflow/model-registry)
 scope:
   - workspace
   - project

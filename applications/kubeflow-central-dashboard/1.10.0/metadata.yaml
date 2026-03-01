@@ -21,7 +21,9 @@ overview: |
 
   **Prerequisites**
   - **Istio** (required) — Uses VirtualService CRD for routing. Declare `istio` as requiredDependencies; NKP installs it first.
-  - **Namespace** — This app deploys via Flux Kustomization (Kustomize from Git), not Helm. Flux Kustomization's targetNamespace only rewrites the namespace in manifests; it does not create the namespace. The namespace `kubeflow-central-dashboard` must exist before deployment. Create it with `kubectl create namespace kubeflow-central-dashboard`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way.
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access** — The Central Dashboard is the main entry point for Kubeflow. Access via Istio VirtualService/Ingress (after Istio setup), or port-forward: `kubectl port-forward svc/centraldashboard -n kubeflow-central-dashboard 8080:80` then open `http://localhost:8080`. From here you can navigate to Pipelines, Notebooks, Katib, Model Registry, and other components.
 
   **Documentation:** [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:

@@ -18,7 +18,9 @@ overview: |
   - Part of the Kubeflow ecosystem
 
   **Prerequisites**
-  - **Namespace** — This app deploys via Flux Kustomization (Kustomize from Git), not Helm. Flux Kustomization's targetNamespace only rewrites the namespace in manifests; it does not create the namespace. The namespace `training-operator` must exist before deployment. Create it with `kubectl create namespace training-operator`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way.
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access** — No UI. Submit training jobs via `kubectl` using PyTorchJob, TFJob, XGBoostJob, or MPIJob CRDs. Integrates with Katib and Pipelines for orchestration.
 
   **Documentation:** [Kubeflow Training Operator](https://github.com/kubeflow/training-operator) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:

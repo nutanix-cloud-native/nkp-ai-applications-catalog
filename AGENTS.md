@@ -21,7 +21,7 @@ applications/
         kustomization.yaml            # Kustomize config listing resources in this directory
         helmrelease.yaml              # OCIRepository + HelmRelease (or Job-based install)
         cm.yaml                       # ConfigMap for default Helm values
-        namespace.yaml                # (optional) Namespace definition
+        namespace.yaml                # (required for Kustomize-based apps; creates target namespace)
         <app>-install.yaml            # (optional) Installation Job with RBAC
         *-cm.yaml                     # (optional) Additional ConfigMaps (e.g. UI dashboard)
 ```
@@ -131,7 +131,7 @@ When adding a Helm-based app whose chart comes from a public Helm repo and must 
 
 ### Optional files
 
-- `namespace.yaml` — only needed for Job-based installs that create their own namespace.
+- `namespace.yaml` — **Required for Kustomize-based apps** (GitRepository + Flux Kustomization). Flux Kustomization's targetNamespace does not create the namespace; include `namespace.yaml` in helmrelease/kustomization.yaml so the namespace is created automatically. For Helm-based apps, `install.createNamespace: true` handles this.
 - `<app>-install.yaml` — Job + ServiceAccount + ClusterRole + ClusterRoleBinding for apps that need a custom installer instead of a plain HelmRelease.
 - `*-cm.yaml` — extra ConfigMaps (e.g. UI dashboard integration).
 - `.bloodhound.yaml` — per-app validation overrides (e.g. `strict: false`).
@@ -192,7 +192,7 @@ Required fields:
 
 Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
-**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Helm's `install.createNamespace: true` is what creates namespaces; Kustomize-based apps never use that. The target namespace must exist before the Kustomization runs. Document this in `metadata.yaml` under **Prerequisites** — e.g. "The namespace `<app-namespace>` must exist before deployment. Create it with `kubectl create namespace <app-namespace>`, or use a ClusterResourceSet if your NKP setup provisions namespaces that way." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, jupyter-notebook-controller, tensorboard-controller, training-operator, spark-operator.
+**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, jupyter-notebook-controller, tensorboard-controller, training-operator, spark-operator.
 
 ## Dependencies
 
@@ -206,7 +206,7 @@ Every application must deploy workloads to its **own dedicated namespace** (e.g.
 - Not listing a new resource file in the corresponding `kustomization.yaml`.
 - Using `strict: true` validation for Helm charts that emit extra/unknown fields — override with a per-app `.bloodhound.yaml`.
 - Missing required fields in `metadata.yaml`.
-- For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to document the namespace prerequisite in `metadata.yaml` overview — Flux does not create the target namespace.
+- For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to include `namespace.yaml` in helmrelease/kustomization.yaml — Flux does not create the target namespace; the namespace must be created by our manifests.
 - For Helm-based apps that need charts pushed to OCI: forgetting to add `push-<app>` and `add-<app>` to the justfile and dev-commands.md.
 
 ## Commit Messages

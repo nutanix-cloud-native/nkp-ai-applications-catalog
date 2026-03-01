@@ -100,3 +100,15 @@ add-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
 # Shortcut: push coder chart and generate scaffold in one step
 add-coder version="2.30.2" oci-registry=OCI_REGISTRY:
     just add-app coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
+
+# ---------- Kubeflow Kustomize image mirroring ----------
+
+# List container images from Kubeflow Kustomize apps (excludes kubeflow-pipelines)
+list-kubeflow-images:
+    ./scripts/mirror-kubeflow-images.sh --list-only
+
+# Mirror Kubeflow Kustomize images to a registry (requires crane or docker)
+# Usage: just mirror-kubeflow-images ghcr.io/deepak-muley
+#        just mirror-kubeflow-images ghcr.io/deepak-muley katib
+mirror-kubeflow-images registry app="":
+    ./scripts/mirror-kubeflow-images.sh --push {{registry}} {{'--app ' + app if app else ''}}
