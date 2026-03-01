@@ -22,6 +22,16 @@ overview: |
   - **Persistence** — Optional persistent volume for model storage across restarts.
   - **Lightweight** — Runs on CPU-only clusters for development and testing.
 
+  **In-cluster usage**
+
+  Ollama exposes an OpenAI-compatible API on port 11434. From another app (Open WebUI, kagent, custom), connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | API | `http://ollama.ollama.svc.cluster.local:11434` |
+
+  Same namespace: `http://ollama:11434`. Configure your client with this URL (e.g. Open WebUI, kagent `providers.default=ollama`).
+
   **Prerequisites**
 
   - **GPU (optional)** — For GPU acceleration, install NVIDIA or AMD device plugins and set `ollama.gpu.enabled=true` in Helm values.

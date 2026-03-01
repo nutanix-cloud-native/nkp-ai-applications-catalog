@@ -17,6 +17,12 @@ overview: |
   - Experiments, recurring runs, and artifact tracking
   - Part of the Kubeflow ecosystem; works with Katib, KServe, Training Operator
 
+  **How to use**
+
+  - **UI** — Access Pipelines via the [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/access/) (install that component for the main entry point). Or port-forward to the Pipelines UI: `kubectl port-forward svc/ml-pipeline-ui -n kubeflow 8080:80` then open `http://localhost:8080`.
+  - **API/SDK** — For programmatic use, the Pipelines SDK connects to the API service. In-cluster: `http://ml-pipeline-api.kubeflow.svc.cluster.local:8888`. See [Connect the Pipelines SDK](https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/).
+  - **Namespace** — Deployed via kubeflow/manifests; components typically run in the `kubeflow` namespace. Verify with `kubectl get svc -n kubeflow | grep ml-pipeline`.
+
   **Documentation:** [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:
   - workspace

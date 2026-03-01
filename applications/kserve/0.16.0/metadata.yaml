@@ -19,6 +19,10 @@ overview: |
   - Integrates with Kubeflow, MLflow, and S3/GCS model storage
   - Part of the Kubeflow project; supports vLLM and custom runtimes
 
+  **In-cluster usage**
+
+  Each InferenceService gets a predictable URL: `http://<name>.<namespace>.svc.cluster.local` or the KServe virtual service host. Use `kubectl get inferenceservice -n <namespace>` to list services. Clients call the predictor endpoint; see [KServe docs](https://kserve.github.io/website/) for the request format.
+
   **Documentation:** [KServe docs](https://kserve.github.io/website/) | **Project:** [GitHub](https://github.com/kserve/kserve)
 scope:
   - workspace

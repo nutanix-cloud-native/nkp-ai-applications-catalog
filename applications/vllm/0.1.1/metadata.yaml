@@ -21,6 +21,16 @@ overview: |
   - **Models** — Support for Llama, Mistral, Qwen, and others; GPU and multi-GPU support.
   - **Production-ready** — Deploy at scale on Kubernetes; tune via Helm values.
 
+  **In-cluster usage**
+
+  vLLM exposes an OpenAI-compatible API. From another app (Open WebUI, kagent, custom), connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | OpenAI API | `http://vllm.vllm.svc.cluster.local:8000/v1` |
+
+  Same namespace: `http://vllm:8000/v1`. Set `OPENAI_API_BASE` or equivalent in your client to this URL.
+
   **Resources**
 
   [Documentation](https://docs.vllm.ai/) · [Project](https://github.com/vllm-project/vllm)

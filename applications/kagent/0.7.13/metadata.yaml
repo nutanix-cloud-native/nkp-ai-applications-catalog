@@ -27,6 +27,10 @@ overview: |
 
   This entry declares a soft dependency on **Ollama**. By default it is configured to use Ollama as the LLM provider (`providers.default=ollama`) at the in-cluster service. Install Ollama in the same workspace or override the provider in Helm values.
 
+  **In-cluster usage**
+
+  To connect kagent to Ollama: `http://ollama.ollama.svc.cluster.local:11434`. For vLLM: `http://vllm.vllm.svc.cluster.local:8000/v1`. Override in Helm values or ModelConfig if your LLM backend uses a different namespace.
+
   **Prerequisites**
 
   - **LLM provider** — Ensure an Ollama instance (or another provider) is reachable. For OpenAI, Anthropic, Gemini, or Azure OpenAI, create the API key secret and set `providers.default` in the app configuration.

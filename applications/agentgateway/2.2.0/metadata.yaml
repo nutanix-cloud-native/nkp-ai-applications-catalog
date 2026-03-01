@@ -16,6 +16,10 @@ overview: |
 
   Agentgateway is the AI-focused gateway from agentgateway.dev that provides security, observability, and traffic management for AI/LLM workloads. Works alongside kagent to govern AI agent interactions with external LLMs. Requires Gateway API CRDs. Sits between your AI agents and LLM providers; deploy in front of vLLM, OpenAI-compatible APIs, or other LLM backends.
 
+  **In-cluster usage**
+
+  Route kagent or other AI clients through Agentgateway to reach vLLM: configure the upstream to `http://vllm.vllm.svc.cluster.local:8000` (or your LLM service). Agentgateway exposes the Gateway API; clients connect to the gateway, which proxies to the backend.
+
   **Key capabilities**
 
   - **Security and policy** — Enforce policies and secure LLM traffic between agents and providers.

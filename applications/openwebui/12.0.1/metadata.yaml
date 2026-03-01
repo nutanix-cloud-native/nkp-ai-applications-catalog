@@ -30,8 +30,10 @@ overview: |
 
   | Backend | Default in-cluster URL (override in Helm values if needed) |
   |---------|-------------------------------------------------------------|
-  | Ollama  | `http://ollama.<releaseNamespace>.svc.cluster.local:11434`  |
-  | vLLM    | `http://vllm.<releaseNamespace>.svc.cluster.local:8000/v1`  |
+  | Ollama  | `http://ollama.ollama.svc.cluster.local:11434`  |
+  | vLLM    | `http://vllm.vllm.svc.cluster.local:8000/v1`  |
+
+  For **RAG** with Weaviate, configure the vector DB URL in Open WebUI settings: `http://weaviate.weaviate.svc.cluster.local:80`.
 
   **Resources**
 

@@ -22,6 +22,17 @@ overview: |
   - **Backup** — Backup and restore to S3, GCS, Azure, or filesystem.
   - **Production** — Persistent storage and optional GPU for vectorization modules.
 
+  **In-cluster usage**
+
+  Weaviate uses ClusterIP services. From another app in the cluster, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | REST/GraphQL | `http://weaviate.weaviate.svc.cluster.local:80` |
+  | gRPC | `weaviate.weaviate.svc.cluster.local:50051` |
+
+  Same namespace: `http://weaviate:80`. To resolve the URL dynamically: `kubectl get svc weaviate -n weaviate -o jsonpath='http://{.metadata.name}.{.metadata.namespace}.svc.cluster.local:{.spec.ports[0].port}'`
+
   **Prerequisites**
 
   - **Storage** — For production, configure a suitable StorageClass in Helm values (default 32Gi).
