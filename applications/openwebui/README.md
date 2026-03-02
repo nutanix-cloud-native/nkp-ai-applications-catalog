@@ -33,6 +33,19 @@ helm push open-webui-12.0.1.tgz oci://<your-oci-registry>/open-webui
 After pushing, update the OCI URL in `helmrelease/helmrelease.yaml` and
 `.catalog-source.yaml` to match your registry.
 
+## Dashboard (Launch button)
+
+This catalog does **not** include a Traefik IngressRoute or Middleware. The Open WebUI is exposed via a **LoadBalancer** service
+(`service.type: LoadBalancer` in the default values), same pattern as kagent.
+
+- **Launch URL:** A post-install Job discovers the **open-webui** LoadBalancer
+  external IP in the `open-webui` namespace and patches the `openwebui-ui` ConfigMap
+  with `dashboardLink` (e.g. `http://<lb-ip>:80/`). The NKP Launch button uses that URL.
+- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
+  `http://open-webui.open-webui.svc.cluster.local:80` or
+  `kubectl port-forward -n open-webui svc/open-webui 8080:80` and open
+  http://localhost:8080.
+
 ## Dependencies
 
 | Dependency | Type | Notes |

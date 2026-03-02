@@ -2,8 +2,10 @@ apiVersion: v1
 data:
   values.yaml: |
     fullnameOverride: "open-webui"
-    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP (same pattern as kagent).
     service.type: LoadBalancer
+    ingress.enabled: false
+    route.enabled: false
 
     # Disable bundled Ollama subchart — use the standalone Ollama from the catalog
     ollama:

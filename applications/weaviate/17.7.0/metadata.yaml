@@ -3,9 +3,7 @@ displayName: Weaviate
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  Weaviate is an open-source, AI-native vector database that stores both objects and vectors,
-  enabling combining vector search with structured filtering for next-generation AI applications.
+description: AI-native vector database for hybrid search and RAG applications.
 dependencies: []
 icon: PHN2ZyB3aWR0aD0iNjMiIGhlaWdodD0iNjMiIHZpZXdCb3g9IjAgMCA2MyA2MyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC42MDExOTYiIHk9IjAuOTUyNjM3IiB3aWR0aD0iNjEuNzk3NiIgaGVpZ2h0PSI2MS43OTc2IiByeD0iOS43NSIgZmlsbD0iIzYxRDM4NCIgc3Ryb2tlPSIjQjlDOERFIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8cGF0aCBkPSJNNDYuMDU1OCAyNS42OTMyTDQwLjg2MTkgMjIuNzMwNEM0MC4xMjQzIDIyLjMwODIgMzkuMjQ4NSAyMi4zMDgyIDM4LjUxMDkgMjIuNzMwNEMzNy43NzMzIDIzLjE0NSAzNy4zMzUzIDIzLjg5MTQgMzcuMzM1MyAyNC43MjgyVjMwLjQ1NzlMMzUuMjA3MSAyOS4yNTE2QzMyLjkxNzUgMjcuOTU0OSAzMC4wNzQ3IDI3Ljk2MjUgMjcuNzg1MSAyOS4yNTkyTDI1LjY3OTkgMzAuNDU3OVYyNC43MjA3QzI1LjY3OTkgMjMuODgzOSAyNS4yNDIgMjMuMTM3NSAyNC41MDQ0IDIyLjcyMjhDMjMuNzY2OCAyMi4zMDgyIDIyLjg5MDkgMjIuMzA4MiAyMi4xNTM0IDIyLjcyMjhMMTYuOTUxOCAyNS42OTMyQzE2LjAyOTkgMjYuMjIxIDE1LjQ1MzYgMjcuMTkzNSAxNS40NTM2IDI4LjI0MTRWMzUuMjgyOEMxNS40NTM2IDM2LjYyNDggMTYuMTQ1MSAzNy44NTM3IDE3LjI5NzYgMzguNTc3NEwyMi4wMzA0IDQxLjU0MDJDMjIuNzUyNiA0MS45OTI2IDIzLjU5NzggNDIuMjMzOCAyNC40NjYgNDIuMjMzOEMyNS40NDk0IDQyLjIzMzggMjYuNDE3NSA0MS45MTcyIDI3LjIwMTIgNDEuMzM2N0wzMC40ODk2IDM4LjkwMTZDMzEuMDI3NCAzOC41MDIgMzEuOTgwMiAzOC41MDIgMzIuNTE4IDM4LjkwMTZMMzUuODA2NCA0MS4zMzY3QzM3LjMxMjMgNDIuNDUyNCAzOS4zODY4IDQyLjUyNzggNDAuOTc3MiA0MS41NDAyTDQ1LjcxIDM4LjU3NzRDNDYuODM5NCAzNy44Njg3IDQ3LjUyMzMgMzYuNjcgNDcuNTQ2MyAzNS4zNTA3VjI4LjI0MTRDNDcuNTQ2MyAyNy4xOTM1IDQ2Ljk3NzcgMjYuMjIxIDQ2LjA1NTggMjUuNjkzMlpNMzQuMTYyMiAzMS4wMDgyTDM3LjMzNTMgMzIuODAyNVYzNC45NTExTDM0LjU1NCAzMy4yMDIxQzMyLjcxMDEgMzIuMDQxMSAzMC4zMjA2IDMyLjA0MTEgMjguNDY4OSAzMy4yMDIxTDI1LjY3MjMgMzQuOTUxMVYzMi44MUwyOC44Mzc3IDMxLjAxNThDMzAuNDgxOSAzMC4wODg1IDMyLjUxOCAzMC4wODg1IDM0LjE2MjIgMzEuMDE1OFYzMS4wMDgyWk0yNS42NzIzIDM3LjM3ODdMMjkuNTkwNyAzNC45MjFDMzAuNzU4NSAzNC4xODk3IDMyLjI2NDQgMzQuMTg5NyAzMy40MzIzIDM0LjkyMUwzNy4zNDMgMzcuMzc4N1YzOS4zMjM4QzM3LjM0MyAzOS41MTk4IDM3LjE2NjMgMzkuNjEwMiAzNy4wNTExIDM5LjYxMDJDMzYuOTk3MyAzOS42MTAyIDM2LjkxMjggMzkuNTg3NiAzNi44NTkgMzkuNTQyNEwzMy43NzggMzcuMjY1NkMzMi41MDI2IDM2LjMyMzIgMzAuNTEyNyAzNi4zMjMyIDI5LjIzNzMgMzcuMjY1NkwyNi4xNzkzIDM5LjUzNDhDMjYuMTc5MyAzOS41MzQ4IDI2LjE1NjMgMzkuNTQ5OSAyNi4xNDg2IDM5LjU1NzVDMjYuMDk0OCAzOS41OTUyIDI2LjA0MSAzOS42MTc4IDI1Ljk3OTYgMzkuNjE3OEMyNS44NTY3IDM5LjYxNzggMjUuNjg3NiAzOS41MjczIDI1LjY4NzYgMzkuMzMxM1YzNy4zNzg3SDI1LjY3MjNaTTM5LjQyNTIgMzkuMzMxM0wzOS40MDk4IDMyLjIxNDVWMjQuNzIwN0MzOS40MDk4IDI0LjU5MjUgMzkuNDg2NiAyNC41MjQ3IDM5LjU0MDQgMjQuNDk0NUMzOS41ODY1IDI0LjQ3MTkgMzkuNjI0OSAyNC40NTY4IDM5LjY3ODcgMjQuNDU2OEMzOS43MzI1IDI0LjQ1NjggMzkuNzcwOSAyNC40NzE5IDM5LjgwOTMgMjQuNDk0NUw0NS4wMDMyIDI3LjQ1NzRDNDUuMjg3NCAyNy42MTU3IDQ1LjQ2NDIgMjcuOTE3MiA0NS40NjQyIDI4LjI0MTRWMzUuMjk3OUM0NS40NjQyIDM1LjkzMTIgNDUuMTI2MSAzNi41MTE3IDQ0LjU4ODMgMzYuODUxTDQ0LjQxOTIgMzYuOTU2NUM0NC40MTkyIDM2Ljk1NjUgNDQuMzg4NSAzNi45NzkxIDQ0LjM3MzEgMzYuOTk0MkwzOS44NjMxIDM5LjgyMTNDMzkuNjk0MSAzOS45MjY5IDM5LjUwOTcgNDAuMDE3MyAzOS4zMTc2IDQwLjA3NzdDMzkuMzk0NCAzOS44NDQgMzkuNDI1MiAzOS41ODc2IDM5LjQyNTIgMzkuMzMxM1pNMjMuNzEzIDQwLjA3NzdDMjMuNTIxIDQwLjAxNzMgMjMuMzM2NiAzOS45MzQ0IDIzLjE1OTkgMzkuODI4OUwxOC40MTE2IDM2Ljg1ODVDMTcuODU4NSAzNi41MTE3IDE3LjUzNTggMzUuOTIzNyAxNy41MzU4IDM1LjI4MjhWMjguMjQxNEMxNy41MzU4IDI3LjkxNzIgMTcuNzEyNSAyNy42MjMyIDE3Ljk5NjcgMjcuNDU3NEwyMy4xOTgzIDI0LjQ5NDVDMjMuMjM2NyAyNC40NzE5IDIzLjI4MjggMjQuNDU2OCAyMy4zMjg5IDI0LjQ1NjhDMjMuMzc1IDI0LjQ1NjggMjMuNDEzNCAyNC40NzE5IDIzLjQ1OTUgMjQuNDk0NUMyMy41NDQgMjQuNTQ3MyAyMy41OTAxIDI0LjYyMjcgMjMuNTkwMSAyNC43MjA3VjM5LjMyMzhDMjMuNTkwMSAzOS41ODAxIDIzLjYyODUgMzkuODI4OSAyMy43MTMgNDAuMDcwMVY0MC4wNzc3WiIgZmlsbD0iIzEzMEM0OSIvPgo8L3N2Zz4K
 licensing:
@@ -14,7 +12,7 @@ licensing:
 overview: |
   **Overview**
 
-  Weaviate is an open-source, AI-native vector database that stores objects and vector embeddings. It supports hybrid (vector + keyword) search, GraphQL and REST APIs, and scales to billions of objects on Kubernetes. Use it for RAG, semantic search, and AI application backends.
+  Weaviate is an open-source, AI-native vector database that stores both objects and vectors, enabling combining vector search with structured filtering for next-generation AI applications. Supports hybrid (vector + keyword) search, GraphQL and REST APIs, and scales to billions of objects on Kubernetes. Use it for RAG, semantic search, and AI application backends.
 
   **Key capabilities**
 
@@ -23,6 +21,17 @@ overview: |
   - **Scale** — Horizontal scaling with Raft-based consensus; multi-tenancy support.
   - **Backup** — Backup and restore to S3, GCS, Azure, or filesystem.
   - **Production** — Persistent storage and optional GPU for vectorization modules.
+
+  **In-cluster usage**
+
+  Weaviate uses ClusterIP services. From another app in the cluster, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | REST/GraphQL | `http://weaviate.weaviate.svc.cluster.local:80` |
+  | gRPC | `weaviate.weaviate.svc.cluster.local:50051` |
+
+  Same namespace: `http://weaviate:80`. To resolve the URL dynamically: `kubectl get svc weaviate -n weaviate -o jsonpath='http://{.metadata.name}.{.metadata.namespace}.svc.cluster.local:{.spec.ports[0].port}'`
 
   **Prerequisites**
 

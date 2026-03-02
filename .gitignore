@@ -8,11 +8,17 @@ nkp
 # Downloaded tools (just nkp-cli)
 .local/
 
+# Temp dir for mirror-kubeflow-images (cloned repos)
+.tmp/
+
 # Catalog bundle artifacts
 *.tar
 
 # Personal dev notes
 dev-commands.md
+
+# Local docs (keep files, exclude from repo)
+docs/
 
 # Cursor IDE rules (local)
 .cursor/

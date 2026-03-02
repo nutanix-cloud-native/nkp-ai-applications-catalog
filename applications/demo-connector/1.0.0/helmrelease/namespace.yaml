@@ -1,0 +1,6 @@
+# Create demo-connector namespace before RBAC (Role in demo-connector ns) and HelmRelease.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-connector
+---

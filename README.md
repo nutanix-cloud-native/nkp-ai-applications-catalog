@@ -225,6 +225,16 @@ spec:
   url: oci://<registry>/<your-org>/<chart-name>
 ```
 
+## Sample Apps (Demo)
+
+| Application | Version | Description |
+|-------------|---------|-------------|
+| **demo-connector** | 1.0.0 | Minimal sample that verifies connectivity to Weaviate. Depends on Weaviate. |
+| **demo-rag** | 1.0.0 | Sample RAG app that indexes docs into Weaviate and provides a query UI. Depends on Weaviate. |
+| **demo-full-rag** | 1.1.0 | Complete RAG app using Weaviate (vector DB) and Ollama (embeddings + LLM). Depends on Weaviate and Ollama. |
+
+These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
+
 ## Existing Applications
 
 | Application | Version | Chart | Description |
@@ -249,6 +259,10 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-helm-to-oci <app> <repo> <url> <chart> <ver> <oci>` | Pull Helm chart and push to OCI, generate `.catalog-source.yaml` |
 | `just push-ollama [version]` | Shortcut for ollama (default: `1.39.0`) |
 | `just push-vllm [version]` | Shortcut for vllm (default: `0.1.1`) |
+| `just push-openwebui [version]` | Shortcut for open-webui (default: `12.0.1`) |
+| `just push-weaviate [version]` | Shortcut for weaviate (default: `17.7.0`) |
+| `just push-coder [version]` | Shortcut for coder (default: `2.30.2`) |
+| `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |
@@ -262,6 +276,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 |--------|-------------|
 | `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
 | `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI + generate `.catalog-source.yaml` |
+| `scripts/demo-catalog.sh` | Build demo apps, create bundle, deploy (see `docs/demo-script.md`) |
 
 ### Typical Workflow
 

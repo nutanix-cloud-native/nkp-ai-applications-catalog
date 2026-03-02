@@ -3,21 +3,27 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other
-  Kubeflow components. This overlay uses oauth2-proxy for auth; deploys via Flux from kubeflow/manifests.
+requiredDependencies:
+  - istio
+description: Single UI for Pipelines, Notebooks, Katib, and other Kubeflow components.
 displayName: Kubeflow Central Dashboard
-icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzMxMUI5MiIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+S0NEPC90ZXh0Pjwvc3ZnPg==
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Central Dashboard is the main entry point for the Kubeflow UI (Pipelines, Notebooks, Katib, etc.).
+  **What it is** — Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other Kubeflow components. This overlay uses oauth2-proxy for auth; deploys via Flux from kubeflow/manifests. The main entry point for the Kubeflow UI.
 
   **Highlights**
   - Single UI for discovering and using Kubeflow components
   - OAuth2-proxy overlay for authentication
   - GitOps deployment via Flux
+
+  **Prerequisites**
+  - **Istio** (required) — Uses VirtualService CRD for routing. Declare `istio` as requiredDependencies; NKP installs it first.
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access** — The Central Dashboard is the main entry point for Kubeflow. Access via Istio VirtualService/Ingress (after Istio setup), or port-forward: `kubectl port-forward svc/centraldashboard -n kubeflow-central-dashboard 8080:80` then open `http://localhost:8080`. From here you can navigate to Pipelines, Notebooks, Katib, Model Registry, and other components.
 
   **Documentation:** [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:

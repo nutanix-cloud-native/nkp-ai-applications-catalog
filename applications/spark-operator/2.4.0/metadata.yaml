@@ -3,23 +3,25 @@ displayName: Spark Operator
 allowMultipleInstances: false
 category:
   - artificial-intelligence
-description: |
-  The Kubernetes operator for Apache Spark: run Spark applications as native
-  Kubernetes resources. Manages driver and executor pods, submission, and
-  lifecycle. Part of the Kubeflow ecosystem for data and ML workloads.
+description: Kubernetes operator for Apache Spark; run Spark apps as native K8s resources.
 dependencies: []
-icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iI0M2MjgyOCIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+U1A8L3RleHQ+PC9zdmc+
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Spark on Kubernetes operator lets you run Apache Spark jobs and applications as Kubernetes-native workloads, with drivers and executors as pods.
+  **What it is** — The Kubernetes operator for Apache Spark runs Spark applications as native Kubernetes resources. Manages driver and executor pods, submission, and lifecycle. Part of the Kubeflow ecosystem for data and ML workloads. Lets you run Apache Spark jobs as Kubernetes-native workloads.
 
   **Highlights**
   - Submit Spark applications via custom resources (SparkApplication); no need to manage pods manually
   - Supports batch and streaming; integrates with Hive, S3, and other data sources
   - Used by Kubeflow Pipelines and other ML/data workflows on Kubernetes
   - Community-driven; part of the Kubeflow manifests and ecosystem
+
+  **Prerequisites**
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access** — No UI. Submit Spark applications via `kubectl` using the SparkApplication CRD. Used by Kubeflow Pipelines and other workflows.
 
   **Documentation:** [Spark on K8s](https://spark.apache.org/docs/latest/running-on-kubernetes.html) | **Project:** [Kubeflow Spark](https://github.com/kubeflow/manifests/tree/master/applications/spark/spark-operator)
 scope:

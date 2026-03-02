@@ -3,23 +3,28 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  Kubeflow Model Registry provides central model versioning and lineage. Ties into
-  Pipelines and KServe; deploys via Flux from kubeflow/manifests.
+description: Central model versioning and lineage for Kubeflow Pipelines and KServe.
 displayName: Kubeflow Model Registry
-icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzRBMTQ4QyIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+TVI8L3RleHQ+PC9zdmc+
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — The Kubeflow Model Registry stores and versions ML models with lineage, linking pipeline runs and serving.
+  **What it is** — Kubeflow Model Registry provides central model versioning and lineage. Ties into Pipelines and KServe; deploys via Flux from kubeflow/model-registry. Stores and versions ML models with lineage, linking pipeline runs and serving.
 
   **Highlights**
   - Model versioning and metadata; integrates with Pipelines and KServe
   - Part of the Kubeflow ecosystem
   - GitOps deployment via Flux
 
-  **Documentation:** [Kubeflow Model Registry](https://github.com/kubeflow/model-registry) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
+  **Prerequisites**
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **Access**
+  - **UI** — The Model Registry web UI is accessed via the [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/) (install that component). From the Central Dashboard, select the Model Registry component to register, view, and manage models.
+  - **API** — Port-forward to `model-registry-service:8080` exposes the REST API, not a full UI. For programmatic use: in-cluster `http://model-registry-service.kubeflow-model-registry.svc.cluster.local:8080`, or use the [Python client](https://github.com/kubeflow/model-registry#python-client).
+
+  **Documentation:** [Kubeflow Model Registry](https://github.com/kubeflow/model-registry) | **Project:** [kubeflow/model-registry](https://github.com/kubeflow/model-registry)
 scope:
   - workspace
   - project

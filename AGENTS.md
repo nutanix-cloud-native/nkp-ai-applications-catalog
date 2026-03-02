@@ -21,7 +21,7 @@ applications/
         kustomization.yaml            # Kustomize config listing resources in this directory
         helmrelease.yaml              # OCIRepository + HelmRelease (or Job-based install)
         cm.yaml                       # ConfigMap for default Helm values
-        namespace.yaml                # (optional) Namespace definition
+        namespace.yaml                # (required for Kustomize-based apps; creates target namespace)
         <app>-install.yaml            # (optional) Installation Job with RBAC
         *-cm.yaml                     # (optional) Additional ConfigMaps (e.g. UI dashboard)
 ```
@@ -70,6 +70,10 @@ helm push <chart>-<version>.tgz oci://<your-oci-registry>/<chart>
 
 Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
+### justfile and dev-commands.md
+
+When adding a Helm-based app whose chart comes from a public Helm repo and must be pushed to OCI: add `push-<app>` and `add-<app>` shortcuts to the justfile, and document them in `dev-commands.md`. See `.cursor/rules/justfile-dev-commands.mdc`.
+
 ### Required files
 
 1. **`applications/<app>/<version>/metadata.yaml`** — must use schema `catalog.nkp.nutanix.com/v1/application-metadata` with fields: `displayName`, `description`, `category`, `licensing`, `scope`, `overview`, `supportLink`, `type`, `dependencies`, `icon`, `allowMultipleInstances`.
@@ -111,7 +115,7 @@ Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
 4. **`applications/<app>/<version>/helmrelease/kustomization.yaml`** — lists all resources in the directory.
 
-5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables.
+5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables. **Each app must deploy to its own dedicated namespace** via `targetNamespace: <app-namespace>` and `install.createNamespace: true` (see `.cursor/rules/app-namespace.mdc`).
 
 6. **`applications/<app>/<version>/helmrelease/cm.yaml`** — ConfigMap for default Helm values:
    ```yaml
@@ -127,7 +131,7 @@ Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
 ### Optional files
 
-- `namespace.yaml` — only needed for Job-based installs that create their own namespace.
+- `namespace.yaml` — **Required for Kustomize-based apps** (GitRepository + Flux Kustomization). Flux Kustomization's targetNamespace does not create the namespace; include `namespace.yaml` in helmrelease/kustomization.yaml so the namespace is created automatically. For Helm-based apps, `install.createNamespace: true` handles this.
 - `<app>-install.yaml` — Job + ServiceAccount + ClusterRole + ClusterRoleBinding for apps that need a custom installer instead of a plain HelmRelease.
 - `*-cm.yaml` — extra ConfigMaps (e.g. UI dashboard integration).
 - `.bloodhound.yaml` — per-app validation overrides (e.g. `strict: false`).
@@ -168,7 +172,8 @@ Required fields:
 | `type` | string | Usually `custom` |
 | `overview` | string | Markdown overview; use **Overview**, **Key capabilities**, **Dependencies** (if any), **Prerequisites** (if any), and **Resources** (docs/project/chart links). Keep concise and production-oriented. |
 | `supportLink` | string | URL to documentation or support |
-| `dependencies` | list | List of dependency app names (empty `[]` if none) |
+| `dependencies` | list | Soft dependencies (empty `[]` if none) |
+| `requiredDependencies` | list | Hard dependencies — platform or catalog apps that must be installed first. Use names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications) for platform apps (e.g. `istio`, `gateway-api-crds`). Do not disable features to avoid crashes; add the dependency instead. |
 | `icon` | string | URL to an SVG/PNG icon (empty `""` if none) |
 | `allowMultipleInstances` | bool | Whether multiple instances can be deployed |
 | `nkpVersionSupport` | string | NKP version constraint, e.g. `">=2.17.0"` for 2.17 and above (optional) |
@@ -183,6 +188,17 @@ Required fields:
 - Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
 
+## App namespace convention
+
+Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
+
+**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, jupyter-notebook-controller, tensorboard-controller, training-operator, spark-operator.
+
+## Dependencies
+
+- **requiredDependencies** — Hard deps (Istio, Gateway API, other apps). NKP installs first. Use platform app names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications). Never disable features (e.g. USE_ISTIO) to "fix" crashes; add the dependency.
+- **dependencies** — Soft deps (recommended but optional).
+
 ## Common Pitfalls
 
 - Forgetting the trailing `---` at the end of YAML documents.
@@ -190,6 +206,8 @@ Required fields:
 - Not listing a new resource file in the corresponding `kustomization.yaml`.
 - Using `strict: true` validation for Helm charts that emit extra/unknown fields — override with a per-app `.bloodhound.yaml`.
 - Missing required fields in `metadata.yaml`.
+- For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to include `namespace.yaml` in helmrelease/kustomization.yaml — Flux does not create the target namespace; the namespace must be created by our manifests.
+- For Helm-based apps that need charts pushed to OCI: forgetting to add `push-<app>` and `add-<app>` to the justfile and dev-commands.md.
 
 ## Commit Messages
 

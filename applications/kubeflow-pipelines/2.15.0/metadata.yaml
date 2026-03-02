@@ -3,21 +3,27 @@ allowMultipleInstances: false
 category:
   - artificial-intelligence
 dependencies: []
-description: |
-  Kubeflow Pipelines runs end-to-end ML pipelines (train, tune, serve) with experiments
-  and recurring runs. Kubernetes-native; deploys via Flux from kubeflow/manifests.
+description: End-to-end ML pipelines (train, tune, serve) with experiments and recurring runs.
 displayName: Kubeflow Pipelines
-icon: PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHJ4PSI4IiBmaWxsPSIjMzI2Q0U1Ii8+PHBhdGggZD0iTTI0IDE0djIwTTE0IDI0aDIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzBENDdBMSIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+S1A8L3RleHQ+PC9zdmc+
 licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — Kubeflow Pipelines lets you build and run portable, scalable ML pipelines on Kubernetes with a full UI and API.
+  **What it is** — Kubeflow Pipelines runs end-to-end ML pipelines (train, tune, serve) with experiments and recurring runs. Kubernetes-native; deploys via Flux from kubeflow/manifests. Lets you build and run portable, scalable ML pipelines on Kubernetes with a full UI and API.
 
   **Highlights**
   - End-to-end pipelines (data → train → tune → serve)
   - Experiments, recurring runs, and artifact tracking
   - Part of the Kubeflow ecosystem; works with Katib, KServe, Training Operator
+
+  **Prerequisites**
+  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+
+  **How to use**
+
+  - **UI** — Access Pipelines via the [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/access/) (install that component for the main entry point). Or port-forward to the Pipelines UI: `kubectl port-forward svc/ml-pipeline-ui -n kubeflow-pipelines 8080:80` then open `http://localhost:8080`.
+  - **API/SDK** — For programmatic use, the Pipelines SDK connects to the API service. In-cluster: `http://ml-pipeline-api.kubeflow-pipelines.svc.cluster.local:8888`. See [Connect the Pipelines SDK](https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/).
 
   **Documentation:** [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:

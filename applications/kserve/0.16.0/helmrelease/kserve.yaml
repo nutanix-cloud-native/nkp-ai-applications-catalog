@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ${releaseName}-0.16.0-chart
+  name: ${releaseName}-${appVersion}-chart
   namespace: ${releaseNamespace}
 spec:
   url: oci://ghcr.io/kserve/charts/kserve
@@ -20,7 +20,7 @@ metadata:
 spec:
   chartRef:
     kind: OCIRepository
-    name: ${releaseName}-0.16.0-chart
+    name: ${releaseName}-${appVersion}-chart
     namespace: ${releaseNamespace}
   dependsOn:
     - name: kserve-crd
@@ -36,6 +36,6 @@ spec:
   targetNamespace: kserve
   valuesFrom:
     - kind: ConfigMap
-      name: kserve-0.16.0-nkp-defaults
+      name: ${releaseName}-${appVersion}-nkp-defaults
       namespace: ${releaseNamespace}
 ---

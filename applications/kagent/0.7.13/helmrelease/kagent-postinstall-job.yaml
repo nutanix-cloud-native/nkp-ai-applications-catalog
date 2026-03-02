@@ -3,7 +3,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ${releaseName}-postinstall-0.7.13
+  name: ${releaseName}-postinstall-${appVersion}
   namespace: ${workspaceNamespace}
 spec:
   backoffLimit: 5
