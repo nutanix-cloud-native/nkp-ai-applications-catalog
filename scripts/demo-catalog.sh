@@ -1,5 +1,5 @@
 #!/bin/sh
-# Demo script for NKP catalog sample apps (demo-connector, demo-rag, demo-full-rag).
+# Demo script for NKP catalog sample app (demo-full-rag).
 #
 # Usage:
 #   ./scripts/demo-catalog.sh build     # Build and push images + charts
@@ -10,23 +10,16 @@
 # Prerequisites:
 #   - docker login ghcr.io
 #   - helm registry login ghcr.io
-#   - nkp-demo-connector, nkp-demo-rag, nkp-demo-full-rag repos at ../../deepak-muley/ (or set DEMO_*)
+#   - nkp-demo-full-rag repo at ../../deepak-muley/ (or set DEMO_FULL_RAG)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-DEMO_CONNECTOR="${DEMO_CONNECTOR:-$REPO_ROOT/../../deepak-muley/nkp-demo-connector}"
-DEMO_RAG="${DEMO_RAG:-$REPO_ROOT/../../deepak-muley/nkp-demo-rag}"
 DEMO_FULL_RAG="${DEMO_FULL_RAG:-$REPO_ROOT/../../deepak-muley/nkp-demo-full-rag}"
-VERSION="${VERSION:-1.1.0}"
 DEMO_FULL_RAG_VERSION="${DEMO_FULL_RAG_VERSION:-1.1.0}"
 
 build() {
-  echo "==> Building demo-connector..."
-  (cd "$DEMO_CONNECTOR" && make release VERSION="$VERSION")
-  echo "==> Building demo-rag..."
-  (cd "$DEMO_RAG" && make release VERSION="$VERSION")
   echo "==> Building demo-full-rag..."
   (cd "$DEMO_FULL_RAG" && make release VERSION="$DEMO_FULL_RAG_VERSION")
   echo "==> Done. Images and charts pushed to ghcr.io/deepak-muley"
@@ -55,7 +48,7 @@ case "${1:-}" in
   *)
     echo "Usage: $0 {build|bundle|deploy|all} [workspace]"
     echo ""
-    echo "  build   - Build and push demo-connector + demo-rag + demo-full-rag images and charts"
+    echo "  build   - Build and push demo-full-rag images and charts"
     echo "  bundle  - Validate catalog and push bundle to OCI"
     echo "  deploy  - Deploy catalog to cluster (dry-run)"
     echo "  all     - build + bundle"

@@ -192,7 +192,7 @@ Required fields:
 
 Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
-**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, jupyter-notebook-controller, tensorboard-controller, training-operator, spark-operator.
+**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, tensorboard-controller, training-operator, spark-operator.
 
 ## Dependencies
 
