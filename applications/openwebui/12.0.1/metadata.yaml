@@ -14,7 +14,7 @@ licensing:
 overview: |
   **Overview**
 
-  Open WebUI is an extensible, self-hosted web interface for interacting with large language models. It provides an intuitive chat UI with support for multiple LLM backends including Ollama, OpenAI-compatible APIs, and more. ChatGPT-like experience on your own infrastructure. Deploy from this catalog and use the Launch button to open the UI via Traefik with optional SSO.
+  Open WebUI is an extensible, self-hosted web interface for interacting with large language models. It provides an intuitive chat UI with support for multiple LLM backends including Ollama, OpenAI-compatible APIs, and more. ChatGPT-like experience on your own infrastructure. Deploy from this catalog and use the Launch button to open the UI via LoadBalancer (same pattern as kagent).
 
   **Key capabilities**
 

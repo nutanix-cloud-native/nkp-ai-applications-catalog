@@ -3,7 +3,7 @@ data:
   values.yaml: |
     # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
     image:
-      tag: "0.2.0"
+      tag: "1.1.0"
     service:
       type: LoadBalancer
     env:

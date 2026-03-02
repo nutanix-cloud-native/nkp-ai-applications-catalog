@@ -1,4 +1,4 @@
-# RBAC for post-install Job: patch openwebui-ui ConfigMap and read Traefik services.
+# RBAC for post-install Job: patch openwebui-ui ConfigMap and read LoadBalancer service.
 apiVersion: v1
 kind: ServiceAccount
 metadata:

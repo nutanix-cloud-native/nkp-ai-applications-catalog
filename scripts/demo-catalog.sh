@@ -19,8 +19,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEMO_CONNECTOR="${DEMO_CONNECTOR:-$REPO_ROOT/../../deepak-muley/nkp-demo-connector}"
 DEMO_RAG="${DEMO_RAG:-$REPO_ROOT/../../deepak-muley/nkp-demo-rag}"
 DEMO_FULL_RAG="${DEMO_FULL_RAG:-$REPO_ROOT/../../deepak-muley/nkp-demo-full-rag}"
-VERSION="${VERSION:-1.0.0}"
-DEMO_FULL_RAG_VERSION="${DEMO_FULL_RAG_VERSION:-0.2.0}"
+VERSION="${VERSION:-1.1.0}"
+DEMO_FULL_RAG_VERSION="${DEMO_FULL_RAG_VERSION:-1.1.0}"
 
 build() {
   echo "==> Building demo-connector..."

@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 6h0m0s
   ref:
-    tag: 0.2.0
+    tag: 1.1.0
   url: oci://ghcr.io/deepak-muley/charts/demo-full-rag
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
