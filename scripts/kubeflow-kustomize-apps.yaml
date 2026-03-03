@@ -18,11 +18,6 @@ apps:
     ref: v0.3.6
     path: ./manifests/kustomize/overlays/db
 
-  jupyter-notebook-controller:
-    repo: https://github.com/kubeflow/manifests
-    ref: master
-    path: ./applications/jupyter/notebook-controller/upstream/overlays/kubeflow
-
   katib:
     repo: https://github.com/kubeflow/manifests
     ref: master

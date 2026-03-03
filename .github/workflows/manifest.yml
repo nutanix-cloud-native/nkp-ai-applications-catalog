@@ -46,4 +46,6 @@ jobs:
 
       - name: Run catalog validation
         if: ${{ hashFiles('applications/**') != '' }}
+        env:
+          CHART_REGISTRY: oci://ghcr.io/deepak-muley/charts
         run: devbox run -- just validate

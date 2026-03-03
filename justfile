@@ -87,6 +87,14 @@ push-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
 push-coder version="2.30.2" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
 
+# Shortcut: push mlflow chart to OCI
+push-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci mlflow community-charts https://community-charts.github.io/helm-charts mlflow {{version}} {{oci-registry}}
+
+# Shortcut: push flowise chart to OCI
+push-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -100,6 +108,14 @@ add-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
 # Shortcut: push coder chart and generate scaffold in one step
 add-coder version="2.30.2" oci-registry=OCI_REGISTRY:
     just add-app coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
+
+# Shortcut: push mlflow chart and generate scaffold in one step
+add-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
+    just add-app mlflow community-charts https://community-charts.github.io/helm-charts mlflow {{version}} {{oci-registry}}
+
+# Shortcut: push flowise chart and generate scaffold in one step
+add-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
+    just add-app flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 

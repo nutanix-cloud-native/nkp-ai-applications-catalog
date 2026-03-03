@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    fullnameOverride: "flowise"
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
+    service:
+      type: LoadBalancer
+    persistence:
+      enabled: true
+      size: 10Gi
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-6.0.0-defaults
+  namespace: ${releaseNamespace}
+---

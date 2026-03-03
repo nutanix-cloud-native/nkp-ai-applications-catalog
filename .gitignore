@@ -20,5 +20,5 @@ dev-commands.md
 # Local docs (keep files, exclude from repo)
 docs/
 
-# Cursor IDE rules (local)
+# Local IDE rules
 .cursor/

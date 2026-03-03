@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace.yaml
+- cm.yaml
+- helmrelease.yaml
+- mlflow-ui-dashboard-cm.yaml
+- mlflow-postinstall-rbac.yaml
+- mlflow-postinstall-job.yaml
+---

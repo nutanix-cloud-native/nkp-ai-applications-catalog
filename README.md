@@ -229,8 +229,6 @@ spec:
 
 | Application | Version | Description |
 |-------------|---------|-------------|
-| **demo-connector** | 1.0.0 | Minimal sample that verifies connectivity to Weaviate. Depends on Weaviate. |
-| **demo-rag** | 1.0.0 | Sample RAG app that indexes docs into Weaviate and provides a query UI. Depends on Weaviate. |
 | **demo-full-rag** | 1.1.0 | Complete RAG app using Weaviate (vector DB) and Ollama (embeddings + LLM). Depends on Weaviate and Ollama. |
 
 These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
@@ -242,6 +240,7 @@ These apps demonstrate catalog composability and dependency flow. See [docs/demo
 | agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
 | kagent | 0.7.13 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
 | vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
+| flowise | 6.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` | Drag-and-drop UI to build customized LLM flows with LangChain |
 
 ## Scripts & Justfile
 
@@ -262,6 +261,8 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-openwebui [version]` | Shortcut for open-webui (default: `12.0.1`) |
 | `just push-weaviate [version]` | Shortcut for weaviate (default: `17.7.0`) |
 | `just push-coder [version]` | Shortcut for coder (default: `2.30.2`) |
+| `just push-mlflow [version]` | Shortcut for mlflow (default: `1.8.1`) |
+| `just push-flowise [version]` | Shortcut for flowise (default: `6.0.0`) |
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |

@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- cm.yaml
+- helmrelease.yaml
+- flowise-ui-dashboard-cm.yaml
+- flowise-postinstall-rbac.yaml
+- flowise-postinstall-job.yaml
+---

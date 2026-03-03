@@ -1,4 +1,12 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: weaviate/weaviate
 helmrepoUrl: https://weaviate.github.io/weaviate-helm/
-ocipush: oci://ghcr.io/deepak-muley/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (from https://github.com/weaviate/weaviate/blob/main/LICENSE)
+license: BSD-3-Clause
+licenseUrl: https://github.com/weaviate/weaviate/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, copy, modify, merge, publish, distribute, sublicense permitted.
+  Must retain copyright notice and license. No endorsement without permission.

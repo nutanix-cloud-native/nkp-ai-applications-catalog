@@ -53,6 +53,13 @@ cat >"$CATALOG_SOURCE" <<EOF
 helmrepo: ${REPO_NAME}/${CHART}
 helmrepoUrl: ${REPO_URL}
 ocipush: ${OCI_REGISTRY}
+
+# Upstream product license (required — see catalog-source-license rule in AGENTS.md)
+# Fill in from the upstream project's public LICENSE file. If redistributionAllowed is false, do not add to catalog.
+license: ""
+licenseUrl: ""
+redistributionAllowed: true
+redistributionNotes: ""
 EOF
 
 echo "==> Created $CATALOG_SOURCE"

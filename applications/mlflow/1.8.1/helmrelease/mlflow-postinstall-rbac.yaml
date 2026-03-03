@@ -1,0 +1,57 @@
+# RBAC for post-install Job: patch mlflow-ui ConfigMap and read LoadBalancer service.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "patch"]
+    resourceNames: ["${releaseName}-ui"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${releaseName}-postinstall
+  namespace: ${workspaceNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${releaseName}-postinstall
+subjects:
+  - kind: ServiceAccount
+    name: ${releaseName}-postinstall
+    namespace: ${workspaceNamespace}
+---
+# Role + RoleBinding in mlflow ns so Job can read mlflow LoadBalancer (external IP).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${releaseName}-postinstall-app-svc
+  namespace: mlflow
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${releaseName}-postinstall-app-svc
+  namespace: mlflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${releaseName}-postinstall-app-svc
+subjects:
+  - kind: ServiceAccount
+    name: ${releaseName}-postinstall
+    namespace: ${workspaceNamespace}
+---

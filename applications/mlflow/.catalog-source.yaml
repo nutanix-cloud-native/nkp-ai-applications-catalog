@@ -1,11 +1,11 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
-helmrepo: vllm/vllm
-helmrepoUrl: https://open-source-ai-dev.github.io/vllm-helm-chart
+helmrepo: community-charts/mlflow
+helmrepoUrl: https://community-charts.github.io/helm-charts
 ocipush: oci://ghcr.io/nutanix-cloud-native/charts
 
-# Upstream product license (from https://github.com/vllm-project/vllm/blob/main/LICENSE)
+# Upstream product license (from https://github.com/mlflow/mlflow/blob/master/LICENSE)
 license: Apache-2.0
-licenseUrl: https://github.com/vllm-project/vllm/blob/main/LICENSE
+licenseUrl: https://github.com/mlflow/mlflow/blob/master/LICENSE
 redistributionAllowed: true
 redistributionNotes: |
   Use, reproduction, distribution, modification, and sublicensing permitted.

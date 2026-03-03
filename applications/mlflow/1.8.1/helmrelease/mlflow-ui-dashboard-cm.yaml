@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${workspaceNamespace}
+  labels:
+    "kommander.d2iq.io/application": ${releaseName}
+  annotations:
+    "kustomize.toolkit.fluxcd.io/ssa": "Merge"
+data:
+  name: "MLflow"
+  # Job patches dashboardLink with LoadBalancer URL; omit here so Flux does not overwrite
+  docsLink: "https://mlflow.org/docs/latest/"
+  version: "1.8.1"
+---
