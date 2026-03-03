@@ -11,8 +11,6 @@ data:
             - admin
           allowed_users:
             - user
-        DummyAuthenticator:
-          password: nutanix/4u
         JupyterHub:
           authenticator_class: dummy
       networkPolicy:
