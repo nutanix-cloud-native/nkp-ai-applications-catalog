@@ -9,8 +9,7 @@ metadata:
     "kustomize.toolkit.fluxcd.io/ssa": "Merge"
 data:
   name: "MLflow"
-  # Required by DKP; postinstall Job patches with real LoadBalancer URL
-  dashboardLink: "#"
+  # Job patches dashboardLink with LoadBalancer URL; omit here so Flux does not overwrite
   docsLink: "https://mlflow.org/docs/latest/"
   version: "1.8.1"
 ---
