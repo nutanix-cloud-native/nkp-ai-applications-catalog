@@ -28,6 +28,8 @@ spec:
               value: "jupyterhub-proxy-public"
             - name: APP_PORT
               value: "80"
+            - name: APP_PATH
+              value: "/jupyter"
             - name: CONFIGMAP_NAME
               value: "${releaseName}-ui"
           command:
@@ -65,9 +67,9 @@ spec:
               fi
 
               if [ -n "$IP" ]; then
-                ENDPOINT="http://$IP:$APP_PORT/"
+                ENDPOINT="http://$IP:$APP_PORT$APP_PATH/"
               else
-                ENDPOINT="http://$HOSTNAME:$APP_PORT/"
+                ENDPOINT="http://$HOSTNAME:$APP_PORT$APP_PATH/"
               fi
 
               PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")
