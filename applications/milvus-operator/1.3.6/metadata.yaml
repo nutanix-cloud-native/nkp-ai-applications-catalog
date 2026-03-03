@@ -30,6 +30,17 @@ overview: |-
   ### Hardware-Accelerated Compute Support
   Milvus is designed to leverage various types of compute capabilities, such as AVX512 and Neon for SIMD execution, alongside quantization, cache-aware optimizations, and GPU support. This approach enables efficient utilization of specific hardware strengths, ensuring rapid processing and cost-effective scalability. By tailoring resource use to the unique demands of different applications, Milvus enhances both the speed and efficiency of vector data management and search operations.
 
+  **In-cluster usage**
+
+  The Milvus Operator deploys and manages Milvus clusters. After creating a Milvus custom resource, connect to the Milvus service in the target namespace:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | gRPC | `milvus-<release>.<namespace>.svc.cluster.local:19530` |
+  | HTTP | `http://milvus-<release>.<namespace>.svc.cluster.local:9091` |
+
+  Replace `<release>` and `<namespace>` with your Milvus release name and deployment namespace.
+
   ## More Information
 
   - [milvus.io](https://milvus.io/)

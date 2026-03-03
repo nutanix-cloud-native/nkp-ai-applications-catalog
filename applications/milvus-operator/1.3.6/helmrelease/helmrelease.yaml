@@ -25,7 +25,7 @@ spec:
     remediation:
       retries: 30
   interval: 15s
-  targetNamespace: ${releaseNamespace}
+  targetNamespace: milvus-operator
   upgrade:
     crds: CreateReplace
     remediation:

@@ -18,6 +18,16 @@ overview: |-
   - You can access JupyterHub using the application dashboard available on the cluster **Application Dashboards** tab
   - Also accessible by using your NKP Dashboard URL with the path `/jupyter/`
 
+  **In-cluster usage**
+
+  JupyterHub exposes its web UI via the proxy-public service. From another app or notebook, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | Web UI | `http://jupyterhub-proxy-public.jupyterhub.svc.cluster.local:80/jupyter` |
+
+  Same namespace: `http://jupyterhub-proxy-public:80/jupyter`.
+
   ### Credentials
 
   - Username: admin
@@ -46,4 +56,3 @@ scope:
 nkpVersionSupport: ">=2.17.0"
 supportLink: https://jupyter.org/hub
 ---
-

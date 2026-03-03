@@ -25,7 +25,7 @@ spec:
     remediation:
       retries: 30
   interval: 15s
-  targetNamespace: ${releaseNamespace}
+  targetNamespace: jupyterhub
   upgrade:
     crds: CreateReplace
     remediation:
@@ -34,4 +34,3 @@ spec:
     - kind: ConfigMap
       name: ${releaseName}-config-defaults
 ---
-

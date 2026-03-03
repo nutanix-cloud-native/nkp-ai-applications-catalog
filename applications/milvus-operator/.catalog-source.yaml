@@ -1,4 +1,12 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: milvus-operator/milvus-operator
 helmrepoUrl: https://zilliztech.github.io/milvus-operator/
-ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/milvus-operator
+
+# Upstream product license (from https://github.com/zilliztech/milvus-operator/blob/main/LICENSE)
+license: Apache-2.0
+licenseUrl: https://github.com/zilliztech/milvus-operator/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, reproduction, distribution, modification, and sublicensing permitted.
+  Must retain copyright and license notices. See licenseUrl for full terms.

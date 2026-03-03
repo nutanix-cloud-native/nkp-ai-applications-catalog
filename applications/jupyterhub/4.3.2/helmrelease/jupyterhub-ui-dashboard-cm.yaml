@@ -1,3 +1,4 @@
+# ConfigMap for NKP Launch button. Postinstall Job patches dashboardLink.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,8 +10,6 @@ metadata:
     kustomize.toolkit.fluxcd.io/ssa: Merge
 data:
   name: ${releaseName}
-  dashboardLink: /jupyter/
   docsLink: "https://z2jh.jupyter.org/en/stable/"
-  version: 4.3.2
+  version: "4.3.2"
 ---
-

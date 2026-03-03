@@ -95,6 +95,14 @@ push-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
 push-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
 
+# Shortcut: push jupyterhub chart to OCI
+push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci jupyterhub jupyterhub https://hub.jupyter.org/helm-chart/ jupyterhub {{version}} {{oci-registry}}
+
+# Shortcut: push milvus-operator chart to OCI
+push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -116,6 +124,14 @@ add-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
 # Shortcut: push flowise chart and generate scaffold in one step
 add-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
     just add-app flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
+
+# Shortcut: push jupyterhub chart and generate scaffold in one step
+add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
+    just add-app jupyterhub jupyterhub https://hub.jupyter.org/helm-chart/ jupyterhub {{version}} {{oci-registry}}
+
+# Shortcut: push milvus-operator chart and generate scaffold in one step
+add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
+    just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 

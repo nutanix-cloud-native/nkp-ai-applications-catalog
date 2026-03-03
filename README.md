@@ -263,6 +263,8 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-coder [version]` | Shortcut for coder (default: `2.30.2`) |
 | `just push-mlflow [version]` | Shortcut for mlflow (default: `1.8.1`) |
 | `just push-flowise [version]` | Shortcut for flowise (default: `6.0.0`) |
+| `just push-jupyterhub [version]` | Shortcut for jupyterhub (default: `4.3.2`) |
+| `just push-milvus-operator [version]` | Shortcut for milvus-operator (default: `1.3.6`) |
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |

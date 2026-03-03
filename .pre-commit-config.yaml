@@ -49,4 +49,5 @@ repos:
     hooks:
       - id: shellcheck
         stages: [pre-commit]
+        files: ^scripts/.*\.sh$
         exclude: ^\.envrc$
