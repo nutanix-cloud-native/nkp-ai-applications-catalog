@@ -30,10 +30,7 @@ overview: |-
 
   ### Credentials
 
-  - Username: admin
-  - Password: nutanix/4u
-
-  To overwrite the credentials, use the **Workspace Configuration** when enabling the application:
+  Configure credentials when enabling the application via **Workspace Configuration**:
 
   ```yaml
   hub:
@@ -41,9 +38,15 @@ overview: |-
       Authenticator:
         admin_users:
           - admin
+        allowed_users:
+          - user
       DummyAuthenticator:
-        password: nutanix/4u
+        password: <your-secure-password>
+      JupyterHub:
+        authenticator_class: dummy
   ```
+
+  Replace `<your-secure-password>` with a secure password. The default uses DummyAuthenticator (shared password for all users); for production, consider OAuth2 (GitHub, Google, CILogon) per [JupyterHub authentication docs](https://z2jh.jupyter.org/en/stable/administrator/authentication.html).
 
   ## More Information
 
