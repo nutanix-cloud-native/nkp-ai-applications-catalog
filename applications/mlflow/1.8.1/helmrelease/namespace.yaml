@@ -1,0 +1,7 @@
+# Create mlflow namespace before RBAC (Role in mlflow ns) and HelmRelease.
+# Ensures namespace exists when Kustomization applies; HelmRelease also has createNamespace: true.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mlflow
+---

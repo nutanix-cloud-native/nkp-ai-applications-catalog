@@ -175,7 +175,7 @@ Required fields:
 | `dependencies` | list | Soft dependencies (empty `[]` if none) |
 | `requiredDependencies` | list | Hard dependencies — platform or catalog apps that must be installed first. Use names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications) for platform apps (e.g. `istio`, `gateway-api-crds`). Do not disable features to avoid crashes; add the dependency instead. |
 | `icon` | string | URL to an SVG/PNG icon (empty `""` if none) |
-| `allowMultipleInstances` | bool | Whether multiple instances can be deployed |
+| `allowMultipleInstances` | bool | Whether multiple instances can be deployed. Set `true` if the app does not install CRDs or cluster-scoped resources; `false` otherwise (see allow-multiple-instances rule). |
 | `nkpVersionSupport` | string | NKP version constraint, e.g. `">=2.17.0"` for 2.17 and above (optional) |
 
 ## Validation

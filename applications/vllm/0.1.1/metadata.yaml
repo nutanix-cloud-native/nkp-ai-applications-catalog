@@ -1,6 +1,6 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: vLLM
-allowMultipleInstances: true
+allowMultipleInstances: false
 category:
   - artificial-intelligence
 description: High-throughput LLM inference server with OpenAI-compatible API.

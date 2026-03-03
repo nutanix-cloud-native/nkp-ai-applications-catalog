@@ -1,6 +1,6 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: Demo Full RAG
-allowMultipleInstances: false
+allowMultipleInstances: true
 category:
   - artificial-intelligence
 description: Complete RAG application using Weaviate (vector DB) and Ollama (embeddings + LLM) for chunking, semantic search, and answer generation.

@@ -117,7 +117,7 @@ process_app() {
   clone_dir="$WORK_DIR/$(echo "$repo" | sed 's|https://||;s|/|_|g')"
   if [[ ! -d $clone_dir ]]; then
     echo "==> Cloning $repo (ref=$ref) into $clone_dir"
-    git clone --depth 1 --branch "$ref" "$repo" "$clone_dir" 2>/dev/null || \
+    git clone --depth 1 --branch "$ref" "$repo" "$clone_dir" 2>/dev/null ||
       git clone --depth 1 "$repo" "$clone_dir" && cd "$clone_dir" && git checkout "$ref" 2>/dev/null
     cd - >/dev/null
   fi
@@ -165,7 +165,7 @@ echo ""
 cd "$REPO_ROOT"
 
 # Validate APP_FILTER exists if set
-if [[ -n "$APP_FILTER" ]]; then
+if [[ -n $APP_FILTER ]]; then
   yq -e ".apps | to_entries | map(select(.key == \"$APP_FILTER\")) | from_entries" "$CONFIG" >/dev/null 2>&1 || {
     echo "ERROR: App '$APP_FILTER' not found in config"
     exit 1

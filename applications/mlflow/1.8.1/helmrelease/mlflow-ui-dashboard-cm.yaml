@@ -1,14 +1,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mlflow-ui
+  name: ${releaseName}-ui
   namespace: ${workspaceNamespace}
   labels:
-    "kommander.d2iq.io/application": "mlflow"
+    "kommander.d2iq.io/application": ${releaseName}
   annotations:
     "kustomize.toolkit.fluxcd.io/ssa": "Merge"
 data:
-  name: "mlflow"
+  name: "MLflow"
+  # Required by DKP; postinstall Job patches with real LoadBalancer URL
+  dashboardLink: "#"
   docsLink: "https://mlflow.org/docs/latest/"
   version: "1.8.1"
 ---

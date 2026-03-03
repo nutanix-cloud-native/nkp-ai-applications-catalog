@@ -41,17 +41,17 @@ deploy() {
 }
 
 case "${1:-}" in
-  build)  build ;;
-  bundle) bundle ;;
-  deploy) deploy "${2:-}" ;;
-  all)   build && bundle ;;
-  *)
-    echo "Usage: $0 {build|bundle|deploy|all} [workspace]"
-    echo ""
-    echo "  build   - Build and push demo-full-rag images and charts"
-    echo "  bundle  - Validate catalog and push bundle to OCI"
-    echo "  deploy  - Deploy catalog to cluster (dry-run)"
-    echo "  all     - build + bundle"
-    exit 1
-    ;;
+build) build ;;
+bundle) bundle ;;
+deploy) deploy "${2:-}" ;;
+all) build && bundle ;;
+*)
+  echo "Usage: $0 {build|bundle|deploy|all} [workspace]"
+  echo ""
+  echo "  build   - Build and push demo-full-rag images and charts"
+  echo "  bundle  - Validate catalog and push bundle to OCI"
+  echo "  deploy  - Deploy catalog to cluster (dry-run)"
+  echo "  all     - build + bundle"
+  exit 1
+  ;;
 esac

@@ -31,5 +31,4 @@ spec:
   valuesFrom:
   - kind: ConfigMap
     name: ${releaseName}-${appVersion}-defaults
-    namespace: ${releaseNamespace}
 ---

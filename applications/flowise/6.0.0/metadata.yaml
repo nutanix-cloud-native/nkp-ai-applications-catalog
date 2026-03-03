@@ -1,6 +1,6 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: Flowise
-allowMultipleInstances: true
+allowMultipleInstances: false
 category:
   - artificial-intelligence
 description: Drag-and-drop UI to build customized LLM flows with LangChain. Low-code tool for building AI agents and chatbots.
