@@ -1,0 +1,52 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: MLflow
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+  - ai-ml
+description: Open-source platform for the full machine learning lifecycle — experiment tracking, model registry, and deployment.
+dependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  MLflow is an open-source platform for managing the end-to-end machine learning lifecycle. It provides experiment tracking, model packaging and registry, and deployment tools. Use it to track training runs, compare models, and serve models for inference.
+
+  **Key capabilities**
+
+  - **Experiment tracking** — Log parameters, metrics, and artifacts from any ML framework (TensorFlow, PyTorch, scikit-learn, etc.).
+  - **Model registry** — Version, stage, and annotate models; promote to staging/production.
+  - **Model deployment** — Serve models via REST API or batch inference.
+  - **Projects** — Package code for reproducible runs.
+
+  **In-cluster usage**
+
+  MLflow exposes a web UI and REST API on port 5000. From another app or notebook, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | API / UI | `http://mlflow.mlflow.svc.cluster.local:5000` |
+
+  Same namespace: `http://mlflow:5000`.
+
+  **Persistence**
+
+  By default, MLflow uses SQLite in-memory (`:memory:`). No data persists across pod restarts. To persist data:
+
+  | Data | What it stores | How to persist |
+  |------|----------------|----------------|
+  | **Backend store** | Experiments, runs, model registry metadata | **Option A (SQLite):** Create a PVC, add `extraVolumes` / `extraVolumeMounts` to mount it at `/mlflow/data`, set `backendStore.defaultSqlitePath: /mlflow/data/mlflow.db`. **Option B (recommended for production):** Enable `postgresql.enabled: true` — the subchart creates a PVC; set `postgresql.primary.persistence.size` and `postgresql.primary.persistence.storageClass` as needed. |
+  | **Artifacts** | Model files, plots, other run artifacts | Default: local filesystem (lost with pod). For production: configure `artifactRoot.s3`, `artifactRoot.azureBlob`, or `artifactRoot.gcs` to use object storage. |
+
+  **Resources**
+
+  [Documentation](https://mlflow.org/docs/latest/) · [Project](https://github.com/mlflow/mlflow) · [Helm chart](https://community-charts.github.io/docs/charts/mlflow/basic-installation)
+scope:
+  - workspace
+  - project
+supportLink: https://mlflow.org/docs/latest/
+type: custom
+---

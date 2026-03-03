@@ -1,0 +1,9 @@
+k8s_versions:
+  - 1.34.0
+
+# Substitution vars for validation (nkp validate uses these)
+substitution_vars:
+  releaseNamespace: kommander
+  releaseName: mlflow
+  appVersion: "1.8.1"
+  workspaceNamespace: workspace

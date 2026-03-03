@@ -1,0 +1,48 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Flowise
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: Drag-and-drop UI to build customized LLM flows with LangChain. Low-code tool for building AI agents and chatbots.
+dependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  [Flowise](https://flowiseai.com/) is a drag-and-drop UI to build customized LLM flows. It provides a low-code interface for building AI agents, chatbots, and RAG pipelines using LangChain. Deploy on Kubernetes; exposes the web UI on port 3000.
+
+  **Key capabilities**
+
+  - **Visual flow builder** — Connect LLM providers, vector stores, and tools without writing code.
+  - **LangChain integration** — Built on LangChain; supports chains, agents, and tools.
+  - **Multiple backends** — Connect to OpenAI, Ollama, vLLM, or other OpenAI-compatible APIs.
+  - **Vector stores** — Integrate with Weaviate, Pinecone, Chroma, and other vector databases.
+  - **Persistence** — Optional MariaDB/PostgreSQL and Redis for queue mode; local storage by default.
+
+  **In-cluster usage**
+
+  Flowise exposes its web UI on port 3000. From another app or ingress, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | Web UI | `http://flowise.flowise.svc.cluster.local:3000` |
+
+  Same namespace: `http://flowise:3000`. Configure your LLM provider (e.g. Ollama) with its in-cluster URL.
+
+  **Prerequisites**
+
+  - **LLM backend** — Flowise needs an LLM provider (e.g. Ollama, OpenAI, vLLM). Deploy Ollama or another provider in the cluster and configure Flowise with its URL.
+  - **Storage (optional)** — For production, enable `persistence.enabled=true` or configure MariaDB/PostgreSQL for queue mode.
+
+  **Resources**
+
+  [Documentation](https://docs.flowiseai.com) · [Project](https://github.com/FlowiseAI/Flowise) · [Helm chart](https://github.com/cowboysysop/charts/tree/master/charts/flowise)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://docs.flowiseai.com
+type: custom
+---

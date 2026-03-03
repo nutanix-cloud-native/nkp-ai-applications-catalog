@@ -72,7 +72,7 @@ Then reference the OCI registry URL in `helmrelease/helmrelease.yaml`.
 
 ### justfile and dev-commands.md
 
-When adding a Helm-based app whose chart comes from a public Helm repo and must be pushed to OCI: add `push-<app>` and `add-<app>` shortcuts to the justfile, and document them in `dev-commands.md`. See `.cursor/rules/justfile-dev-commands.mdc`.
+When adding a Helm-based app whose chart comes from a public Helm repo and must be pushed to OCI: add `push-<app>` and `add-<app>` shortcuts to the justfile, and document them in `dev-commands.md`. See justfile-dev-commands rule.
 
 ### Required files
 
@@ -115,7 +115,7 @@ When adding a Helm-based app whose chart comes from a public Helm repo and must 
 
 4. **`applications/<app>/<version>/helmrelease/kustomization.yaml`** — lists all resources in the directory.
 
-5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables. **Each app must deploy to its own dedicated namespace** via `targetNamespace: <app-namespace>` and `install.createNamespace: true` (see `.cursor/rules/app-namespace.mdc`).
+5. **`applications/<app>/<version>/helmrelease/helmrelease.yaml`** — contains an `OCIRepository` (chart source) and a `HelmRelease` (or Job-based install manifest). Uses `${releaseName}` and `${releaseNamespace}` substitution variables. **Each app must deploy to its own dedicated namespace** via `targetNamespace: <app-namespace>` and `install.createNamespace: true` (see app-namespace rule).
 
 6. **`applications/<app>/<version>/helmrelease/cm.yaml`** — ConfigMap for default Helm values:
    ```yaml
@@ -135,7 +135,7 @@ When adding a Helm-based app whose chart comes from a public Helm repo and must 
 - `<app>-install.yaml` — Job + ServiceAccount + ClusterRole + ClusterRoleBinding for apps that need a custom installer instead of a plain HelmRelease.
 - `*-cm.yaml` — extra ConfigMaps (e.g. UI dashboard integration).
 - `.bloodhound.yaml` — per-app validation overrides (e.g. `strict: false`).
-- `.catalog-source.yaml` — Helm repo metadata for version-check tooling.
+- `.catalog-source.yaml` — Helm repo metadata for version-check tooling. **Must include** `license`, `licenseUrl`, `redistributionAllowed`, and `redistributionNotes` (see catalog-source-license rule). If `redistributionAllowed` is false, do not add the app — raise to user.
 
 ## YAML Conventions
 

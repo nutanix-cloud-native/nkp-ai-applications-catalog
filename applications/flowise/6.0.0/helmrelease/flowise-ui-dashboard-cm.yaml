@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${workspaceNamespace}
+  labels:
+    "kommander.d2iq.io/application": ${releaseName}
+  annotations:
+    "kustomize.toolkit.fluxcd.io/ssa": "Merge"
+data:
+  name: "Flowise"
+  # Required by DKP; postinstall Job patches with real LoadBalancer URL
+  dashboardLink: "#"
+  docsLink: "https://docs.flowiseai.com/"
+  version: "6.0.0"
+---
