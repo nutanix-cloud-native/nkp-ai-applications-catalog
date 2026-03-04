@@ -30,7 +30,7 @@ subjects:
     name: ${releaseName}-postinstall
     namespace: ${workspaceNamespace}
 ---
-# Role + RoleBinding in jupyterhub ns so Job can read jupyterhub-proxy-public LoadBalancer (external IP).
+# Role + RoleBinding in jupyterhub ns so Job can read Ingress or LoadBalancer service.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -39,6 +39,9 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["services"]
+    verbs: ["get", "list"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
     verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

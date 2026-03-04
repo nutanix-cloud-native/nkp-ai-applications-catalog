@@ -1,5 +1,6 @@
-# Post-install Job: discovers jupyterhub proxy-public LoadBalancer (external IP) in jupyterhub namespace
+# Post-install Job: discovers jupyterhub Ingress or LoadBalancer in jupyterhub namespace
 # and patches jupyterhub-ui ConfigMap with dashboardLink so the NKP Launch button opens JupyterHub UI.
+# Prefers Ingress (Traefik) when LoadBalancer is pending (e.g. bare-metal clusters).
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,6 +31,8 @@ spec:
               value: "80"
             - name: APP_PATH
               value: "/jupyter"
+            - name: APP_INGRESS
+              value: "jupyterhub"
             - name: CONFIGMAP_NAME
               value: "${releaseName}-ui"
           command:
@@ -51,19 +54,26 @@ spec:
                 echo "ERROR: $CONFIGMAP_NAME ConfigMap not found after 5min"; exit 1
               fi
 
-              echo "Waiting for $APP_SERVICE LoadBalancer in $APP_NAMESPACE..."
+              echo "Trying Ingress $APP_INGRESS first (Traefik), then LoadBalancer $APP_SERVICE..."
               IP=""; HOSTNAME=""
               for i in $(seq 1 60); do
+                IP=$(kubectl get ingress -n "$APP_NAMESPACE" "$APP_INGRESS" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+                HOSTNAME=$(kubectl get ingress -n "$APP_NAMESPACE" "$APP_INGRESS" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                  echo "Found Ingress endpoint."
+                  break
+                fi
                 IP=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
                 HOSTNAME=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
                 if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                  echo "Found LoadBalancer endpoint."
                   break
                 fi
                 echo "Waiting... ($i/60)"; sleep 5
               done
 
               if [ -z "$IP" ] && [ -z "$HOSTNAME" ]; then
-                echo "ERROR: $APP_SERVICE LoadBalancer not found"; kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o yaml 2>/dev/null || true; exit 1
+                echo "ERROR: Neither Ingress nor LoadBalancer found"; kubectl get ingress,svc -n "$APP_NAMESPACE" 2>/dev/null || true; exit 1
               fi
 
               if [ -n "$IP" ]; then
