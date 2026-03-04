@@ -20,7 +20,7 @@ data:
     ingress:
       enabled: true
       annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: kommander-stripprefixes@kubernetescrd
+        # Do NOT use stripprefixes: JupyterHub expects full path (hub.baseUrl: /jupyter)
         traefik.ingress.kubernetes.io/router.tls: "true"
       ingressClassName: kommander-traefik
       pathType: ImplementationSpecific
