@@ -1,0 +1,7 @@
+# Create jupyterhub namespace before RBAC (Role in jupyterhub ns) and HelmRelease.
+# Ensures namespace exists when Kustomization applies; HelmRelease also has createNamespace: true.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jupyterhub
+---

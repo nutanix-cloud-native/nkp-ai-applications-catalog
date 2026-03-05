@@ -1,0 +1,61 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: JupyterHub brings the power of notebooks to groups of users.
+displayName: JupyterHub
+icon: PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjE1MnB4IiBoZWlnaHQ9IjE2NXB4IiB2aWV3Qm94PSIwIDAgMTUyIDE2NSIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDwhLS0gR2VuZXJhdG9yOiBTa2V0Y2ggMzkuMSAoMzE3MjApIC0gaHR0cDovL3d3dy5ib2hlbWlhbmNvZGluZy5jb20vc2tldGNoIC0tPgogICAgPHRpdGxlPmxvZ288L3RpdGxlPgogICAgPGRlc2M+Q3JlYXRlZCB3aXRoIFNrZXRjaC48L2Rlc2M+CiAgICA8ZGVmcz48L2RlZnM+CiAgICA8ZyBpZD0iUGFnZS0xIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8ZyBpZD0ibG9nbyIgZmlsbD0iI0YzNzcyNiI+CiAgICAgICAgICAgIDxnIGlkPSJsb2dvLnN2ZyI+CiAgICAgICAgICAgICAgICA8ZyBpZD0iQ2FudmFzIj4KICAgICAgICAgICAgICAgICAgICA8ZyBpZD0ibG9nbyI+CiAgICAgICAgICAgICAgICAgICAgICAgIDxnIGlkPSJnIj4KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxnIGlkPSJwYXRoIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjAwMDAwMCwgMTA5LjgwNDg3OCkiPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxnIGlkPSJwYXRoOC1maWxsIj4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGcgaWQ9InBhdGgxX2ZpbGwtbGluayIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wNzg5NDcsIDAuNzc4MDQ5KSI+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNzUuOTQyMjg0MiwyOS41ODA0NTYxIEM0My4zMDIzOTQ3LDI5LjU4MDQ1NjEgMTQuNzk2NzgzMiwxNy42NTM0NjM0IDAsMCBDNS41MTA4MzIxMSwxNS44NDA2ODI5IDE1Ljc4MTUzODksMjkuNTY2NzczMiAyOS4zOTA0OTQ3LDM5LjI3ODQxNzEgQzQyLjk5OTcsNDguOTg5ODUzNyA1OS4yNzM3LDU0LjIwNjc4MDUgNzUuOTYwNTc4OSw1NC4yMDY3ODA1IEM5Mi42NDc0NTc5LDU0LjIwNjc4MDUgMTA4LjkyMTQ1OCw0OC45ODk4NTM3IDEyMi41MzA2NjMsMzkuMjc4NDE3MSBDMTM2LjEzOTQ1MywyOS41NjY3NzMyIDE0Ni40MTAyODQsMTUuODQwNjgyOSAxNTEuOTIxMTU4LDAgQzEzNy4wODc4NjgsMTcuNjUzNDYzNCAxMDguNTgyNTg5LDI5LjU4MDQ1NjEgNzUuOTQyMjg0MiwyOS41ODA0NTYxIEw3NS45NDIyODQyLDI5LjU4MDQ1NjEgWiIgaWQ9InBhdGgxX2ZpbGwiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9nPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxnIGlkPSJwYXRoIj4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZyBpZD0icGF0aDktZmlsbCI+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxnIGlkPSJwYXRoMl9maWxsLWxpbmsiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuMDM3MzY4LCAwLjcwNDg3OCkiPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPHBhdGggZD0iTTc1Ljk3ODQ1NzksMjQuNjI2NDA3MyBDMTA4LjYxODc2MywyNC42MjY0MDczIDEzNy4xMjQ0NTgsMzYuNTUzNDQxNSAxNTEuOTIxMTU4LDU0LjIwNjc4MDUgQzE0Ni40MTAyODQsMzguMzY2MjIyIDEzNi4xMzk0NTMsMjQuNjQwMTMxNyAxMjIuNTMwNjYzLDE0LjkyODQ4NzggQzEwOC45MjE0NTgsNS4yMTY4NDM5IDkyLjY0NzQ1NzksMCA3NS45NjA1Nzg5LDAgQzU5LjI3MzcsMCA0Mi45OTk3LDUuMjE2ODQzOSAyOS4zOTA0OTQ3LDE0LjkyODQ4NzggQzE1Ljc4MTUzODksMjQuNjQwMTMxNyA1LjUxMDgzMjExLDM4LjM2NjIyMiAwLDU0LjIwNjc4MDUgQzE0LjgzMzA4MTYsMzYuNTg5OTI5MyA0My4zMzg1Njg0LDI0LjYyNjQwNzMgNzUuOTc4NDU3OSwyNC42MjY0MDczIEw3NS45Nzg0NTc5LDI0LjYyNjQwNzMgWiIgaWQ9InBhdGgyX2ZpbGwiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9nPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgICAgICAgICAgPC9nPgogICAgICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |-
+  ## Overview
+
+  JupyterHub brings the power of notebooks to groups of users. It gives users access to computational environments and resources without burdening the users with installation and maintenance tasks.
+
+  ## Access
+
+  - You can access JupyterHub using the application dashboard available on the cluster **Application Dashboards** tab
+  - Also accessible by using your NKP Dashboard URL with the path `/jupyter/`
+
+  **In-cluster usage**
+
+  JupyterHub exposes its web UI via the proxy-public service. From another app or notebook, connect via Kubernetes DNS:
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | Web UI | `http://jupyterhub-proxy-public.jupyterhub.svc.cluster.local:80/jupyter` |
+
+  Same namespace: `http://jupyterhub-proxy-public:80/jupyter`.
+
+  ### Credentials
+
+  Configure credentials when enabling the application via **Workspace Configuration**:
+
+  ```yaml
+  hub:
+    config:
+      Authenticator:
+        admin_users:
+          - admin
+        allowed_users:
+          - user
+      DummyAuthenticator:
+        password: <your-secure-password>
+      JupyterHub:
+        authenticator_class: dummy
+  ```
+
+  Replace `<your-secure-password>` with a secure password. The default uses DummyAuthenticator (shared password for all users); for production, consider OAuth2 (GitHub, Google, CILogon) per [JupyterHub authentication docs](https://z2jh.jupyter.org/en/stable/administrator/authentication.html).
+
+  ## More Information
+
+  - [jupyter.org](https://jupyter.org/hub)
+  - [Jupyter Documentation](https://docs.jupyter.org/en/latest/)
+  - [JupyterHub for Kubernetes](https://z2jh.jupyter.org/en/stable/)
+  - [List of Helm values](https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/main/jupyterhub/values.yaml)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://jupyter.org/hub
+---

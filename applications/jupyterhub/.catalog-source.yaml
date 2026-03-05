@@ -1,0 +1,11 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: jupyterhub/jupyterhub
+helmrepoUrl: https://hub.jupyter.org/helm-chart/
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/jupyterhub
+
+# Upstream product license (from https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/main/LICENSE)
+license: BSD-3-Clause
+licenseUrl: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, copy, modify, distribute permitted. Must retain copyright and license notices.
