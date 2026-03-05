@@ -17,6 +17,11 @@ data:
         egress:
           - ports:
               - port: 6443
+    # Use ClusterIP when Ingress is enabled so Helm does not wait for LoadBalancer IP
+    # (LoadBalancer can stay Pending on bare-metal; Ingress provides external access)
+    proxy:
+      service:
+        type: ClusterIP
     ingress:
       enabled: true
       annotations:
