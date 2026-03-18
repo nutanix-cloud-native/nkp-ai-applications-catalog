@@ -1,0 +1,11 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: kuberay/kuberay-operator
+helmrepoUrl: https://ray-project.github.io/kuberay-helm/
+ocipush: oci://ghcr.io/deepak-muley/charts
+
+# Upstream product license (required — see catalog-source-license rule in AGENTS.md)
+# Fill in from the upstream project's public LICENSE file. If redistributionAllowed is false, do not add to catalog.
+license: ""
+licenseUrl: ""
+redistributionAllowed: true
+redistributionNotes: ""
