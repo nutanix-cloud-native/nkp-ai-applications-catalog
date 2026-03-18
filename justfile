@@ -42,6 +42,11 @@ check: pre-commit
 # Full check: pre-commit + catalog validation (ready to push)
 check-all: pre-commit validate
 
+# Check if catalog apps have newer versions at source (Helm repo or OCI)
+# Requires: helm, crane (for OCI apps). Usage: just check-versions [--json] [--app NAME]
+check-versions *ARGS:
+    ./scripts/check-app-versions.sh {{ ARGS }}
+
 # ---------- OCI registry ----------
 
 # Login to GHCR (reads .env.local)
@@ -77,7 +82,7 @@ add-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
 
 # Shortcut: push open-webui chart to OCI
 push-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
+    just push-helm-to-oci open-webui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart to OCI
 push-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
@@ -107,7 +112,7 @@ push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
 
 # Shortcut: push open-webui chart and generate scaffold in one step
 add-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
-    just add-app openwebui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
+    just add-app open-webui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
 
 # Shortcut: push weaviate chart and generate scaffold in one step
 add-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:

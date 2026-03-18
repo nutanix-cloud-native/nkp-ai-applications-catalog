@@ -1,4 +1,4 @@
-# openwebui
+# open-webui
 
 Extensible, self-hosted web interface for interacting with large language models.
 
@@ -39,7 +39,7 @@ This catalog does **not** include a Traefik IngressRoute or Middleware. The Open
 (`service.type: LoadBalancer` in the default values), same pattern as kagent.
 
 - **Launch URL:** A post-install Job discovers the **open-webui** LoadBalancer
-  external IP in the `open-webui` namespace and patches the `openwebui-ui` ConfigMap
+  external IP in the `open-webui` namespace and patches the `open-webui-ui` ConfigMap
   with `dashboardLink` (e.g. `http://<lb-ip>:80/`). The NKP Launch button uses that URL.
 - **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
   `http://open-webui.open-webui.svc.cluster.local:80` or

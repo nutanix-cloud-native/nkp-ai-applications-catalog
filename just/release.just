@@ -7,7 +7,7 @@ CHART_REGISTRY_BASE := "oci://ghcr.io/nutanix-cloud-native/charts"
 
 # Create the catalog bundle (removes existing bundle file first)
 # Usage: just create-bundle [tag] [skip] [chart-registry]
-# skip: comma-separated app=version to exclude, e.g. "openwebui=12.0.1,kserve=0.16.0"
+# skip: comma-separated app=version to exclude, e.g. "open-webui=12.0.1,kserve=0.16.0"
 # chart-registry: override Helm chart OCI base (e.g. oci://ghcr.io/deepak-muley/charts) for testing
 # Or set CHART_REGISTRY env var: CHART_REGISTRY=oci://ghcr.io/deepak-muley/charts just create-bundle
 create-bundle tag=DEFAULT_TAG skip="" chart-registry=(env_var_or_default('CHART_REGISTRY', '')): nkp-cli

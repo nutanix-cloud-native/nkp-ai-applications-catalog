@@ -12,7 +12,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: openwebui
+  name: open-webui
   namespace: ${releaseNamespace}
 spec:
   chartRef:

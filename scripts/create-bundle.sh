@@ -4,7 +4,7 @@
 # Usage:
 #   ./scripts/create-bundle.sh <repo-root> <bundle-name> <chart-registry-base> <tag> [skip] [chart-registry]
 #
-# skip: comma-separated app=version to exclude, e.g. "openwebui=12.0.1,kserve=0.16.0"
+# skip: comma-separated app=version to exclude, e.g. "open-webui=12.0.1,kserve=0.16.0"
 # chart-registry: override Helm chart OCI base for testing (optional)
 
 set -e

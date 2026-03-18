@@ -10,7 +10,7 @@
 apps:
   kubeflow-central-dashboard:
     repo: https://github.com/kubeflow/manifests
-    ref: master
+    ref: v1.11.0
     path: ./applications/centraldashboard/overlays/oauth2-proxy
 
   kubeflow-model-registry:
@@ -20,20 +20,20 @@ apps:
 
   katib:
     repo: https://github.com/kubeflow/manifests
-    ref: master
+    ref: v1.11.0
     path: ./applications/katib/upstream/installs/katib-with-kubeflow
 
   tensorboard-controller:
     repo: https://github.com/kubeflow/manifests
-    ref: master
+    ref: v1.11.0
     path: ./applications/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
 
   training-operator:
     repo: https://github.com/kubeflow/manifests
-    ref: master
+    ref: v1.11.0
     path: ./applications/training-operator/upstream/overlays/kubeflow
 
   spark-operator:
     repo: https://github.com/kubeflow/manifests
-    ref: master
+    ref: v1.11.0
     path: ./applications/spark/spark-operator/overlays/kubeflow
