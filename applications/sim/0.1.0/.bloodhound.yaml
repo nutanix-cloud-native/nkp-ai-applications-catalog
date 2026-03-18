@@ -1,0 +1,9 @@
+k8s_versions:
+  - 1.34.0
+
+# Validation overrides for sim helm chart
+substitute:
+  releaseName: sim
+  releaseNamespace: kommander
+  workspaceNamespace: workspace
+  appVersion: "0.1.0"

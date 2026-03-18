@@ -1,0 +1,51 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Sim
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: Open-source platform to build AI agents and orchestrate agentic workflows. Connect 1,000+ integrations and LLMs.
+dependencies: []
+requiredDependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  Sim is the open-source platform to build AI agents and run your agentic workforce. Design agent workflows visually on a canvas—connect agents, tools, and blocks, then run them instantly. Connect 1,000+ integrations and LLMs to orchestrate agentic workflows.
+
+  ## What gets installed
+
+  - Sim main application (Next.js) in the `sim` namespace
+  - PostgreSQL (bundled) for persistence
+  - Realtime WebSocket server for live updates
+  - Optional: Ollama subchart (disable to use catalog's standalone Ollama)
+
+  | Component | In-cluster URL |
+  |-----------|----------------|
+  | Web UI | `http://<svc>.<namespace>.svc.cluster.local:3000` |
+  | Realtime | `http://<svc>-realtime.<namespace>.svc.cluster.local:3002` |
+
+  ## How to use it
+
+  Use the Launch button or connect to `sim-app.sim.svc.cluster.local:3000`. Configure LLM providers (OpenAI, Anthropic, Ollama, vLLM) in Settings. For local models, use the catalog's Ollama or vLLM and set `OLLAMA_URL` / `VLLM_BASE_URL` in Sim's environment.
+
+  ## Dependencies
+
+  None required. Works with catalog's Ollama and vLLM for local models.
+
+  ## Prerequisites
+
+  Kubernetes 1.19+. PostgreSQL with pgvector (bundled or external). Generate secrets: `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY`, `INTERNAL_API_SECRET` (see [Sim docs](https://docs.sim.ai)).
+
+  ## Resources
+
+  - [Sim Documentation](https://docs.sim.ai)
+  - [GitHub](https://github.com/simstudioai/sim)
+  - [Helm Chart](https://github.com/simstudioai/sim/tree/main/helm/sim)
+scope:
+  - workspace
+supportLink: https://docs.sim.ai
+type: custom
+---

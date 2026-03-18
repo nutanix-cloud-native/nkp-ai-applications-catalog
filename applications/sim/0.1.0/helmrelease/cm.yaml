@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    fullnameOverride: "sim"
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink (NKP Launch button).
+    app:
+      service:
+        type: LoadBalancer
+        port: 3000
+        targetPort: 3000
+
+    # Disable bundled Ollama — use the standalone Ollama from the catalog if needed
+    ollama:
+      enabled: false
+
+    # Point to catalog's Ollama when using local models (set OLLAMA_URL in app.env if needed)
+    # app:
+    #   env:
+    #     OLLAMA_URL: "http://ollama-ollama.ollama.svc.cluster.local:11434"
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

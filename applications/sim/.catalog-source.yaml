@@ -1,0 +1,12 @@
+# Source for check-versions: Git (packaged and pushed to OCI during add-app)
+giturl: https://github.com/simstudioai/sim.git
+chartpath: helm/sim
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (required — see catalog-source-license rule in AGENTS.md)
+license: Apache-2.0
+licenseUrl: https://github.com/simstudioai/sim/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, reproduction, distribution, modification, and sublicensing permitted.
+  Must retain copyright and license notices. See licenseUrl for full terms.

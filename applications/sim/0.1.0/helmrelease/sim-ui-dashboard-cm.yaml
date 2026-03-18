@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sim-ui
+  namespace: ${workspaceNamespace}
+  labels:
+    "kommander.d2iq.io/application": "sim"
+  annotations:
+    "kustomize.toolkit.fluxcd.io/ssa": "Merge"
+data:
+  name: "sim"
+  docsLink: "https://docs.sim.ai"
+  version: "0.1.0"
+---
