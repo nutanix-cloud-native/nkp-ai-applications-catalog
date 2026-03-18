@@ -108,6 +108,17 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push elastic-vector-db charts (eck-operator + eck-stack) to OCI
+push-elastic-vector-db eck-operator-version="3.3.1" eck-stack-version="0.18.1" oci-registry=OCI_REGISTRY:
+    helm repo add elastic https://helm.elastic.co
+    helm repo update elastic
+    helm pull elastic/eck-operator --version {{eck-operator-version}}
+    helm push eck-operator-{{eck-operator-version}}.tgz {{oci-registry}}
+    rm -f eck-operator-{{eck-operator-version}}.tgz
+    helm pull elastic/eck-stack --version {{eck-stack-version}}
+    helm push eck-stack-{{eck-stack-version}}.tgz {{oci-registry}}
+    rm -f eck-stack-{{eck-stack-version}}.tgz
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +148,11 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push elastic-vector-db charts and generate scaffold in one step
+add-elastic-vector-db eck-operator-version="3.3.1" eck-stack-version="0.18.1" oci-registry=OCI_REGISTRY:
+    just push-elastic-vector-db {{eck-operator-version}} {{eck-stack-version}} {{oci-registry}}
+    just generate-app elastic-vector-db {{eck-stack-version}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 
