@@ -1,0 +1,12 @@
+# Source for check-versions: NGC Helm chart (pulled with NGC_API_KEY and pushed to OCI)
+ngcChart: nim-llm
+ngcUrl: https://helm.ngc.nvidia.com/nim/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (NVIDIA NGC terms — see catalog-source-license rule)
+license: NVIDIA-Software-License
+licenseUrl: https://docs.nvidia.com/nim/large-language-models/latest/acknowledgements.html
+redistributionAllowed: true
+redistributionNotes: |
+  Helm chart is deployment configuration. NIM containers from nvcr.io require NGC API key.
+  Users must comply with NGC terms and NVIDIA AI Enterprise for production use.
