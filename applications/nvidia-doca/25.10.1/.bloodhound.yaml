@@ -1,0 +1,2 @@
+# DPF chart may emit CRDs and custom resources with extra fields
+strict: false

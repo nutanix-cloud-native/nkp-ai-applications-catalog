@@ -108,6 +108,10 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push nvidia-doca chart from NGC to OCI (requires NGC_API_KEY)
+push-nvidia-doca version="25.10.1" oci-registry=OCI_REGISTRY:
+    ./scripts/push-helm-from-ngc-doca.sh nvidia-doca dpu-networking {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +141,11 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push nvidia-doca chart from NGC and generate scaffold (requires NGC_API_KEY)
+add-nvidia-doca version="25.10.1" oci-registry=OCI_REGISTRY:
+    just push-nvidia-doca {{version}} {{oci-registry}}
+    just generate-app nvidia-doca {{version}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 

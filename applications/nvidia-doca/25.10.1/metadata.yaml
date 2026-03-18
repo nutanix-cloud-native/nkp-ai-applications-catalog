@@ -1,0 +1,57 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: NVIDIA DOCA Platform
+allowMultipleInstances: false
+category:
+  - networking
+  - artificial-intelligence
+description: NVIDIA DOCA Platform Framework for provisioning and orchestrating NVIDIA BlueField DPUs on Kubernetes. Manages DPU clusters, services, and networking.
+dependencies: []
+requiredDependencies:
+  - cert-manager
+  - argo-cd
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  NVIDIA DOCA (Data Center Infrastructure-on-a-Chip Architecture) Platform Framework (DPF) manages provisioning and service orchestration for NVIDIA BlueField DPUs on Kubernetes. It provides operators and controllers for DPU cluster management, DPUServices, and networking integration.
+
+  ## What gets installed
+
+  - DPF Operator and controllers in the `nvidia-doca` namespace
+  - CRDs for DPUCluster, DPUService, DPUServiceChain, and related resources
+  - Support for OVN-Kubernetes, Host Based Networking (HBN), and DPU service deployment
+  - Integration with cert-manager, Argo CD, and node-feature-discovery
+
+  ## How to use it
+
+  **Prerequisites:** Install cert-manager, Argo CD, node-feature-discovery, and maintenance-operator before enabling DOCA. See [DPF Helm Prerequisites](https://docs.nvidia.com/networking/display/dpf25101/helm-prerequisites).
+
+  After enabling, create DPUCluster and DPUService resources to provision and manage BlueField DPUs. Use the [DPF helmfiles](https://github.com/NVIDIA/doca-platform/tree/main/deploy/helmfiles) for full deployment with all dependencies.
+
+  ## Dependencies
+
+  - cert-manager (certificate management)
+  - argo-cd (GitOps for DPUService integration)
+  - node-feature-discovery (hardware feature discovery for DPUs)
+  - maintenance-operator (node maintenance operations)
+
+  ## Prerequisites
+
+  - Kubernetes cluster with NVIDIA BlueField DPU nodes
+  - BlueField image version 3.9.0 or higher
+  - NGC API key for pulling container images from nvcr.io (if using NGC images)
+
+  ## Resources
+
+  - [DOCA Platform Framework Documentation](https://docs.nvidia.com/networking/display/dpf25101)
+  - [NVIDIA doca-platform GitHub](https://github.com/NVIDIA/doca-platform)
+  - [Helm Prerequisites](https://docs.nvidia.com/networking/display/dpf25101/helm-prerequisites)
+scope:
+  - workspace
+  - project
+supportLink: https://docs.nvidia.com/networking/display/dpf25101
+type: custom
+---

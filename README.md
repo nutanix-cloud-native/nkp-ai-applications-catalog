@@ -269,6 +269,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-flowise [version]` | Shortcut for flowise (default: `6.0.0`) |
 | `just push-jupyterhub [version]` | Shortcut for jupyterhub (default: `4.3.2`) |
 | `just push-milvus-operator [version]` | Shortcut for milvus-operator (default: `1.3.6`) |
+| `just push-nvidia-doca [version]` | Shortcut for nvidia-doca from NGC (default: `25.10.1`, requires NGC_API_KEY) |
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
