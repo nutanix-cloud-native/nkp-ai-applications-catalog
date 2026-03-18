@@ -5,6 +5,10 @@ data:
     fullnameOverride: jupyterhub
     hub:
       baseUrl: /jupyter
+      # Use in-memory DB to avoid Nutanix CSI PVC (GetVG unexpected type issue).
+      # Hub loses user state on restart; for production use sqlite-pvc when CSI works.
+      db:
+        type: sqlite-memory
       config:
         Authenticator:
           admin_users:
