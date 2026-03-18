@@ -170,7 +170,7 @@ Required fields:
 | `licensing` | list | Supported tiers: `["Pro", "Ultimate"]` |
 | `scope` | list | Deployment scope: `["workspace"]`, `["project"]`, or both |
 | `type` | string | Usually `custom` |
-| `overview` | string | Markdown overview; use **Overview**, **Key capabilities**, **Dependencies** (if any), **Prerequisites** (if any), and **Resources** (docs/project/chart links). Keep concise and production-oriented. |
+| `overview` | string | Markdown overview; must include **What gets installed** and **How to use it** (brief). Use **Overview**, **Key capabilities**, **Dependencies**, **Prerequisites**, and **Resources**. See metadata-overview rule. |
 | `supportLink` | string | URL to documentation or support |
 | `dependencies` | list | Soft dependencies (empty `[]` if none) |
 | `requiredDependencies` | list | Hard dependencies — platform or catalog apps that must be installed first. Use names from [kommander-applications](https://github.com/mesosphere/kommander-applications/tree/main/applications) for platform apps (e.g. `istio`, `gateway-api-crds`). Do not disable features to avoid crashes; add the dependency instead. |

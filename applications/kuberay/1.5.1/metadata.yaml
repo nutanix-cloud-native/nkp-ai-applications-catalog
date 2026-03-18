@@ -13,18 +13,23 @@ overview: |-
   ## Overview
   KubeRay Operator is the Kubernetes operator for [Ray](https://docs.ray.io/), an open source framework for building and scaling distributed Python applications. It manages RayCluster, RayJob, and RayService custom resources on Kubernetes.
 
-  ## Key capabilities
+  ## What gets installed
+  - RayCluster, RayJob, RayService CRDs
+  - KubeRay operator controller in the `kuberay` namespace
 
+  ## How to use it
+  Create a RayCluster manifest and apply it with `kubectl apply`. Use RayJob for batch jobs or RayService for long-running Ray Serve apps. Connect to the Ray head from in-cluster workloads via `ray://<head-svc>.<namespace>.svc.cluster.local:10001`. See [RayCluster Quickstart](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/raycluster-quickstart.html).
+
+  ## Key capabilities
   - **RayCluster** — Deploy Ray clusters with head and worker nodes; supports autoscaling.
   - **RayJob** — Run batch Ray jobs that complete and exit.
   - **RayService** — Deploy long-running Ray Serve applications with zero-downtime upgrades.
-  - **Ray Data, Ray Train, Ray Tune, Ray Serve** — Use Ray libraries for data processing, ML training, hyperparameter tuning, and model serving.
 
   ## Dependencies
-  None. KubeRay Operator installs its own CRDs and manages Ray workloads.
+  None.
 
   ## Prerequisites
-  A Kubernetes cluster (1.26+ recommended). GPU support available for Ray workloads.
+  Kubernetes 1.26+. GPU optional for Ray workloads.
 
   ## Resources
   - [KubeRay Operator Installation](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/kuberay-operator-installation.html)

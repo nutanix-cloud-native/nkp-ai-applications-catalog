@@ -1,11 +1,12 @@
 # Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
 helmrepo: kuberay/kuberay-operator
 helmrepoUrl: https://ray-project.github.io/kuberay-helm/
-ocipush: oci://ghcr.io/deepak-muley/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts/kuberay-operator
 
-# Upstream product license (required — see catalog-source-license rule in AGENTS.md)
-# Fill in from the upstream project's public LICENSE file. If redistributionAllowed is false, do not add to catalog.
-license: ""
-licenseUrl: ""
+# Upstream product license (from https://github.com/ray-project/kuberay/blob/master/LICENSE)
+license: Apache-2.0
+licenseUrl: https://github.com/ray-project/kuberay/blob/master/LICENSE
 redistributionAllowed: true
-redistributionNotes: ""
+redistributionNotes: |
+  Use, reproduction, distribution, modification, and sublicensing permitted.
+  Must retain copyright and license notices. See licenseUrl for full terms.
