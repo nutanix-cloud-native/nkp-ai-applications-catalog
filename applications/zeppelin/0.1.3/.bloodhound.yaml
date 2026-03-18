@@ -1,0 +1,9 @@
+k8s_versions:
+  - 1.34.0
+
+# Substitution vars for validation (nkp validate uses these)
+substitution_vars:
+  releaseNamespace: kommander
+  releaseName: zeppelin
+  appVersion: "0.1.3"
+  workspaceNamespace: workspace
