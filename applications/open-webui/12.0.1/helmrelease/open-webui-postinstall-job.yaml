@@ -1,5 +1,5 @@
 # Post-install Job: discovers open-webui LoadBalancer (external IP) in open-webui namespace
-# and patches openwebui-ui ConfigMap with dashboardLink so the NKP Launch button opens Open WebUI.
+# and patches open-webui-ui ConfigMap with dashboardLink so the NKP Launch button opens Open WebUI.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -15,7 +15,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: patch-dashboard-link
-          image: bitnami/kubectl:1.32
+          image: mesosphere/kubectl:v1.34.1-alpine
           imagePullPolicy: IfNotPresent
           env:
             - name: WORKSPACE_NAMESPACE
@@ -35,16 +35,16 @@ spec:
               set -e
               echo "Starting post-install (ns=$WORKSPACE_NAMESPACE, app=$APP_SERVICE in $APP_NAMESPACE)"
               sleep 15
-              echo "Waiting for openwebui-ui ConfigMap..."
+              echo "Waiting for open-webui-ui ConfigMap..."
               for i in $(seq 1 60); do
-                if kubectl get configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
-                  echo "ConfigMap openwebui-ui found."
+                if kubectl get configmap open-webui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
+                  echo "ConfigMap open-webui-ui found."
                   break
                 fi
                 echo "Waiting for ConfigMap... ($i/60)"; sleep 5
               done
-              if ! kubectl get configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
-                echo "ERROR: openwebui-ui ConfigMap not found after 5min"; exit 1
+              if ! kubectl get configmap open-webui-ui -n "$WORKSPACE_NAMESPACE" 2>/dev/null; then
+                echo "ERROR: open-webui-ui ConfigMap not found after 5min"; exit 1
               fi
 
               echo "Waiting for $APP_SERVICE LoadBalancer in $APP_NAMESPACE..."
@@ -69,6 +69,6 @@ spec:
               fi
 
               PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")
-              kubectl patch configmap openwebui-ui -n "$WORKSPACE_NAMESPACE" --type=merge -p "$PAYLOAD"
+              kubectl patch configmap open-webui-ui -n "$WORKSPACE_NAMESPACE" --type=merge -p "$PAYLOAD"
               echo "Dashboard link updated: $ENDPOINT"
 ---

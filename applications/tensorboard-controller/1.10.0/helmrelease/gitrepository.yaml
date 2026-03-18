@@ -7,5 +7,5 @@ spec:
   interval: 1h
   url: https://github.com/kubeflow/manifests
   ref:
-    branch: master
+    tag: v1.11.0
 ---

@@ -52,7 +52,8 @@ direnv allow
 │   └── release.just           # Bundle create, push, deploy, release pipeline
 ├── scripts/                   # Helper scripts
 │   ├── login-oci-registry.sh  # Docker login to GHCR
-│   └── push-helm-to-oci.sh   # Pull Helm chart → push to OCI + generate .catalog-source.yaml
+│   ├── push-helm-to-oci.sh   # Pull Helm chart → push to OCI + generate .catalog-source.yaml
+│   └── check-app-versions.sh # Check if catalog apps have newer versions at source
 └── applications/              # Application catalog entries
     └── <app-name>/
         ├── .catalog-source.yaml       # Helm repo source info (auto-generated)
@@ -233,6 +234,8 @@ spec:
 
 These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
 
+**Kubeflow:** All Kubeflow components use [kubeflow/manifests v1.11.0](https://github.com/kubeflow/manifests/releases/tag/v1.11.0). See [docs/KUBEFLOW-V1.11-MIGRATION.md](docs/KUBEFLOW-V1.11-MIGRATION.md) for migration notes and required fixes.
+
 ## Existing Applications
 
 | Application | Version | Chart | Description |
@@ -252,6 +255,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 |--------|-------------|
 | `just check` | Quick check: run pre-commit hooks only |
 | `just check-all` | Full check: pre-commit + catalog validation (ready to push) |
+| `just check-versions [--json] [--app NAME]` | Check if catalog apps have newer versions at source (requires helm, crane for OCI) |
 | `just pre-commit` | Run pre-commit hooks and gitlint |
 | `just validate` | Validate catalog manifests (auto-downloads `nkp` CLI) |
 | `just login` | Docker login to GHCR (reads `.env.local`) |
@@ -279,6 +283,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 |--------|-------------|
 | `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
 | `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI + generate `.catalog-source.yaml` |
+| `scripts/check-app-versions.sh` | Check if catalog apps have newer versions at Helm repo or OCI source |
 | `scripts/demo-catalog.sh` | Build demo apps, create bundle, deploy (see `docs/demo-script.md`) |
 
 ### Typical Workflow

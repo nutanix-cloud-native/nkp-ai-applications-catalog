@@ -1,4 +1,4 @@
-# RBAC for post-install Job: patch openwebui-ui ConfigMap and read LoadBalancer service.
+# RBAC for post-install Job: patch open-webui-ui ConfigMap and read LoadBalancer service.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -14,7 +14,7 @@ rules:
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "patch"]
-    resourceNames: ["openwebui-ui"]
+    resourceNames: ["open-webui-ui"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
