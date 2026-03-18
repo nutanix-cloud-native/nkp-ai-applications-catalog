@@ -108,6 +108,10 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push crewai chart (local chart) to OCI
+push-crewai version="1.0.0" oci-registry=OCI_REGISTRY:
+    ./scripts/push-local-chart-to-oci.sh crewai charts/crewai {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +141,11 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push crewai chart and generate scaffold (local chart - scaffold already created)
+add-crewai version="1.0.0" oci-registry=OCI_REGISTRY:
+    just push-crewai {{version}} {{oci-registry}}
+    # App scaffold at applications/crewai/1.0.0/ is maintained manually (no upstream Helm repo)
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 

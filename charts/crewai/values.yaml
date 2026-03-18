@@ -1,0 +1,39 @@
+# CrewAI runtime environment - deploys a CrewAI development/runtime container
+# Uses community sageil/crewai image (multi-arch: amd64, arm64)
+# Users can kubectl exec into the pod to run crewai CLI and crews
+
+image:
+  repository: sageil/crewai
+  tag: "1.10.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# Keep pod running so users can exec in and run crewai commands
+# Alternative: run a custom command for long-running crews
+command:
+  - sleep
+  - infinity
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 2Gi
+
+# Optional: persistence for crew projects and output
+persistence:
+  enabled: false
+  size: 10Gi
+  storageClass: ""
+
+# Service for in-cluster DNS (crewai.crewai.svc.cluster.local)
+# Note: Container runs sleep infinity; use kubectl exec to run crewai CLI
+service:
+  type: ClusterIP
+  port: 8080
+
+# Override to set predictable resource names (e.g. crewai for service/deployment)
+fullnameOverride: ""
