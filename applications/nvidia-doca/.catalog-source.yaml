@@ -1,0 +1,13 @@
+# Source for check-versions: NGC DOCA Helm chart (pulled with NGC_API_KEY and pushed to OCI)
+# Run: NGC_API_KEY=$NGC_API_KEY just push-nvidia-doca
+ngcChart: dpu-networking
+ngcUrl: https://helm.ngc.nvidia.com/doca/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (NVIDIA DOCA Platform — Apache-2.0)
+license: Apache-2.0
+licenseUrl: https://github.com/NVIDIA/doca-platform/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  DOCA Platform is Apache-2.0 licensed. Helm chart is deployment configuration.
+  Users must comply with NGC terms for container images from nvcr.io.
