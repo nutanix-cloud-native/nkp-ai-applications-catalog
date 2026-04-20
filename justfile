@@ -108,6 +108,10 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push sim chart from GitHub to OCI (chart not in Helm repo)
+push-sim version="0.1.0" oci-registry=OCI_REGISTRY:
+    ./scripts/push-helm-from-github.sh sim https://github.com/simstudioai/sim.git helm/sim {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +141,11 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push sim chart from GitHub and generate scaffold in one step
+add-sim version="0.1.0" oci-registry=OCI_REGISTRY:
+    just push-sim {{version}} {{oci-registry}}
+    just generate-app sim {{version}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 
