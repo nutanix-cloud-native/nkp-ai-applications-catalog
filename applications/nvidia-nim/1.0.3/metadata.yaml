@@ -1,0 +1,63 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: NVIDIA NIM for LLMs
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: GPU-accelerated LLM inference microservices with OpenAI-compatible API. Pre-optimized models for low-latency, high-throughput inferencing on NVIDIA GPUs.
+dependencies: []
+requiredDependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  NVIDIA NIM (NVIDIA Inference Microservices) provides containers to self-host GPU-accelerated inferencing microservices for pretrained and customized AI models. NIM microservices expose industry-standard APIs for simple integration into AI applications and optimize response latency and throughput for each model and GPU combination.
+
+  ## What gets installed
+
+  - NIM LLM inference service (StatefulSet or Deployment) in the `nvidia-nim` namespace
+  - OpenAI-compatible API on port 8000
+  - Model cache persistence (configurable PVC)
+  - Support for Llama, Mistral, and other models from NGC
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | OpenAI API | `http://<release>-nim-llm.nvidia-nim.svc.cluster.local:8000/v1` |
+
+  ## How to use it
+
+  **Before enabling:** Create NGC secrets in the target namespace. You need an [NGC API key](https://ngc.nvidia.com/setup/api-key):
+
+  ```bash
+  kubectl create secret docker-registry ngc-secret -n nvidia-nim \
+    --docker-server=nvcr.io --docker-username='$oauthtoken' --docker-password=$NGC_API_KEY
+  kubectl create secret generic ngc-api -n nvidia-nim --from-literal=NGC_API_KEY=$NGC_API_KEY
+  ```
+
+  After enabling, connect from Open WebUI, kagent, or any OpenAI-compatible client. Use the Launch button or `kubectl port-forward` to access the API.
+
+  ## Dependencies
+
+  None. Requires GPU Operator and GPU nodes for inference.
+
+  ## Prerequisites
+
+  - Kubernetes cluster with NVIDIA GPU nodes
+  - [NVIDIA GPU Operator](https://github.com/NVIDIA/gpu-operator) installed
+  - NGC API key for pulling images and models from nvcr.io
+  - Persistent storage for model cache (default 50Gi)
+
+  ## Resources
+
+  - [NVIDIA NIM for Developers](https://developer.nvidia.com/nim)
+  - [Deploy with Helm](https://docs.nvidia.com/nim/large-language-models/latest/deploy-helm.html)
+  - [Supported Models](https://docs.nvidia.com/nim/large-language-models/latest/supported-models.html)
+scope:
+  - workspace
+  - project
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://docs.nvidia.com/nim/large-language-models/latest/
+type: custom
+---
