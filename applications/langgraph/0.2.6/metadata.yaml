@@ -1,0 +1,56 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: LangGraph
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: LangGraph Cloud — self-hosted platform for building and deploying stateful, multi-actor AI agents with LangChain.
+dependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  [LangGraph Cloud](https://github.com/langchain-ai/langgraph) is a self-hosted platform for building and deploying stateful, multi-actor AI agents. It provides the LangGraph API server, Studio (debugger UI), and bundled PostgreSQL, Redis, and optional MongoDB for checkpointing.
+
+  ## What gets installed
+
+  - **API Server** — LangGraph API on port 8000 (LoadBalancer by default)
+  - **Studio** — LangGraph Debugger UI on port 3968 (LoadBalancer by default)
+  - **PostgreSQL** — Bundled pgvector database for persistence
+  - **Redis** — Bundled Redis for caching and queues
+  - **MongoDB** (optional) — Enable for checkpointing; disabled by default
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | API | `http://langgraph-api-server.langgraph.svc.cluster.local:8000` |
+  | Studio (Debugger UI) | `http://langgraph-studio.langgraph.svc.cluster.local:3968` |
+
+  ## How to use it
+
+  Use the Launch button to open the LangGraph Studio (debugger UI), or connect to the API from in-cluster workloads. You must provide a custom LangGraph API image built with `langgraph-cli` for production; the chart defaults use the public LangChain images. See [LangGraph Platform docs](https://docs.langchain.com/langgraph-platform/deploy-standalone-server) for deployment details.
+
+  ## Dependencies
+
+  None.
+
+  ## Prerequisites
+
+  - Kubernetes 1.27+
+  - At least 1 vCPU and 4GB memory available
+  - Dynamic PV provisioner or existing Persistent Volumes
+  - Optional: LangGraph Cloud license key, LangSmith API key for production deployments
+
+  ## Resources
+
+  - [LangGraph Platform docs](https://docs.langchain.com/langgraph-platform/deploy-standalone-server)
+  - [Deploying LangSmith & LangGraph on Kubernetes](https://kb.langchain.com/articles/3969485352-deploying-langsmith-langgraph-on-kubernetes-a-practical-q-a)
+  - [Helm chart](https://github.com/langchain-ai/helm/tree/main/charts/langgraph-cloud)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://docs.langchain.com/langgraph-platform/deploy-standalone-server
+type: custom
+---
+

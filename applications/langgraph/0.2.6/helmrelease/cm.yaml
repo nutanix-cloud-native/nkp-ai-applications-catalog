@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    fullnameOverride: "langgraph"
+    # Expose Studio (debugger UI) via LoadBalancer so postinstall job can set dashboardLink.
+    apiServer:
+      service:
+        type: LoadBalancer
+    studio:
+      enabled: true
+      service:
+        type: LoadBalancer
+    postgres:
+      persistence:
+        enabled: true
+        size: 8Gi
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-0.2.6-defaults
+  namespace: ${releaseNamespace}
+---
+
