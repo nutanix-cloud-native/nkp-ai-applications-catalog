@@ -1,0 +1,13 @@
+# Source for check-versions: Local chart (no upstream Helm repo)
+# Chart is packaged from charts/crewai/ and pushed to OCI
+helmrepo: ""
+helmrepoUrl: ""
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (CrewAI framework is MIT)
+license: MIT
+licenseUrl: https://github.com/crewAIInc/crewAI/blob/master/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, reproduction, distribution, modification permitted. Retain copyright notice.
+  See licenseUrl for full terms.

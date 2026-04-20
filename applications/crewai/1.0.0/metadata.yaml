@@ -1,0 +1,57 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: CrewAI
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: CrewAI runtime environment for orchestrating role-playing autonomous AI agents. Deploy a CrewAI container to run crews and agents in-cluster.
+dependencies: []
+requiredDependencies: []
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzM3NDc0RiIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Q0E8L3RleHQ+PC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  [CrewAI](https://github.com/crewAIInc/crewAI) is an open-source framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewAI empowers agents to work together seamlessly, tackling complex tasks.
+
+  ## What gets installed
+
+  - CrewAI runtime Deployment in the `crewai` namespace
+  - Service for in-cluster DNS (`crewai.crewai.svc.cluster.local`)
+  - Optional persistent volume for crew projects and output
+
+  The deployment uses the community [sageil/crewai](https://hub.docker.com/r/sageil/crewai) Docker image (multi-arch: amd64, arm64) with CrewAI CLI and dependencies pre-installed.
+
+  ## How to use it
+
+  The pod runs a long-lived process. Use `kubectl exec` to run CrewAI commands:
+
+  ```bash
+  kubectl exec -it deployment/crewai -n crewai -- bash
+  # Inside the container:
+  crewai create crew my_crew
+  crewai run
+  ```
+
+  Configure your LLM provider (e.g. Ollama, OpenAI) via environment variables or a `.env` file. Connect to in-cluster Ollama at `http://ollama.ollama.svc.cluster.local:11434` if Ollama is deployed in the same cluster.
+
+  ## Dependencies
+
+  None required. For LLM inference, deploy Ollama or configure an external API (OpenAI, etc.).
+
+  ## Prerequisites
+
+  Kubernetes 1.26+. Recommended: 2 CPU, 4Gi memory per replica.
+
+  ## Resources
+
+  - [CrewAI Documentation](https://docs.crewai.com)
+  - [CrewAI GitHub](https://github.com/crewAIInc/crewAI)
+  - [CrewAI Quickstart](https://docs.crewai.com/en/quickstart)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://docs.crewai.com
+type: custom
+---

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: crewai
+description: CrewAI runtime environment for orchestrating autonomous AI agents
+type: application
+version: 1.0.0
+appVersion: "1.10.0"
+keywords:
+  - crewai
+  - ai
+  - agents
+  - llm
+home: https://github.com/crewAIInc/crewAI
+sources:
+  - https://github.com/crewAIInc/crewAI
+maintainers:
+  - name: Nutanix Cloud Native
+    url: https://github.com/nutanix-cloud-native
