@@ -19,4 +19,4 @@ overview: |-
   ## More Information
   - [AMD Network Operator - Kubernetes (Helm)](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm.html)
   - [AMD Network Operator - GitHub](https://github.com/ROCm/network-operator)
-icon: ""
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMzAwIDMwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxNiIgZmlsbD0iI0VEMUMyNCIvPjxnIGZpbGw9IndoaXRlIj48cmVjdCB4PSI3MCIgeT0iODAiIHdpZHRoPSIxNjAiIGhlaWdodD0iMTQwIiByeD0iOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI2Ii8+PHJlY3QgeD0iOTAiIHk9IjEwMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiByeD0iNCIvPjxyZWN0IHg9IjE3MCIgeT0iMTAwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHJ4PSI0Ii8+PHJlY3QgeD0iOTAiIHk9IjE1MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI1MCIgcng9IjQiLz48L2c+PC9zdmc+
