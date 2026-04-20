@@ -1,6 +1,6 @@
 # Validate each application artifact w.r.t the .bloodhound.yml config.
 # When CHART_REGISTRY is set, replaces chart URLs in a temp copy before validating (for testing).
-# 
+#
 # NOTE: Validation pulls OCI charts from ghcr.io/nutanix-cloud-native/charts and requires authentication.
 #       Login first: docker login ghcr.io  OR  helm registry login ghcr.io
 validate: nkp-cli

@@ -36,7 +36,7 @@ TARBALL="${CHART}-${VERSION}.tgz"
 if [ ! -f "$TARBALL" ]; then
   # Find any .tgz file with the version in the name
   TARBALL="$(find . -maxdepth 1 -name '*'"${VERSION}"'.tgz' 2>/dev/null | head -1)"
-  TARBALL="${TARBALL#./}"  # Remove leading ./
+  TARBALL="${TARBALL#./}" # Remove leading ./
 fi
 if [ -z "$TARBALL" ] || [ ! -f "$TARBALL" ]; then
   echo "ERROR: Expected tarball ${CHART}-${VERSION}.tgz (or *${VERSION}.tgz) not found"
