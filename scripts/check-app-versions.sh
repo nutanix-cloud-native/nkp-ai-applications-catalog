@@ -138,8 +138,8 @@ helm_repo_latest() {
     echo ""
     return 1
   fi
-  local app_ver
-  app_ver=$(echo "$table" | awk -v cv="$chart_ver" '$2==cv {print $3; exit}')
+  local app_ver=""
+  app_ver=$(helm show chart "$repo_name/$chart_name" --version "$chart_ver" 2>/dev/null | grep -E '^appVersion:' | sed 's/appVersion:[[:space:]]*//;s/[[:space:]]*$//' || true)
   echo "${chart_ver}|${app_ver:-}"
 }
 
@@ -223,11 +223,12 @@ github_release_app_version() {
 
 # Get app version for a specific chart version from Helm repo
 # Args: repo_name chart_name repo_url chart_version
+# Output: appVersion from Chart.yaml, or empty (displayed as -) when absent
 get_helm_catalog_app_version() {
   local repo_name="$1" chart_name="$2" repo_url="$3" chart_ver="$4"
   helm repo add "$repo_name" "$repo_url" &>/dev/null || true
   helm repo update "$repo_name" &>/dev/null || true
-  helm search repo "$repo_name/$chart_name" --version "$chart_ver" 2>/dev/null | tail -n +2 | awk -v cv="$chart_ver" '$2==cv {print $3; exit}'
+  helm show chart "$repo_name/$chart_name" --version "$chart_ver" 2>/dev/null | grep -E '^appVersion:' | sed 's/appVersion:[[:space:]]*//;s/[[:space:]]*$//' || true
 }
 
 # Get app version for a specific chart version from OCI (helm show chart, then GitHub fallback)

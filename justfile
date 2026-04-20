@@ -26,6 +26,23 @@ add-app app repo-name repo-url chart version oci-registry:
     just push-helm-to-oci {{ app }} {{ repo-name }} {{ repo-url }} {{ chart }} {{ version }} {{ oci-registry }}
     just generate-app {{ app }} {{ version }}
 
+# ---------- Project TODO ----------
+
+# View PROJECT_TODO.md
+todo:
+    ./scripts/todo.sh view
+
+# List tasks (alias for todo)
+todo-list: todo
+
+# Add a new task. Usage: just todo-add "task description"
+todo-add task:
+    ./scripts/todo.sh add '{{ task }}'
+
+# Mark a task complete by pattern. Usage: just todo-complete agentgateway
+todo-complete pattern:
+    ./scripts/todo.sh complete '{{ pattern }}'
+
 # ---------- Checks ----------
 
 # Run pre-commit hooks and gitlint
@@ -108,6 +125,10 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push kuberay chart to OCI
+push-kuberay version="1.5.1" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci kuberay kuberay https://ray-project.github.io/kuberay-helm/ kuberay-operator {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +158,10 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push kuberay chart and generate scaffold in one step
+add-kuberay version="1.5.1" oci-registry=OCI_REGISTRY:
+    just add-app kuberay kuberay https://ray-project.github.io/kuberay-helm/ kuberay-operator {{version}} {{oci-registry}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 

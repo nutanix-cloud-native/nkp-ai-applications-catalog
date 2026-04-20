@@ -1,0 +1,42 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+  - ai-ml
+description: KubeRay Operator deploys and manages Ray clusters on Kubernetes. Ray is a framework for building and running distributed Python applications for ML training, hyperparameter tuning, and model serving.
+displayName: KubeRay Operator
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzM3NDc0RiIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+S1I8L3RleHQ+PC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |-
+  ## Overview
+  KubeRay Operator is the Kubernetes operator for [Ray](https://docs.ray.io/), an open source framework for building and scaling distributed Python applications. It manages RayCluster, RayJob, and RayService custom resources on Kubernetes.
+
+  ## What gets installed
+  - RayCluster, RayJob, RayService CRDs
+  - KubeRay operator controller in the `kuberay` namespace
+
+  ## How to use it
+  Create a RayCluster manifest and apply it with `kubectl apply`. Use RayJob for batch jobs or RayService for long-running Ray Serve apps. Connect to the Ray head from in-cluster workloads via `ray://<head-svc>.<namespace>.svc.cluster.local:10001`. See [RayCluster Quickstart](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/raycluster-quickstart.html).
+
+  ## Key capabilities
+  - **RayCluster** — Deploy Ray clusters with head and worker nodes; supports autoscaling.
+  - **RayJob** — Run batch Ray jobs that complete and exit.
+  - **RayService** — Deploy long-running Ray Serve applications with zero-downtime upgrades.
+
+  ## Dependencies
+  None.
+
+  ## Prerequisites
+  Kubernetes 1.26+. GPU optional for Ray workloads.
+
+  ## Resources
+  - [KubeRay Operator Installation](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/kuberay-operator-installation.html)
+  - [RayCluster Quickstart](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/raycluster-quickstart.html)
+  - [Ray Documentation](https://docs.ray.io/)
+scope:
+  - workspace
+supportLink: https://docs.ray.io/en/latest/cluster/kubernetes/
+type: custom
+---

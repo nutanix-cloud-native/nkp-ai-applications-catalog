@@ -274,6 +274,7 @@ These apps demonstrate catalog composability and dependency flow. See [docs/demo
 |-------------|---------|-------|-------------|
 | agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
 | kagent | 0.7.13 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
+| kuberay | 1.5.1 | `oci://ghcr.io/nutanix-cloud-native/charts/kuberay-operator` | KubeRay Operator for deploying and managing Ray clusters on Kubernetes (Ray Data, Train, Tune, Serve) |
 | vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
 | flowise | 6.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` | Drag-and-drop UI to build customized LLM flows with LangChain |
 
@@ -285,6 +286,10 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 
 | Recipe | Description |
 |--------|-------------|
+| `just todo` | View PROJECT_TODO.md (persistent project TODO list) |
+| `just todo-list` | Same as `just todo` |
+| `just todo-add "task"` | Append a new task to PROJECT_TODO.md |
+| `just todo-complete <pattern>` | Mark a task complete (e.g. `agentgateway`) |
 | `just check` | Quick check: run pre-commit hooks only |
 | `just check-all` | Full check: pre-commit + catalog validation (ready to push) |
 | `just check-versions [--json] [--app NAME]` | Check if catalog apps have newer versions at source (requires helm, crane for OCI) |
@@ -301,6 +306,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-flowise [version]` | Shortcut for flowise (default: `6.0.0`) |
 | `just push-jupyterhub [version]` | Shortcut for jupyterhub (default: `4.3.2`) |
 | `just push-milvus-operator [version]` | Shortcut for milvus-operator (default: `1.3.6`) |
+| `just push-kuberay [version]` | Shortcut for kuberay (default: `1.5.1`) |
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
@@ -313,6 +319,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 
 | Script | Description |
 |--------|-------------|
+| `scripts/todo.sh` | Manage PROJECT_TODO.md (view, list, add "task") |
 | `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
 | `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI + generate `.catalog-source.yaml` |
 | `scripts/check-app-versions.sh` | Check if catalog apps have newer versions at Helm repo or OCI source |
