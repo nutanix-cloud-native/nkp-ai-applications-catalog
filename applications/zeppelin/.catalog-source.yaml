@@ -1,0 +1,12 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+helmrepo: duyet/zeppelin
+helmrepoUrl: https://duyet.github.io/charts
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (from https://github.com/apache/zeppelin/blob/master/LICENSE)
+license: Apache-2.0
+licenseUrl: https://github.com/apache/zeppelin/blob/master/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, reproduction, distribution, modification, and sublicensing permitted.
+  Must retain copyright and license notices. See licenseUrl for full terms.

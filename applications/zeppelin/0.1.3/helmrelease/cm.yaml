@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    fullnameOverride: "zeppelin"
+    # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
+    service:
+      type: LoadBalancer
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

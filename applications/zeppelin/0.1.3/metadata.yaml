@@ -1,0 +1,46 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+  - ai-ml
+description: Apache Zeppelin is a web-based notebook for interactive data analytics and collaborative documents with SQL, Scala, Python, and more.
+displayName: Apache Zeppelin
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzM3NDc0RiIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+QVo8L3RleHQ+PC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  Apache Zeppelin is a web-based notebook that enables interactive data analytics and collaborative documents. It supports multiple interpreters including Spark, SQL, Python, Scala, and more. Use it for data exploration, visualization, and building data pipelines.
+
+  ## What gets installed
+
+  - Zeppelin server deployment in the `zeppelin` namespace
+  - Web UI on port 80 (mapped from container port 8080)
+  - Configurable Spark on Kubernetes integration
+
+  ## How to use it
+
+  - Use the **Launch** button from the NKP Application Dashboards tab to open the Zeppelin UI
+  - Or connect in-cluster via `http://zeppelin.zeppelin.svc.cluster.local:80`
+
+  ## Dependencies
+
+  None.
+
+  ## Prerequisites
+
+  Kubernetes 1.26+. For Spark workloads, configure interpreters with adequate resources (minimum 4 CPUs, 6GB memory recommended).
+
+  ## Resources
+
+  - [Apache Zeppelin Documentation](https://zeppelin.apache.org/docs/latest/)
+  - [Zeppelin on Kubernetes](https://zeppelin.apache.org/docs/latest/quickstart/kubernetes.html)
+  - [Helm chart source](https://github.com/duyet/charts/tree/master/zeppelin)
+scope:
+  - workspace
+  - project
+supportLink: https://zeppelin.apache.org/docs/latest/
+type: custom
+---

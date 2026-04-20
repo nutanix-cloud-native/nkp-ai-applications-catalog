@@ -108,6 +108,10 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push zeppelin chart to OCI
+push-zeppelin version="0.1.3" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci zeppelin duyet https://duyet.github.io/charts zeppelin {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +141,10 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push zeppelin chart and generate scaffold in one step
+add-zeppelin version="0.1.3" oci-registry=OCI_REGISTRY:
+    just add-app zeppelin duyet https://duyet.github.io/charts zeppelin {{version}} {{oci-registry}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 
