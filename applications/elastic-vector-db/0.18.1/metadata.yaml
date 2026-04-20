@@ -1,0 +1,51 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Elastic Vector DB
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+  - database
+description: Elasticsearch as a vector database for semantic search, RAG, and AI applications, deployed via ECK (Elastic Cloud on Kubernetes).
+dependencies: []
+requiredDependencies: []
+icon: PHN2ZyB2aWV3Qm94PSIwIDAgNDggNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzAwQkI5MSIvPjx0ZXh0IHg9IjI0IiB5PSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+RVY8L3RleHQ+PC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  ## Overview
+
+  Elasticsearch serves as a vector database with native support for dense vector search, combining full-text search, structured queries, and k-NN similarity search. Deployed via ECK (Elastic Cloud on Kubernetes), it provides a scalable, production-ready vector store for RAG, semantic search, and AI applications.
+
+  ## What gets installed
+
+  - **ECK Operator** — In `elastic-system` namespace; manages Elasticsearch and Kibana lifecycle
+  - **Elasticsearch** — Vector-capable search engine in `elastic-vector-db` namespace
+  - **Kibana** — Optional UI for management and visualization (can be disabled via values)
+
+  | Endpoint | In-cluster URL |
+  |----------|----------------|
+  | Elasticsearch HTTP | `https://<release>-es-http.elastic-vector-db.svc.cluster.local:9200` |
+  | Kibana (if enabled) | `http://<release>-kb-http.elastic-vector-db.svc.cluster.local:5601` |
+
+  ## How to use it
+
+  Create indices with `dense_vector` or `knn_vector` fields for vector search. Use the Elasticsearch API or Kibana to ingest and query vectors. Connect from in-cluster workloads via the URLs above. See [Elasticsearch vector search](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) and [ECK docs](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html).
+
+  ## Dependencies
+
+  None.
+
+  ## Prerequisites
+
+  Kubernetes 1.21+. StorageClass for persistent volumes. For production, configure resource requests/limits and storage size in Helm values.
+
+  ## Resources
+
+  - [ECK Documentation](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html)
+  - [Elasticsearch Vector Search](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
+  - [ECK Stack Helm Chart](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-stack-helm-chart.html)
+scope:
+  - workspace
+supportLink: https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html
+type: custom
+---

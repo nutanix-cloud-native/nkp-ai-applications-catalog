@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    eck-elasticsearch:
+      enabled: true
+      fullnameOverride: elasticsearch
+      version: 8.17.0
+      nodeSets:
+        - name: default
+          count: 1
+          config:
+            node.store.allow_mmap: false
+          podTemplate:
+            spec:
+              containers:
+                - name: elasticsearch
+                  resources:
+                    requests:
+                      memory: 2Gi
+                      cpu: "1"
+                    limits:
+                      memory: 2Gi
+                      cpu: "1"
+          volumeClaimTemplates:
+            - metadata:
+                name: elasticsearch-data
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 30Gi
+    eck-kibana:
+      enabled: true
+      elasticsearchRef:
+        name: elasticsearch
+        namespace: elastic-vector-db
+      version: 8.17.0
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

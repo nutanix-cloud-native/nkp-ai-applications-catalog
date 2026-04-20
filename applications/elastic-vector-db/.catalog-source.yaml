@@ -1,0 +1,15 @@
+# Source for check-versions: Helm repo (pulled and pushed to OCI during add-app)
+# Primary chart: eck-stack (Elasticsearch + Kibana). Also pushes eck-operator.
+helmrepo: elastic/eck-stack
+helmrepoUrl: https://helm.elastic.co
+ocipush: oci://ghcr.io/nutanix-cloud-native/charts
+
+# Upstream product license (Elastic License 2.0 - ECK/Elasticsearch)
+# https://github.com/elastic/cloud-on-k8s/blob/main/LICENSE
+license: Elastic-2.0
+licenseUrl: https://github.com/elastic/cloud-on-k8s/blob/main/LICENSE
+redistributionAllowed: true
+redistributionNotes: |
+  Use, modification, and redistribution permitted.
+  Must retain licensing and copyright notices. Cannot provide as managed/hosted service to third parties.
+  See licenseUrl for full terms.

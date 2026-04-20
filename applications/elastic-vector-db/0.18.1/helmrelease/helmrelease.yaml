@@ -1,0 +1,38 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: "0.18.1"
+  url: oci://ghcr.io/nutanix-cloud-native/charts/eck-stack
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${releaseName}-eck-stack
+  namespace: ${releaseNamespace}
+spec:
+  dependsOn:
+    - name: ${releaseName}-eck-operator
+      namespace: ${releaseNamespace}
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  install:
+    crds: Skip
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  targetNamespace: elastic-vector-db
+  upgrade:
+    remediation:
+      retries: 30
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-defaults
+---
