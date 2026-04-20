@@ -12,6 +12,8 @@ licensing:
   - Ultimate
 certifications:
   - qualified
+requiredDependencies:
+  - cert-manager
 overview: |-
   # Overview
   The AMD Network Operator automates NIC discovery and driver management for AMD AI NICs (e.g. AMD Pensando Pollara), with RDMA/RoCE support, Prometheus metrics, and dynamic resource allocation. It can be installed alongside the AMD GPU Operator on the same cluster.

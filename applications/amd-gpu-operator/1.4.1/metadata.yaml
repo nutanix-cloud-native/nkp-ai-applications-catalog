@@ -12,6 +12,8 @@ licensing:
   - Ultimate
 certifications:
   - qualified
+requiredDependencies:
+  - cert-manager
 overview: |-
   # Overview
   The AMD GPU Operator uses the operator framework within Kubernetes to automate the management of AMD software components needed to provision GPUs.
