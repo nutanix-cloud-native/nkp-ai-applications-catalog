@@ -6,6 +6,38 @@ This repository serves as the catalog for AI applications available on the **Nut
 
 This project uses [Devbox](https://www.jetify.com/devbox) to provide a reproducible development environment with all required tools. Alternatively, install the tools manually.
 
+### OCI Registry Authentication (Optional)
+
+If you need to push Helm charts to `ghcr.io/nutanix-cloud-native/charts`, you have two options:
+
+**Option 1: Use environment variables (recommended)**
+```bash
+export GITHUB_USERNAME=your-github-username
+export GITHUB_TOKEN=ghp_your_github_token_here
+
+# Then login works automatically
+just login
+```
+
+**Option 2: Create a `.env.local` file**
+```bash
+# Copy the example file
+cp .env.local.example .env.local
+
+# Edit .env.local and add your credentials
+# GHCR_USERNAME=your-github-username
+# GHCR_PASSWORD=ghp_your_github_token_here
+
+just login
+```
+
+To create a GitHub token:
+1. Go to [GitHub Settings → Tokens](https://github.com/settings/tokens)
+2. Generate a new token (classic) with `read:packages` and `write:packages` scopes
+3. Copy the token to use as `GITHUB_TOKEN` or `GHCR_PASSWORD`
+
+**Note:** For validation only, you can use `docker login ghcr.io` or `helm registry login ghcr.io` directly with your GitHub credentials instead of setting up environment variables.
+
 ### Quick Start with Devbox
 
 ```bash
