@@ -108,6 +108,18 @@ push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
 
+# Shortcut: push amd-gpu-operator chart to OCI
+push-amd-gpu-operator version="1.4.1" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci amd-gpu-operator rocm https://rocm.github.io/gpu-operator gpu-operator-charts {{version}} {{oci-registry}}
+
+# Shortcut: push amd-network-operator chart to OCI
+push-amd-network-operator version="1.0.0" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci amd-network-operator rocm-network https://rocm.github.io/network-operator network-operator-charts {{version}} {{oci-registry}}
+
+# Shortcut: push amd-device-metrics-exporter chart to OCI
+push-amd-device-metrics-exporter version="1.4.2" oci-registry=OCI_REGISTRY:
+    just push-helm-to-oci amd-device-metrics-exporter rocm-exporter https://rocm.github.io/device-metrics-exporter device-metrics-exporter-charts {{version}} {{oci-registry}}
+
 # ---------- Add App (push + generate) ----------
 
 # Shortcut: push open-webui chart and generate scaffold in one step
@@ -137,6 +149,18 @@ add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
 # Shortcut: push milvus-operator chart and generate scaffold in one step
 add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
     just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
+
+# Shortcut: push amd-gpu-operator chart and generate scaffold in one step
+add-amd-gpu-operator version="1.4.1" oci-registry=OCI_REGISTRY:
+    just add-app amd-gpu-operator rocm https://rocm.github.io/gpu-operator gpu-operator-charts {{version}} {{oci-registry}}
+
+# Shortcut: push amd-network-operator chart and generate scaffold in one step
+add-amd-network-operator version="1.0.0" oci-registry=OCI_REGISTRY:
+    just add-app amd-network-operator rocm-network https://rocm.github.io/network-operator network-operator-charts {{version}} {{oci-registry}}
+
+# Shortcut: push amd-device-metrics-exporter chart and generate scaffold in one step
+add-amd-device-metrics-exporter version="1.4.2" oci-registry=OCI_REGISTRY:
+    just add-app amd-device-metrics-exporter rocm-exporter https://rocm.github.io/device-metrics-exporter device-metrics-exporter-charts {{version}} {{oci-registry}}
 
 # ---------- Kubeflow Kustomize image mirroring ----------
 
