@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - cm.yaml
   - amd-network-operator.yaml
+  - kmm-registry-consumer-reconciler.yaml

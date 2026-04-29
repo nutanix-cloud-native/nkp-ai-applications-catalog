@@ -1,0 +1,46 @@
+schema: "catalog.nkp.nutanix.com/v1/application-metadata"
+displayName: AMD KMM Operator
+description: Shared Kernel Module Management (KMM) operator for AMD GPU and Network operators. Provides standalone KMM, private registry credential plumbing, and node containerd trust configuration.
+category:
+  - general
+type: nkp-core-platform
+allowMultipleInstances: false
+scope:
+  - workspace
+licensing:
+  - Pro
+  - Ultimate
+certifications:
+  - qualified
+requiredDependencies:
+  - cert-manager
+overview: |-
+  # Overview
+  The AMD KMM Operator installs a shared Kernel Module Management (KMM) instance and manages private container registry integration for AMD GPU and Network operators.
+
+  ## Key Features
+  ### Shared KMM Instance
+  Provides a single, pinned KMM deployment shared by both AMD GPU Operator and AMD Network Operator. Consumers disable their embedded KMM subchart.
+
+  ### Private Registry Integration
+  Automatically projects user-provided registry credentials into a docker-registry secret for KMM image push/pull and configures containerd on all nodes to trust the registry CA.
+
+  ### Self-Healing Reconciliation
+  A periodic reconciler keeps registry plumbing in sync with user-provided credentials, making install order irrelevant.
+
+  ## Prerequisites
+  If using a private registry, create the credentials secret before installing:
+  ```
+  kubectl create secret generic kmm-registry-credentials \
+    --namespace=<workspace-namespace> \
+    --from-literal=registry-url=registry.example.com:5000 \
+    --from-literal=username=admin \
+    --from-literal=password=<password> \
+    --from-file=ca.crt=/path/to/ca.crt
+  ```
+
+  ## More Information
+  - [AMD GPU Operator](https://github.com/ROCm/gpu-operator)
+  - [AMD Network Operator](https://github.com/ROCm/network-operator)
+  - [Kernel Module Management](https://github.com/rh-ecosystem-edge/kernel-module-management)
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMzAwIDMwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIHJ4PSIxNiIgZmlsbD0iI0VEMUMyNCIvPjxnIGZpbGw9IndoaXRlIj48cmVjdCB4PSI3MCIgeT0iODAiIHdpZHRoPSIxNjAiIGhlaWdodD0iMTQwIiByeD0iOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI2Ii8+PHJlY3QgeD0iOTAiIHk9IjEwMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiByeD0iNCIvPjxyZWN0IHg9IjE3MCIgeT0iMTAwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHJ4PSI0Ii8+PHJlY3QgeD0iOTAiIHk9IjE1MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI1MCIgcng9IjQiLz48L2c+PC9zdmc+

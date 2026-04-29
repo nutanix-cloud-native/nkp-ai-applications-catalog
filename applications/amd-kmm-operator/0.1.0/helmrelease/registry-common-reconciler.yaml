@@ -1,0 +1,130 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kmm-registry-reconciler
+  namespace: ${releaseNamespace}
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: kmm-registry-reconciler
+          restartPolicy: Never
+          containers:
+          - name: reconciler
+            image: bitnami/kubectl:latest
+            command: ["/bin/sh", "-e", "-c"]
+            args:
+            - |
+              CREDENTIALS_SECRET="kmm-registry-credentials"
+              DOCKERCONFIG_SECRET="kmm-registry-dockerconfig"
+              DAEMONSET_NAME="kmm-registry-node-config"
+              NAMESPACE="${releaseNamespace}"
+
+              # 1. Read credentials secret; exit gracefully if absent
+              if ! kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" > /dev/null 2>&1; then
+                echo "INFO: Secret $CREDENTIALS_SECRET not found in $NAMESPACE. Registry plumbing will not be created."
+                exit 0
+              fi
+
+              REGISTRY_URL=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.registry-url}' | base64 -d)
+              REGISTRY_USER=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.username}' | base64 -d)
+              REGISTRY_PASS=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.password}' | base64 -d)
+              HAS_CA=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}' 2>/dev/null || true)
+
+              if [ -z "$REGISTRY_URL" ] || [ -z "$REGISTRY_USER" ] || [ -z "$REGISTRY_PASS" ]; then
+                echo "ERROR: registry-url, username, or password is empty in $CREDENTIALS_SECRET"
+                exit 1
+              fi
+
+              # 2. Create/update dockerconfig secret
+              kubectl create secret docker-registry "$DOCKERCONFIG_SECRET" \
+                --docker-server="$REGISTRY_URL" \
+                --docker-username="$REGISTRY_USER" \
+                --docker-password="$REGISTRY_PASS" \
+                --namespace="$NAMESPACE" \
+                --dry-run=client -o yaml | kubectl apply -f -
+              echo "INFO: Secret $DOCKERCONFIG_SECRET reconciled."
+
+              # 3. Build and apply node DaemonSet
+              if [ -n "$HAS_CA" ]; then
+                CA_CERT=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}')
+                CA_LINE="        ca = \"/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt\""
+                CA_WRITE_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/\$REGISTRY_URL/ca.crt"
+              else
+                CA_LINE=""
+                CA_WRITE_CMD=""
+              fi
+
+              cat <<DSEOF | kubectl apply -f -
+              apiVersion: apps/v1
+              kind: DaemonSet
+              metadata:
+                name: $DAEMONSET_NAME
+                namespace: $NAMESPACE
+              spec:
+                selector:
+                  matchLabels:
+                    app: kmm-registry-node-config
+                template:
+                  metadata:
+                    labels:
+                      app: kmm-registry-node-config
+                  spec:
+                    hostPID: false
+                    hostNetwork: false
+                    containers:
+                    - name: configure
+                      image: alpine:3.20
+                      command: ["/bin/sh", "-c"]
+                      args:
+                      - |
+                        set -e
+                        REGISTRY_URL="$REGISTRY_URL"
+                        DIR="/host/etc/containerd/certs.d/\$REGISTRY_URL"
+                        mkdir -p "\$DIR"
+
+                        cat > "\$DIR/hosts.toml" <<TOMLEOF
+              server = "https://\$REGISTRY_URL"
+
+              [host."https://\$REGISTRY_URL"]
+                capabilities = ["pull", "resolve"]
+              $CA_LINE
+              TOMLEOF
+                        $CA_WRITE_CMD
+                        echo "INFO: containerd certs.d configured for \$REGISTRY_URL"
+                        # Sleep to keep pod running; cleanup runs via preStop
+                        trap "rm -rf \$DIR; echo 'INFO: cleaned up \$DIR'" TERM INT
+                        while true; do sleep 3600 & wait; done
+                      env:
+                      - name: CA_CERT
+                        valueFrom:
+                          secretKeyRef:
+                            name: $CREDENTIALS_SECRET
+                            key: ca.crt
+                            optional: true
+                      volumeMounts:
+                      - name: containerd-certs
+                        mountPath: /host/etc/containerd/certs.d
+                      lifecycle:
+                        preStop:
+                          exec:
+                            command:
+                            - /bin/sh
+                            - -c
+                            - "rm -rf /host/etc/containerd/certs.d/$REGISTRY_URL; echo 'INFO: cleaned up certs.d/$REGISTRY_URL'"
+                    volumes:
+                    - name: containerd-certs
+                      hostPath:
+                        path: /etc/containerd/certs.d
+                        type: DirectoryOrCreate
+                    tolerations:
+                    - operator: Exists
+              DSEOF
+              echo "INFO: DaemonSet $DAEMONSET_NAME reconciled."

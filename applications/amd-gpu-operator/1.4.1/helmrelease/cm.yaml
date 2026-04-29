@@ -8,6 +8,20 @@ data:
     # Default values for AMD GPU Operator (rocm/gpu-operator-charts).
     # See https://github.com/ROCm/gpu-operator for full options.
     # targetNamespace is set via HelmRelease targetNamespace (releaseNamespace).
+    # KMM is provided by the shared amd-kmm-operator component.
+    kmm:
+      enabled: false
+    # NFD is provided by the Kommander platform layer.
+    node-feature-discovery:
+      enabled: false
     crds:
       defaultCR:
         install: true
+    # Override deviceConfig to point at the private registry.
+    # Users must update spec.driver.image to their actual registry path.
+    deviceConfig:
+      spec:
+        driver:
+          image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          imageRegistrySecret:
+            name: "kmm-registry-dockerconfig"

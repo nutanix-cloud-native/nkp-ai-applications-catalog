@@ -1,54 +1,40 @@
 # AMD Network Operator
 
-This application deploys the **AMD Network Operator** on Kubernetes via Flux (HelmRepository + HelmRelease), using the official ROCm Helm chart.
+NKP catalog component for the [AMD Network Operator](https://github.com/ROCm/network-operator).
 
-## Overview
+## Dependencies
 
-The AMD Network Operator simplifies deployment and management of **AMD AI NICs (AINICs)** in Kubernetes:
+This component requires `amd-kmm-operator` to be installed first. The dependency is enforced via both `metadata.yaml` (`requiredDependencies`) and Flux `HelmRelease.spec.dependsOn`.
 
-- **Node Feature Discovery (NFD)** – Detects AMD NIC hardware and labels nodes (e.g. `feature.node.kubernetes.io/amd-nic=true`).
-- **Kernel Module Management (KMM)** – Driver and firmware lifecycle for AMD NICs.
-- **Multus** – Optional multi-network support.
-- **NIC device plugin / resources** – Exposes AMD NIC resources (e.g. `amd.com/nic`, `amd.com/vnic`) for workloads.
-- **Metrics** – Prometheus-compatible metrics for NIC health and utilization.
+## Default Configuration
 
-It is designed to work alongside the **AMD GPU Operator** for high-performance networking in AI/ML and HPC clusters.
+The following subcharts are **disabled** by default because they are provided by other NKP components:
 
-## Documentation
+| Subchart | Disabled | Provided By |
+|---|---|---|
+| `kmm` | `kmm.enabled: false` | `amd-kmm-operator` |
+| `node-feature-discovery` | `node-feature-discovery.enabled: false` | Kommander |
 
-| Resource | Link |
-|----------|------|
-| **Installation (Helm)** | [Kubernetes (Helm) — Network Operator](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm.html) |
-| **NetworkConfig CRD** | [Custom Resource Installation / NetworkConfig](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/networkconfig.html) |
-| **Helm chart parameters** | [Helm Chart Customization Parameters](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm.html#helm-chart-customization-parameters) (and `helm show values rocm-network/network-operator-charts`) |
-| **Workload example** | [Test a Workload Deployment](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/workload.html) |
-| **Troubleshooting** | [Troubleshooting](https://instinct.docs.amd.com/projects/network-operator/en/main/troubleshooting.html) |
-| **Uninstall** | [Uninstallation](https://instinct.docs.amd.com/projects/network-operator/en/main/uninstallation/uninstallation.html) |
-| **GitHub** | [ROCm/network-operator](https://github.com/ROCm/network-operator) |
+## Private Registry Setup
 
-## Prerequisites
+The Network Operator does **not** template a default `NetworkConfig` CR from Helm values. Users must manually create `NetworkConfig` CRs with private registry settings:
 
-- Kubernetes cluster **v1.29.0 or later**
-- Helm **v3.2.0 or later** (for catalog/Flux tooling)
-- **cert-manager** installed (required for TLS)
-- Worker nodes with **AMD NICs** (e.g. AMD Pensando Pollara AI NIC)
-- CNI and system pods healthy
+```yaml
+apiVersion: networking.amd.com/v1alpha1
+kind: NetworkConfig
+metadata:
+  name: my-network-config
+  namespace: <workspace-namespace>
+spec:
+  driver:
+    image: "registry.example.com:5000/drivers/amd-network-kmod"
+    imageRegistrySecret:
+      name: "kmm-registry-dockerconfig"
+    # imageRegistryTLS:
+    #   insecure: false
+    #   insecureSkipTLSVerify: false
+```
 
-## How This App Deploys It
+## ServiceAccount Reconciler
 
-- **Helm repository:** `https://rocm.github.io/network-operator`
-- **Chart:** `network-operator-charts`
-- **Version:** `v1.0.0`
-- **Release name:** `amd-network-operator`
-- **Target namespace:** Workspace release namespace (`releaseNamespace`)
-
-After the operator is installed, create a **NetworkConfig** custom resource in the operator namespace so the operator can manage NICs (driver install, device plugin, etc.). See the [NetworkConfig guide](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/networkconfig.html) for examples.
-
-## Configuration
-
-- Override defaults via the app’s ConfigMap or your platform’s override mechanism.
-- Common options: `node-feature-discovery.enabled`, `kmm.enabled`, `multus.enabled`, `installdefaultNFDRule`, and controller resource limits (see [Resource Configuration](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm.html#resource-configuration)).
-
-## Installing With AMD GPU Operator
-
-If both AMD GPU Operator and AMD Network Operator run on the same cluster, use AMD’s combined installation guide to align NFD/KMM and avoid conflicts: [Installation of GPU Operator and Network Operator together](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm-operators.html).
+A CronJob (`amd-network-operator-sa-reconciler`) runs every 5 minutes and ensures the `kmm-registry-dockerconfig` imagePullSecret is present on the `amd-network-operator-kmm-module-loader` ServiceAccount. This is additive — existing imagePullSecrets are preserved.

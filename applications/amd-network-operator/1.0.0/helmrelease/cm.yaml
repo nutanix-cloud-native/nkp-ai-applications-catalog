@@ -7,3 +7,9 @@ data:
   values.yaml: |
     # Default values for AMD Network Operator (rocm-network/network-operator-charts).
     # See https://github.com/ROCm/network-operator for full options.
+    # KMM is provided by the shared amd-kmm-operator component.
+    kmm:
+      enabled: false
+    # NFD is provided by the Kommander platform layer.
+    node-feature-discovery:
+      enabled: false

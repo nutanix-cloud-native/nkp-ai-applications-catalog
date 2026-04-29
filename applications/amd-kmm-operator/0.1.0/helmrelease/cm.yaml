@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-config-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    # Shared KMM operator values.
+    # Registry credential secret name (user-created prerequisite).
+    registry:
+      credentialsSecretName: "kmm-registry-credentials"
+      dockerconfigSecretName: "kmm-registry-dockerconfig"
+    cleanup:
+      deleteCredentialsSecretWhenUnused: true
+      deleteDockerconfigSecretWhenUnused: true
+    kmm:
+      enabled: true
+      # Pin to the KMM version validated with both AMD operators in this catalog release.
+      # TODO: set to the validated KMM chart version before release.
+      chartVersion: "<pin-me>"
