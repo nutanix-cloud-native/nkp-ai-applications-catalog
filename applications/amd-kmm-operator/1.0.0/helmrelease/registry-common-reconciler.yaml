@@ -94,7 +94,7 @@ spec:
               server = "https://\$REGISTRY_URL"
 
               [host."https://\$REGISTRY_URL"]
-                capabilities = ["pull", "resolve"]
+                capabilities = ["pull", "resolve", "push"]
               $CA_LINE
               TOMLEOF
                         $CA_WRITE_CMD
