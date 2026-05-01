@@ -4,4 +4,5 @@ resources:
   - cm.yaml
   - amd-kmm-operator.yaml
   - registry-common-rbac.yaml
+  - registry-reconciler-config.yaml
   - registry-common-reconciler.yaml

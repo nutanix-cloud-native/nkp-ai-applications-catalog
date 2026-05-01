@@ -7,16 +7,36 @@ data:
   values.yaml: |
     # Default values for AMD GPU Operator (rocm/gpu-operator-charts).
     # See https://github.com/ROCm/gpu-operator for full options.
-    # targetNamespace is set via HelmRelease targetNamespace (releaseNamespace).
     # KMM is provided by the shared amd-kmm-operator component.
     kmm:
       enabled: false
     # NFD is provided by the Kommander platform layer.
+    # IMPORTANT: Kommander's NFD worker must have the following toleration
+    # to discover AMD GPUs on tainted nodes:
+    #   - key: "amd-dcm"
+    #     operator: "Equal"
+    #     value: "up"
+    #     effect: "NoExecute"
     node-feature-discovery:
       enabled: false
     crds:
       defaultCR:
         install: true
+    # GPU operator controller manager
+    controllerManager:
+      manager:
+        image:
+          repository: docker.io/rocm/gpu-operator
+          tag: v1.4.1
+        imagePullPolicy: IfNotPresent
+        imagePullSecrets: "kmm-registry-dockerconfig"
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
     # Override deviceConfig to point at the private registry.
     # Users must update spec.driver.image to their actual registry path.
     deviceConfig:
@@ -25,3 +45,21 @@ data:
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           imageRegistrySecret:
             name: "kmm-registry-dockerconfig"
+          imageRegistryTLS:
+            insecure: false
+            insecureSkipTLSVerify: false
+        commonConfig:
+          initContainerImage: busybox:1.36
+          utilsContainer:
+            image: docker.io/rocm/gpu-operator-utils:v1.4.0
+            imagePullPolicy: IfNotPresent
+        devicePlugin:
+          devicePluginImage: rocm/k8s-device-plugin:1.31.0.9
+          devicePluginImagePullPolicy: IfNotPresent
+          enableNodeLabeller: true
+          nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.9
+          nodeLabellerImagePullPolicy: IfNotPresent
+        metricsExporter:
+          enable: true
+          image: rocm/device-metrics-exporter:v1.4.2
+          imagePullPolicy: IfNotPresent

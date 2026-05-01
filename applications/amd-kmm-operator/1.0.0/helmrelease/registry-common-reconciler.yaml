@@ -19,12 +19,12 @@ spec:
           containers:
           - name: reconciler
             image: bitnami/kubectl:latest
+            envFrom:
+            - secretRef:
+                name: kmm-registry-reconciler-config
             command: ["/bin/sh", "-e", "-c"]
             args:
             - |
-              CREDENTIALS_SECRET="kmm-registry-credentials"
-              DOCKERCONFIG_SECRET="kmm-registry-dockerconfig"
-              DAEMONSET_NAME="kmm-registry-node-config"
               NAMESPACE="${releaseNamespace}"
 
               # 1. Read credentials secret; exit gracefully if absent

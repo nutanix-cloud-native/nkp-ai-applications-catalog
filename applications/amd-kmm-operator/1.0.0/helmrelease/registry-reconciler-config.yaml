@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kmm-registry-reconciler-config
+  namespace: ${releaseNamespace}
+type: Opaque
+stringData:
+  CREDENTIALS_SECRET: "${credentialsSecretName}"
+  DOCKERCONFIG_SECRET: "${dockerconfigSecretName}"
+  DAEMONSET_NAME: "${daemonsetName}"

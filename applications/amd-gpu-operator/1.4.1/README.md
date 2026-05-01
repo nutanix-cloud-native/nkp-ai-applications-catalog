@@ -15,6 +15,20 @@ The following subcharts are **disabled** by default because they are provided by
 | `kmm` | `kmm.enabled: false` | `amd-kmm-operator` |
 | `node-feature-discovery` | `node-feature-discovery.enabled: false` | Kommander |
 
+## NFD Toleration Requirement
+
+Kommander's NFD worker DaemonSet must include the following toleration to discover AMD GPUs on tainted nodes:
+
+```yaml
+tolerations:
+  - key: "amd-dcm"
+    operator: "Equal"
+    value: "up"
+    effect: "NoExecute"
+```
+
+Without this, NFD workers won't run on nodes with the `amd-dcm` taint, and those nodes won't receive AMD GPU feature labels.
+
 ## Private Registry Setup
 
 When using a private registry for built driver images, the default `DeviceConfig` CR must have `spec.driver.image` and `spec.driver.imageRegistrySecret` set:
@@ -30,6 +44,4 @@ deviceConfig:
 
 These values are set in `helmrelease/cm.yaml`. Update `spec.driver.image` to match your registry path before deploying.
 
-## ServiceAccount Reconciler
-
-A CronJob (`amd-gpu-operator-sa-reconciler`) runs every 5 minutes and ensures the `kmm-registry-dockerconfig` imagePullSecret is present on the `amd-gpu-operator-kmm-module-loader` ServiceAccount. This is additive — existing imagePullSecrets are preserved.
+The `imageRegistrySecret` flows from `DeviceConfig` → `Module.spec.imageRepoSecret` → module-loader pod `imagePullSecrets`, so KMM handles pull/push authentication automatically without any ServiceAccount patching.

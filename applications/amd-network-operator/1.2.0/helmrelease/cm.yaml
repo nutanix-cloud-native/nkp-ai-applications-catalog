@@ -11,5 +11,33 @@ data:
     kmm:
       enabled: false
     # NFD is provided by the Kommander platform layer.
+    # IMPORTANT: Kommander's NFD worker must have the following toleration
+    # to discover AMD NICs on tainted nodes:
+    #   - key: "amd-dcm"
+    #     operator: "Equal"
+    #     value: "up"
+    #     effect: "NoExecute"
     node-feature-discovery:
       enabled: false
+    # Multus CNI — disabled; will be provided by NKP v2.18.
+    multus:
+      enabled: false
+      image:
+        repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+        tag: v4.2.2
+        pullPolicy: IfNotPresent
+    # Network operator controller manager
+    controllerManager:
+      manager:
+        image:
+          repository: docker.io/rocm/amd-network-operator
+          tag: v1.2.0
+        imagePullPolicy: IfNotPresent
+        imagePullSecrets: "kmm-registry-dockerconfig"
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
