@@ -18,7 +18,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: reconciler
-            image: bitnami/kubectl:latest
+            image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
             envFrom:
             - secretRef:
                 name: kmm-registry-reconciler-config
@@ -81,7 +81,7 @@ spec:
                     hostNetwork: false
                     containers:
                     - name: configure
-                      image: alpine:3.20
+                      image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
                       command: ["/bin/sh", "-c"]
                       args:
                       - |
