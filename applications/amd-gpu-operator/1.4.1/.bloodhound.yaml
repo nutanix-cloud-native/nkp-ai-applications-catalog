@@ -16,6 +16,7 @@ additional_crds:
   # cert-manager CRDs (required by amd-gpu-operator, amd-network-operator, kubeflow-pipelines, kserve, etc.)
   - https://raw.githubusercontent.com/cert-manager/cert-manager/master/deploy/crds/cert-manager.io_certificates.yaml
   - https://raw.githubusercontent.com/cert-manager/cert-manager/master/deploy/crds/cert-manager.io_issuers.yaml
+  - https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/refs/heads/master/deployment/helm/node-feature-discovery/crds/nfd-api-crds.yaml
 
 # set values for substitution variables (e.g. ${releaseNamespace}) in the resources
 substitution_vars:
