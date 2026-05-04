@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: kmm-registry-reconciler
+  name: amd-kmm-operator-registry-reconciler
   namespace: ${releaseNamespace}
 spec:
   schedule: "*/5 * * * *"
@@ -14,14 +14,14 @@ spec:
       backoffLimit: 1
       template:
         spec:
-          serviceAccountName: kmm-registry-reconciler
+          serviceAccountName: amd-kmm-operator-registry-reconciler
           restartPolicy: Never
           containers:
           - name: reconciler
             image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
             envFrom:
             - secretRef:
-                name: kmm-registry-reconciler-config
+                name: amd-kmm-operator-registry-reconciler-config
             command: ["/bin/sh", "-e", "-c"]
             args:
             - |
