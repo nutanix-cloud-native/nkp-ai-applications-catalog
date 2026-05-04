@@ -11,6 +11,9 @@ metadata:
   name: amd-kmm-operator-registry-reconciler
   namespace: ${releaseNamespace}
 rules:
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["get"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "create", "update", "delete"]
