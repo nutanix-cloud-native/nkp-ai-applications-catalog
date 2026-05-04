@@ -13,7 +13,6 @@ licensing:
 certifications:
   - qualified
 requiredDependencies:
-  - cert-manager
   - amd-kmm-operator
 overview: |-
   # Overview
