@@ -16,7 +16,7 @@ rules:
   verbs: ["get"]
 - apiGroups: [""]
   resources: ["secrets"]
-  verbs: ["get", "create", "update", "delete"]
+  verbs: ["get", "create", "update", "patch", "delete"]
 - apiGroups: ["apps"]
   resources: ["daemonsets"]
   verbs: ["get", "create", "update", "patch", "delete"]
