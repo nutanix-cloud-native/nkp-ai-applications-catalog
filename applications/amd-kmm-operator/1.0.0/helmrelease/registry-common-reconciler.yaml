@@ -25,6 +25,11 @@ spec:
             command: ["/bin/sh", "-e", "-c"]
             args:
             - |
+              if ! command -v jq > /dev/null 2>&1; then
+                echo "ERROR: jq is required but not found in the container image"
+                exit 1
+              fi
+
               NAMESPACE="${releaseNamespace}"
               KUBETOOLS_IMAGE="${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}"
 
@@ -53,63 +58,62 @@ spec:
                 --dry-run=client -o yaml | kubectl apply -f -
               echo "INFO: Secret $DOCKERCONFIG_SECRET reconciled."
 
-              # 3. Build hosts.toml content and CA write command
+              # 3. Build the container init script
               TOML_CA_LINE=""
-              CA_WRITE="true"
+              CA_CMD="true"
               if [ -n "$HAS_CA" ]; then
                 TOML_CA_LINE="  ca = \"/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt\""
-                CA_WRITE="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt"
+                CA_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt"
               fi
 
-              # 4. Build init script — writes hosts.toml via printf, no heredoc needed
-              INIT_SCRIPT="set -e; DIR=/host/etc/containerd/certs.d/${REGISTRY_URL}; mkdir -p \$DIR; printf '%s\n' 'server = \"https://${REGISTRY_URL}\"' '' '[host.\"https://${REGISTRY_URL}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '${TOML_CA_LINE}' > \$DIR/hosts.toml; ${CA_WRITE}; echo INFO: containerd certs.d configured for ${REGISTRY_URL}; trap 'rm -rf \$DIR' TERM INT; while true; do sleep 3600 & wait; done"
+              INIT_SCRIPT="set -e
+              DIR=/host/etc/containerd/certs.d/${REGISTRY_URL}
+              mkdir -p \$DIR
+              printf '%s\n' 'server = \"https://${REGISTRY_URL}\"' '' '[host.\"https://${REGISTRY_URL}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '${TOML_CA_LINE}' > \$DIR/hosts.toml
+              ${CA_CMD}
+              echo INFO: containerd certs.d configured for ${REGISTRY_URL}
+              trap 'rm -rf \$DIR' TERM INT
+              while true; do sleep 3600 & wait; done"
 
-              # 5. Write DaemonSet manifest to temp file using valid YAML
-              DSFILE=$(mktemp /tmp/ds-XXXXXX.json)
-              trap "rm -f $DSFILE" EXIT
-              cat > "$DSFILE" <<'JSONEOF'
-              {
-                "apiVersion": "apps/v1",
-                "kind": "DaemonSet",
-                "metadata": {
-                  "name": "__DS_NAME__",
-                  "namespace": "__NS__"
-                },
-                "spec": {
-                  "selector": { "matchLabels": { "app": "kmm-registry-node-config" } },
-                  "template": {
-                    "metadata": { "labels": { "app": "kmm-registry-node-config" } },
-                    "spec": {
-                      "hostPID": false,
-                      "hostNetwork": false,
-                      "containers": [{
-                        "name": "configure",
-                        "image": "__IMAGE__",
-                        "command": ["/bin/sh", "-c"],
-                        "args": ["__INIT_SCRIPT__"],
-                        "env": [{
-                          "name": "CA_CERT",
-                          "valueFrom": { "secretKeyRef": { "name": "__CRED_SECRET__", "key": "ca.crt", "optional": true } }
+              # 4. Build DaemonSet manifest via jq and apply
+              jq -n \
+                --arg name "$DAEMONSET_NAME" \
+                --arg ns "$NAMESPACE" \
+                --arg image "$KUBETOOLS_IMAGE" \
+                --arg script "$INIT_SCRIPT" \
+                --arg credSecret "$CREDENTIALS_SECRET" \
+                --arg regUrl "$REGISTRY_URL" \
+              '{
+                apiVersion: "apps/v1",
+                kind: "DaemonSet",
+                metadata: { name: $name, namespace: $ns },
+                spec: {
+                  selector: { matchLabels: { app: "kmm-registry-node-config" } },
+                  template: {
+                    metadata: { labels: { app: "kmm-registry-node-config" } },
+                    spec: {
+                      hostPID: false,
+                      hostNetwork: false,
+                      containers: [{
+                        name: "configure",
+                        image: $image,
+                        command: ["/bin/sh", "-c"],
+                        args: [$script],
+                        env: [{
+                          name: "CA_CERT",
+                          valueFrom: { secretKeyRef: { name: $credSecret, key: "ca.crt", optional: true } }
                         }],
-                        "volumeMounts": [{ "name": "containerd-certs", "mountPath": "/host/etc/containerd/certs.d" }],
-                        "lifecycle": {
-                          "preStop": {
-                            "exec": { "command": ["/bin/sh", "-c", "rm -rf /host/etc/containerd/certs.d/__REGISTRY_URL__; echo 'INFO: cleaned up certs.d/__REGISTRY_URL__'"] }
+                        volumeMounts: [{ name: "containerd-certs", mountPath: "/host/etc/containerd/certs.d" }],
+                        lifecycle: {
+                          preStop: {
+                            exec: { command: ["/bin/sh", "-c", ("rm -rf /host/etc/containerd/certs.d/" + $regUrl + "; echo INFO: cleaned up certs.d/" + $regUrl)] }
                           }
                         }
                       }],
-                      "volumes": [{ "name": "containerd-certs", "hostPath": { "path": "/etc/containerd/certs.d", "type": "DirectoryOrCreate" } }],
-                      "tolerations": [{ "operator": "Exists" }]
+                      volumes: [{ name: "containerd-certs", hostPath: { path: "/etc/containerd/certs.d", type: "DirectoryOrCreate" } }],
+                      tolerations: [{ operator: "Exists" }]
                     }
                   }
                 }
-              }
-              JSONEOF
-              sed -i "s|__DS_NAME__|$DAEMONSET_NAME|g" "$DSFILE"
-              sed -i "s|__NS__|$NAMESPACE|g" "$DSFILE"
-              sed -i "s|__IMAGE__|$KUBETOOLS_IMAGE|g" "$DSFILE"
-              sed -i "s|__CRED_SECRET__|$CREDENTIALS_SECRET|g" "$DSFILE"
-              sed -i "s|__REGISTRY_URL__|$REGISTRY_URL|g" "$DSFILE"
-              sed -i "s|__INIT_SCRIPT__|$INIT_SCRIPT|g" "$DSFILE"
-              kubectl apply -f "$DSFILE"
+              }' | kubectl apply -f -
               echo "INFO: DaemonSet $DAEMONSET_NAME reconciled."
