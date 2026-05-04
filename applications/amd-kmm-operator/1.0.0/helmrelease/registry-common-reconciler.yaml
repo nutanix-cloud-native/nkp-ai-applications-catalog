@@ -26,6 +26,7 @@ spec:
             args:
             - |
               NAMESPACE="${releaseNamespace}"
+              KUBETOOLS_IMAGE="${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}"
 
               # 1. Read credentials secret; exit gracefully if absent
               if ! kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" > /dev/null 2>&1; then
@@ -52,17 +53,29 @@ spec:
                 --dry-run=client -o yaml | kubectl apply -f -
               echo "INFO: Secret $DOCKERCONFIG_SECRET reconciled."
 
-              # 3. Build and apply node DaemonSet
+              # 3. Build hosts.toml writer and optional CA commands
+              TOML_LINE_CA=""
+              CA_CMD=":"
               if [ -n "$HAS_CA" ]; then
-                CA_CERT=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}')
-                CA_LINE="        ca = \"/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt\""
-                CA_WRITE_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/\$REGISTRY_URL/ca.crt"
-              else
-                CA_LINE=""
-                CA_WRITE_CMD=""
+                TOML_LINE_CA="  ca = \\\"/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt\\\""
+                CA_CMD="echo \\\"\\\$CA_CERT\\\" | base64 -d > /host/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt"
               fi
 
-              cat <<DSEOF | kubectl apply -f -
+              # 4. Build the DaemonSet init script — uses printf instead of heredoc to avoid YAML indentation issues
+              INIT_SCRIPT=$(printf '%s\n' \
+                "set -e" \
+                "DIR=/host/etc/containerd/certs.d/${REGISTRY_URL}" \
+                "mkdir -p \"\$DIR\"" \
+                "printf '%s\\n' 'server = \"https://${REGISTRY_URL}\"' '' '[host.\"https://${REGISTRY_URL}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '${TOML_LINE_CA}' > \"\$DIR/hosts.toml\"" \
+                "${CA_CMD}" \
+                "echo \"INFO: containerd certs.d configured for ${REGISTRY_URL}\"" \
+                "trap \"rm -rf \$DIR; echo 'INFO: cleaned up \$DIR'\" TERM INT" \
+                "while true; do sleep 3600 & wait; done")
+
+              # 5. Write DaemonSet manifest to temp file and apply
+              DSFILE=$(mktemp /tmp/ds-XXXXXX.yaml)
+              trap "rm -f \$DSFILE" EXIT
+              cat > "\$DSFILE" <<DSEOF
               apiVersion: apps/v1
               kind: DaemonSet
               metadata:
@@ -81,27 +94,10 @@ spec:
                     hostNetwork: false
                     containers:
                     - name: configure
-                      image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
+                      image: $KUBETOOLS_IMAGE
                       command: ["/bin/sh", "-c"]
                       args:
-                      - |
-                        set -e
-                        REGISTRY_URL="$REGISTRY_URL"
-                        DIR="/host/etc/containerd/certs.d/\$REGISTRY_URL"
-                        mkdir -p "\$DIR"
-
-                        cat > "\$DIR/hosts.toml" <<TOMLEOF
-              server = "https://\$REGISTRY_URL"
-
-              [host."https://\$REGISTRY_URL"]
-                capabilities = ["pull", "resolve", "push"]
-              $CA_LINE
-              TOMLEOF
-                        $CA_WRITE_CMD
-                        echo "INFO: containerd certs.d configured for \$REGISTRY_URL"
-                        # Sleep to keep pod running; cleanup runs via preStop
-                        trap "rm -rf \$DIR; echo 'INFO: cleaned up \$DIR'" TERM INT
-                        while true; do sleep 3600 & wait; done
+                      - "$INIT_SCRIPT"
                       env:
                       - name: CA_CERT
                         valueFrom:
@@ -127,4 +123,5 @@ spec:
                     tolerations:
                     - operator: Exists
               DSEOF
+              kubectl apply -f "\$DSFILE"
               echo "INFO: DaemonSet $DAEMONSET_NAME reconciled."
