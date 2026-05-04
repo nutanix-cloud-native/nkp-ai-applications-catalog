@@ -9,11 +9,11 @@ spec:
   wait: true
   interval: 6h
   retryInterval: 1m
-  path: ./applications/amd-device-metrics-exporter/1.4.2/helmrelease
+  path: ./helmrelease
   sourceRef:
-    kind: GitRepository
-    name: management
-    namespace: kommander-flux
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
   timeout: 1m
   postBuild:
     substitute:
