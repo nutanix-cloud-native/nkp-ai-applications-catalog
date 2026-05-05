@@ -1,10 +1,49 @@
 apiVersion: batch/v1
+kind: Job
+metadata:
+  name: amd-kmm-operator-registry-reconciler-init
+  namespace: ${releaseNamespace}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      serviceAccountName: amd-kmm-operator-registry-reconciler
+      restartPolicy: OnFailure
+      containers:
+      - name: reconciler
+        image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
+        envFrom:
+        - secretRef:
+            name: amd-kmm-operator-registry-reconciler-config
+        command: ["/bin/sh", "-e", "-c"]
+        args:
+        - |
+          CRONJOB_READY=false
+          for i in $(seq 1 30); do
+            if kubectl get cronjob amd-kmm-operator-registry-reconciler -n "${releaseNamespace}" > /dev/null 2>&1; then
+              CRONJOB_READY=true
+              break
+            fi
+            echo "INFO: Waiting for CronJob to be created... ($i/30)"
+            sleep 2
+          done
+          if [ "$CRONJOB_READY" = "false" ]; then
+            echo "ERROR: CronJob amd-kmm-operator-registry-reconciler not found after 60s"
+            exit 1
+          fi
+          echo "INFO: CronJob ready, running initial reconciliation..."
+          exec kubectl create job -n "${releaseNamespace}" \
+            amd-kmm-operator-registry-reconciler-initial \
+            --from=cronjob/amd-kmm-operator-registry-reconciler
+---
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: amd-kmm-operator-registry-reconciler
   namespace: ${releaseNamespace}
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 3
   successfulJobsHistoryLimit: 1
