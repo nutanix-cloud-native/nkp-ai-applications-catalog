@@ -106,9 +106,9 @@ spec:
                   }]
                 },
                 spec: {
-                  selector: { matchLabels: { app: "kmm-registry-node-config" } },
+                  selector: { matchLabels: { app: "amd-kmm-operator-registry-node-config" } },
                   template: {
-                    metadata: { labels: { app: "kmm-registry-node-config" } },
+                    metadata: { labels: { app: "amd-kmm-operator-registry-node-config" } },
                     spec: {
                       hostPID: false,
                       hostNetwork: false,

@@ -42,6 +42,7 @@ data:
     deviceConfig:
       spec:
         driver:
+          enable: true
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           imageRegistrySecret:
             name: "kmm-registry-dockerconfig"

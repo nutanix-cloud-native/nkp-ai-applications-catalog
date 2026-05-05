@@ -22,7 +22,7 @@ spec:
       releaseNamespace: ${releaseNamespace}
       credentialsSecretName: kmm-registry-credentials
       dockerconfigSecretName: kmm-registry-dockerconfig
-      daemonsetName: kmm-registry-node-config
+      daemonsetName: amd-kmm-operator-registry-node-config
     substituteFrom:
       - kind: Secret
         name: kmm-registry-user-config
