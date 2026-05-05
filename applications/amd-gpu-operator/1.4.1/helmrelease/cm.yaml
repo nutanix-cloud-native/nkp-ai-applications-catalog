@@ -44,6 +44,11 @@ data:
         driver:
           enable: true
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          imageBuild:
+            baseImageRegistry: "registry.example.com:5000/amd-driver-images"
+            baseImageRegistryTLS:
+              insecure: false
+              insecureSkipTLSVerify: false
           imageRegistrySecret:
             name: "kmm-registry-dockerconfig"
           imageRegistryTLS:
