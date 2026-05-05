@@ -33,7 +33,7 @@ data:
           repository: docker.io/rocm/amd-network-operator
           tag: v1.2.0
         imagePullPolicy: IfNotPresent
-        imagePullSecrets: "kmm-registry-dockerconfig"
+        imagePullSecrets: ""
         resources:
           limits:
             cpu: 1000m

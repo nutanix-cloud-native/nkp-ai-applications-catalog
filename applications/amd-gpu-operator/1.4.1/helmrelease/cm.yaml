@@ -29,7 +29,7 @@ data:
           repository: docker.io/rocm/gpu-operator
           tag: v1.4.1
         imagePullPolicy: IfNotPresent
-        imagePullSecrets: "kmm-registry-dockerconfig"
+        imagePullSecrets: ""
         resources:
           limits:
             cpu: 1000m
