@@ -19,24 +19,30 @@ overview: |-
 
   ## Key Features
   ### Shared KMM Instance
-  Provides a single, pinned KMM deployment shared by both AMD GPU Operator and AMD Network Operator. Consumers disable their embedded KMM subchart.
+  Provides a single, pinned KMM deployment shared by both AMD GPU Operator and AMD Network Operator. Both operators disable their embedded KMM subchart and rely on this shared instance.
 
   ### Private Registry Integration
-  Automatically projects user-provided registry credentials into a docker-registry secret for KMM image push/pull and configures containerd on all nodes to trust the registry CA.
+  When a `kmm-registry-credentials` secret is present, the reconciler automatically:
+  - Creates a `kmm-registry-dockerconfig` secret for KMM image push/pull authentication.
+  - Deploys a DaemonSet that configures containerd on every node to trust the private registry, including CA certificate distribution and `config_path` setup.
 
   ### Self-Healing Reconciliation
-  A periodic reconciler keeps registry plumbing in sync with user-provided credentials, making install order irrelevant.
+  A CronJob runs on install and hourly thereafter, keeping registry plumbing in sync with user-provided credentials. Install order between this operator and the GPU/Network operators does not matter.
 
   ## Prerequisites
-  If using a private registry, create the credentials secret before installing:
+  If using a private registry for driver image builds, create the credentials secret before or after installing. The reconciler will pick it up on the next run.
   ```
   kubectl create secret generic kmm-registry-credentials \
     --namespace=<workspace-namespace> \
-    --from-literal=registry-url=registry.example.com:5000 \
-    --from-literal=username=admin \
+    --from-literal=registry-url=https://<registry-host>:<port>/<project> \
+    --from-literal=username=<user> \
     --from-literal=password=<password> \
-    --from-file=ca.crt=/path/to/ca.crt
+    --from-file=ca.crt=/path/to/ca.crt   # optional, omit for public CAs
   ```
+  The `registry-url` must include the scheme (e.g. `https://`) and may include a project path. The `ca.crt` field is optional; omit it if the registry uses a publicly trusted certificate.
+
+  ## Config Overrides for GPU / Network Operators
+  The GPU and Network operators must be configured to push and pull driver images from the same private registry. When enabling either operator, supply config overrides that reference the registry host and the `kmm-registry-dockerconfig` secret created by this operator's reconciler. See the AMD GPU Operator and AMD Network Operator metadata for the full override YAML.
 
   ## More Information
   - [AMD GPU Operator](https://github.com/ROCm/gpu-operator)
