@@ -91,9 +91,13 @@ spec:
                 exit 1
               fi
 
+              # Normalize registry URL: extract host:port for containerd certs.d and dockerconfig
+              REGISTRY_HOST=$(echo "$REGISTRY_URL" | sed 's|^https\?://||; s|/.*||')
+              echo "INFO: Registry host: $REGISTRY_HOST (from registry-url: $REGISTRY_URL)"
+
               # 2. Create/update dockerconfig secret (owned by CronJob for GC)
               kubectl create secret docker-registry "$DOCKERCONFIG_SECRET" \
-                --docker-server="$REGISTRY_URL" \
+                --docker-server="$REGISTRY_HOST" \
                 --docker-username="$REGISTRY_USER" \
                 --docker-password="$REGISTRY_PASS" \
                 --namespace="$NAMESPACE" \
@@ -107,17 +111,24 @@ spec:
               TOML_CA_LINE=""
               CA_CMD="true"
               if [ -n "$HAS_CA" ]; then
-                TOML_CA_LINE="  ca = \"/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt\""
-                CA_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/${REGISTRY_URL}/ca.crt"
+                TOML_CA_LINE="  ca = \"/etc/containerd/certs.d/${REGISTRY_HOST}/ca.crt\""
+                CA_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/${REGISTRY_HOST}/ca.crt"
               fi
 
               INIT_SCRIPT="set -e
-              DIR=/host/etc/containerd/certs.d/${REGISTRY_URL}
+              CONFD=/host/etc/containerd/conf.d
+              mkdir -p \$CONFD
+              CONFD_FILE=\$CONFD/kmm-registry.toml
+              if [ ! -f \$CONFD_FILE ]; then
+                printf '%s\n' '[plugins.\"io.containerd.grpc.v1.cri\".registry]' '  config_path = \"/etc/containerd/certs.d\"' > \$CONFD_FILE
+                echo INFO: wrote containerd config_path drop-in
+              fi
+              DIR=/host/etc/containerd/certs.d/${REGISTRY_HOST}
               mkdir -p \$DIR
-              printf '%s\n' 'server = \"https://${REGISTRY_URL}\"' '' '[host.\"https://${REGISTRY_URL}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '${TOML_CA_LINE}' > \$DIR/hosts.toml
+              printf '%s\n' 'server = \"https://${REGISTRY_HOST}\"' '' '[host.\"https://${REGISTRY_HOST}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '${TOML_CA_LINE}' > \$DIR/hosts.toml
               ${CA_CMD}
-              echo INFO: containerd certs.d configured for ${REGISTRY_URL}
-              trap 'rm -rf \$DIR' TERM INT
+              echo INFO: containerd certs.d configured for ${REGISTRY_HOST}
+              trap 'rm -rf \$DIR; rm -f \$CONFD_FILE' TERM INT
               while true; do sleep 3600 & wait; done"
 
               # 4. Build DaemonSet manifest via jq and apply (owned by CronJob for GC)
@@ -127,7 +138,7 @@ spec:
                 --arg image "$KUBETOOLS_IMAGE" \
                 --arg script "$INIT_SCRIPT" \
                 --arg credSecret "$CREDENTIALS_SECRET" \
-                --arg regUrl "$REGISTRY_URL" \
+                --arg regUrl "$REGISTRY_HOST" \
                 --arg cronjobName "$CRONJOB_NAME" \
                 --arg cronjobUid "$CRONJOB_UID" \
               '{
@@ -160,14 +171,20 @@ spec:
                           name: "CA_CERT",
                           valueFrom: { secretKeyRef: { name: $credSecret, key: "ca.crt", optional: true } }
                         }],
-                        volumeMounts: [{ name: "containerd-certs", mountPath: "/host/etc/containerd/certs.d" }],
+                        volumeMounts: [
+                          { name: "containerd-certs", mountPath: "/host/etc/containerd/certs.d" },
+                          { name: "containerd-confd", mountPath: "/host/etc/containerd/conf.d" }
+                        ],
                         lifecycle: {
                           preStop: {
-                            exec: { command: ["/bin/sh", "-c", ("rm -rf /host/etc/containerd/certs.d/" + $regUrl + "; echo INFO: cleaned up certs.d/" + $regUrl)] }
+                            exec: { command: ["/bin/sh", "-c", ("rm -rf /host/etc/containerd/certs.d/" + $regUrl + " /host/etc/containerd/conf.d/kmm-registry.toml; echo INFO: cleaned up certs.d/" + $regUrl)] }
                           }
                         }
                       }],
-                      volumes: [{ name: "containerd-certs", hostPath: { path: "/etc/containerd/certs.d", type: "DirectoryOrCreate" } }],
+                      volumes: [
+                        { name: "containerd-certs", hostPath: { path: "/etc/containerd/certs.d", type: "DirectoryOrCreate" } },
+                        { name: "containerd-confd", hostPath: { path: "/etc/containerd/conf.d", type: "DirectoryOrCreate" } }
+                      ],
                       tolerations: [{ operator: "Exists" }]
                     }
                   }
