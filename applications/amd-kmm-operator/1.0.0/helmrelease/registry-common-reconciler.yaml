@@ -112,7 +112,7 @@ spec:
               CA_CMD="true"
               if [ -n "$HAS_CA" ]; then
                 TOML_CA_LINE="  ca = \"/etc/containerd/certs.d/$${REGISTRY_HOST}/ca.crt\""
-                CA_CMD="echo \"\$CA_CERT\" | base64 -d > /host/etc/containerd/certs.d/$${REGISTRY_HOST}/ca.crt"
+                CA_CMD="printf '%s' \"\$CA_CERT\" > /host/etc/containerd/certs.d/$${REGISTRY_HOST}/ca.crt"
               fi
 
               INIT_SCRIPT="set -e
