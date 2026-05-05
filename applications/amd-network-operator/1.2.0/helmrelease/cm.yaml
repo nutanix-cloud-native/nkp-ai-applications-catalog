@@ -30,7 +30,7 @@ data:
     controllerManager:
       manager:
         image:
-          repository: docker.io/rocm/amd-network-operator
+          repository: docker.io/rocm/network-operator
           tag: v1.2.0
         imagePullPolicy: IfNotPresent
         imagePullSecrets: ""
