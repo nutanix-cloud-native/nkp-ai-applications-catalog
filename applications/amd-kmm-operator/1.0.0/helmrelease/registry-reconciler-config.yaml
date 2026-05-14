@@ -5,6 +5,5 @@ metadata:
   namespace: ${releaseNamespace}
 type: Opaque
 stringData:
-  CREDENTIALS_SECRET: "${credentialsSecretName}"
   DOCKERCONFIG_SECRET: "${dockerconfigSecretName}"
   DAEMONSET_NAME: "${daemonsetName}"

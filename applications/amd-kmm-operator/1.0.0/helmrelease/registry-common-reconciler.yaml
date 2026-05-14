@@ -55,12 +55,21 @@ spec:
         spec:
           serviceAccountName: amd-kmm-operator-registry-reconciler
           restartPolicy: Never
+          volumes:
+          - name: registry-creds
+            secret:
+              secretName: ${credentialsSecretName}
+              optional: true
           containers:
           - name: reconciler
             image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
             envFrom:
             - secretRef:
                 name: amd-kmm-operator-registry-reconciler-config
+            volumeMounts:
+            - name: registry-creds
+              mountPath: /etc/secrets/kmm-registry-creds
+              readOnly: true
             command: ["/bin/sh", "-e", "-c"]
             args:
             - |
@@ -73,13 +82,10 @@ spec:
               KUBETOOLS_IMAGE="${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}"
 
               CRONJOB_NAME="amd-kmm-operator-registry-reconciler"
+              CREDS_DIR="/etc/secrets/kmm-registry-creds"
               K8S_NAME_REGEXP='^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$'
 
               # Validate reconciler configuration before reading or writing resources.
-              if [ -z "$CREDENTIALS_SECRET" ] || ! printf '%s' "$CREDENTIALS_SECRET" | grep -Eq "$K8S_NAME_REGEXP"; then
-                echo "ERROR: CREDENTIALS_SECRET must be a valid Kubernetes resource name"
-                exit 1
-              fi
               if [ -z "$DOCKERCONFIG_SECRET" ] || ! printf '%s' "$DOCKERCONFIG_SECRET" | grep -Eq "$K8S_NAME_REGEXP"; then
                 echo "ERROR: DOCKERCONFIG_SECRET must be a valid Kubernetes resource name"
                 exit 1
@@ -90,18 +96,19 @@ spec:
               fi
 
               # 1. Read and validate registry credentials; exit gracefully if absent.
-              if ! kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" > /dev/null 2>&1; then
-                echo "INFO: Secret $CREDENTIALS_SECRET not found in $NAMESPACE. Registry plumbing will not be created."
+              if [ ! -f "$CREDS_DIR/registry-url" ]; then
+                echo "INFO: Secret ${credentialsSecretName} not found in $NAMESPACE. Registry plumbing will not be created."
                 exit 0
               fi
 
-              REGISTRY_URL=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.registry-url}' | base64 -d)
-              REGISTRY_USER=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.username}' | base64 -d)
-              REGISTRY_PASS=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.password}' | base64 -d)
-              HAS_CA=$(kubectl get secret "$CREDENTIALS_SECRET" -n "$NAMESPACE" -o jsonpath='{.data.ca\.crt}' 2>/dev/null || true)
+              REGISTRY_URL=$(cat "$CREDS_DIR/registry-url")
+              REGISTRY_USER=$(cat "$CREDS_DIR/username")
+              REGISTRY_PASS=$(cat "$CREDS_DIR/password")
+              HAS_CA=""
+              [ -f "$CREDS_DIR/ca.crt" ] && HAS_CA="true"
 
               if [ -z "$REGISTRY_URL" ] || [ -z "$REGISTRY_USER" ]; then
-                echo "ERROR: registry-url or username is empty in $CREDENTIALS_SECRET"
+                echo "ERROR: registry-url or username is empty in ${credentialsSecretName}"
                 exit 1
               fi
 
@@ -238,7 +245,7 @@ spec:
                 --arg ns "$NAMESPACE" \
                 --arg image "$KUBETOOLS_IMAGE" \
                 --arg script "$INIT_SCRIPT" \
-                --arg credSecret "$CREDENTIALS_SECRET" \
+                --arg credSecret "${credentialsSecretName}" \
                 --arg regUrl "$REGISTRY_HOST" \
                 --arg cronjobName "$CRONJOB_NAME" \
                 --arg cronjobUid "$CRONJOB_UID" \
