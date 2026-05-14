@@ -115,11 +115,11 @@ Both resources are owned by the CronJob (via `ownerReferences`) and are garbage-
 
 On each node, the DaemonSet writes:
 
-1. **`/etc/containerd/conf.d/kmm-registry.toml`** — drop-in that sets `config_path = "/etc/containerd/certs.d"` so containerd reads per-registry config.
+1. **`/etc/containerd/conf.d/kmm-registry.toml`** — drop-in that sets `config_path = "/etc/containerd/certs.d"` (for both containerd config format v2 and v3) so containerd reads per-registry config. This file is **only written if `config_path` is not already configured** in the main `/etc/containerd/config.toml` or any existing drop-in (`conf.d/`, `konvoy-conf.d/`). NKP clusters provisioned with a registry mirror will already have this setting applied via `toml-merge`.
 2. **`/etc/containerd/certs.d/<host>/hosts.toml`** — registry endpoint configuration with pull/resolve/push capabilities.
 3. **`/etc/containerd/certs.d/<host>/ca.crt`** — CA certificate (only if `ca.crt` was provided in the credentials secret).
 
-Cleanup is handled by a `preStop` hook that removes these files when the DaemonSet is deleted.
+Cleanup is handled by a `preStop` hook that removes these files when the DaemonSet is deleted. The `kmm-registry.toml` drop-in is only removed if it was originally created by this operator (identified by a marker comment).
 
 ## CRD Lifecycle
 
