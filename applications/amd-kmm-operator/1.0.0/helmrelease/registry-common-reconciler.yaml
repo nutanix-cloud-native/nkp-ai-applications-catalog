@@ -185,6 +185,7 @@ spec:
                 fi
               done
 
+              NEEDS_RESTART=false
               if [ \"\$CONFIG_PATH_EXISTS\" = \"true\" ]; then
                 echo INFO: config_path already configured in containerd, skipping drop-in
               elif [ ! -f \"\$CONFD_FILE\" ]; then
@@ -197,6 +198,7 @@ spec:
                   '[plugins.\"io.containerd.cri.v1.images\".registry]' \
                   '  config_path = \"/etc/containerd/certs.d\"' > \"\$CONFD_FILE\"
                 echo INFO: wrote containerd config_path drop-in with v2+v3 support
+                NEEDS_RESTART=true
               fi
 
               DIR=/host/etc/containerd/certs.d/$${REGISTRY_HOST}
@@ -204,7 +206,30 @@ spec:
               printf '%s\n' 'server = \"$${REGISTRY_SCHEME}://$${REGISTRY_HOST}\"' '' '[host.\"$${REGISTRY_SCHEME}://$${REGISTRY_HOST}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '$${TOML_CA_LINE}' > \"\$DIR/hosts.toml\"
               $${CA_CMD}
               echo INFO: containerd certs.d configured for $${REGISTRY_HOST}
+              # Containerd does not hot-reload imported plugin configs (config_path
+              # is a CRI plugin setting). If we wrote a new conf.d drop-in, we must
+              # restart containerd so it picks up config_path and begins reading
+              # certs.d/<host>/hosts.toml. Running containers are unaffected; only
+              # new image pull operations are briefly paused during restart.
+              if [ \"\$NEEDS_RESTART\" = \"true\" ]; then
+                echo INFO: restarting containerd to load config_path drop-in...
+                nsenter --target 1 --mount -- systemctl restart containerd
+                for i in \$(seq 1 30); do
+                  if nsenter --target 1 --mount -- ctr --connect-timeout 1s version >/dev/null 2>&1; then
+                    echo INFO: containerd restarted with config_path support
+                    break
+                  fi
+                  if [ \"\$i\" = \"30\" ]; then
+                    echo ERROR: containerd did not come back within 30s
+                    exit 1
+                  fi
+                  sleep 1
+                done
+              fi
               trap '[ -n \"$${REGISTRY_HOST}\" ] && rm -f \"\$DIR/hosts.toml\" \"\$DIR/ca.crt\" && rmdir \"\$DIR\" 2>/dev/null; grep -q \"managed by amd-kmm-operator\" \"\$CONFD_FILE\" 2>/dev/null && rm -f \"\$CONFD_FILE\"' TERM INT
+              # Keep the container alive; sleep in the background so the
+              # trap can fire immediately on TERM/INT without waiting for
+              # sleep to finish.
               while true; do sleep 3600 & wait; done"
 
               # 4. Build DaemonSet manifest via jq and apply (owned by CronJob for GC)
@@ -236,11 +261,12 @@ spec:
                   template: {
                     metadata: { labels: { app: "amd-kmm-operator-registry-node-config" } },
                     spec: {
-                      hostPID: false,
+                      hostPID: true,
                       hostNetwork: false,
                       containers: [{
                         name: "configure",
                         image: $image,
+                        securityContext: { privileged: true },
                         command: ["/bin/sh", "-c"],
                         args: [$script],
                         env: [{
