@@ -68,13 +68,13 @@ jobs:
 
       - name: Verify scan definitions exist
         run: |
-          count=$(ls scans/*.yaml 2>/dev/null | wc -l)
+          count=$(find scans -maxdepth 1 -type f -name '*.yaml' | wc -l)
           if [ "$count" -eq 0 ]; then
             echo "::error::No scan definition YAML files found in scans/"
             exit 1
           fi
           echo "Found $count scan definition(s):"
-          ls -la scans/*.yaml
+          find scans -maxdepth 1 -type f -name '*.yaml' -print
 
       - name: Generate GitHub App token
         uses: actions/create-github-app-token@v1
@@ -120,7 +120,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir localtmp
-          export TMPDIR="$(pwd)/$(mktemp -d --tmpdir=localtmp)"
+          tmpdir="$(mktemp -d --tmpdir=localtmp)"
+          export TMPDIR="$(pwd)/$tmpdir"
           mkdir -p "$TMPDIR/go/pkg/mod"
 
           any_failed=false
