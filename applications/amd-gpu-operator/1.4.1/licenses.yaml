@@ -1,0 +1,18 @@
+ignore: []
+resources:
+- container_image: docker.io/rocm/gpu-operator:v1.4.1
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/gpu-operator.git
+- container_image: docker.io/rocm/kernel-module-management-operator:v1.4.1
+  sources:
+  - ref: release-v1.4.1
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-webhook-server:v1.4.1
+  sources:
+  - ref: release-v1.4.1
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: registry.k8s.io/nfd/node-feature-discovery:v0.16.1
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubernetes-sigs/node-feature-discovery.git
