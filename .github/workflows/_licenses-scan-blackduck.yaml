@@ -121,7 +121,8 @@ jobs:
           set -euo pipefail
           mkdir localtmp
           tmpdir="$(mktemp -d --tmpdir=localtmp)"
-          export TMPDIR="$(pwd)/$tmpdir"
+          TMPDIR="$(pwd)/$tmpdir"
+          export TMPDIR
           mkdir -p "$TMPDIR/go/pkg/mod"
 
           any_failed=false
