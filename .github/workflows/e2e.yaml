@@ -3,12 +3,11 @@ name: E2E Tests
 on:
   pull_request:
     branches: [main]
-    paths: ["applications/**", "apptests/**"]
     types: [opened, synchronize, labeled]
   workflow_dispatch:
     inputs:
       app:
-        description: "Application name (blank = all)"
+        description: "Application name (blank = all enabled)"
         required: false
         type: string
       version:
@@ -17,7 +16,7 @@ on:
         type: string
   push:
     branches: [main]
-    paths: ["applications/**", "apptests/**"]
+    paths: ["apptests/**"]
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -36,8 +35,6 @@ jobs:
       has_entries: ${{ steps.matrix.outputs.has_entries }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Build test matrix
         id: matrix
@@ -45,8 +42,6 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           LABEL: ${{ github.event.label.name }}
           PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           INPUT_APP: ${{ inputs.app }}
           INPUT_VERSION: ${{ inputs.version }}
         run: |
@@ -54,35 +49,35 @@ jobs:
 
           latest() { find "applications/$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -V | tail -1; }
 
+          # Source of truth: enabledApps slice in suites_test.go
+          enabled=$(sed -n '/enabledApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
+
           if [[ -n "${INPUT_APP}" ]]; then
-            pairs="${INPUT_APP}/${INPUT_VERSION:-$(latest "$INPUT_APP")}"
-          elif [[ "${LABEL}" == "run-e2e-all" ]] || [[ " ${PR_LABELS} " == *" run-e2e-all "* ]]; then
-            pairs=$(find applications -mindepth 2 -maxdepth 2 -type d | sed 's|^applications/||')
-          elif [[ "${LABEL}" == e2e-* ]]; then
-            app="${LABEL#e2e-}"
-            pairs="$app/$(latest "$app")"
-          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
-            # Honor any e2e-* labels already on the PR
-            for l in $PR_LABELS; do
-              if [[ "$l" == e2e-* ]]; then
-                app="${l#e2e-}"
-                v=$(latest "$app")
-                [[ -n "$v" ]] && pairs="$(printf '%s\n%s' "${pairs:-}" "$app/$v")"
-              fi
+            apps="${INPUT_APP}"
+          elif [[ " ${LABEL} ${PR_LABELS} " == *" run-e2e-all "* ]]; then
+            apps="$enabled"
+          elif [[ -n "${LABEL}${PR_LABELS}" ]]; then
+            apps=""
+            for l in $PR_LABELS ${LABEL}; do
+              [[ "$l" == e2e-* ]] && apps="${apps} ${l#e2e-}"
             done
-            # Fall back to changed-file detection if no e2e labels
-            if [[ -z "${pairs:-}" ]]; then
-              pairs=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- applications/ \
-                | sed -n 's|^applications/\([^/]*\)/\([^/]*\)/.*|\1/\2|p' | sort -u)
-            fi
+          elif [[ "${EVENT_NAME}" != "pull_request" ]]; then
+            # push to main or workflow_dispatch with no app: run all enabled
+            apps="$enabled"
           else
-            pairs=$(find applications -mindepth 2 -maxdepth 2 -type d | sed 's|^applications/||')
+            # PR with no e2e labels: skip
+            apps=""
           fi
 
-          entries=$(echo "$pairs" \
-            | awk -F/ 'NF==2 {printf "{\"app\":\"%s\",\"version\":\"%s\"}\n",$1,$2}' \
-            | jq -sc '.')
+          pairs=""
+          for app in $apps; do
+            # Only include if the app is in the enabled list
+            echo "$enabled" | grep -qw "$app" || continue
+            ver="${INPUT_VERSION:-$(latest "$app")}"
+            [[ -n "$ver" ]] && pairs=$(printf '%s\n%s/%s' "$pairs" "$app" "$ver")
+          done
 
+          entries=$(echo "$pairs" | awk -F/ 'NF==2 {printf "{\"app\":\"%s\",\"version\":\"%s\"}\n",$1,$2}' | jq -sc '.')
           echo "matrix={\"include\":${entries}}" >> "$GITHUB_OUTPUT"
           echo "has_entries=$([[ "$entries" != "[]" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
