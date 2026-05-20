@@ -9,6 +9,7 @@ import 'just/tools.just'
 import 'just/validate.just'
 import 'just/release.just'
 import 'just/licenses.just'
+import 'just/test.just'
 
 # Default: list available recipes
 default:
