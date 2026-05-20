@@ -2,7 +2,7 @@ module github.com/nutanix-cloud-native/nkp-ai-applications-catalog/apptests
 
 go 1.25.0
 
-require github.com/mesosphere/kommander-applications/apptests v0.0.0-20260520052250-62e267d13516
+require github.com/mesosphere/kommander-applications/apptests v0.0.0-20260520055733-099a9bd8e750
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
