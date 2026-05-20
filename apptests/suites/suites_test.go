@@ -1,31 +1,24 @@
 package suites
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/mesosphere/kommander-applications/apptests/catalog"
 )
 
-// registeredLabels lists apps that have a custom _test.go in this package.
-// Apps NOT listed here get the default install+upgrade template test via
-// catalog.ScanAndRegister.
-var registeredLabels = map[string]bool{
-	// Add app names here when you create a custom <app>_test.go that
-	// needs pre-install setup (secrets, ConfigMap patches, etc.).
-	// Example:
-	//   "kasm": true,
+// enabledApps lists applications that have opt-in E2E tests.
+// Add an app name here to get the default install + upgrade template test.
+// Apps with a custom <app>_test.go in this package do NOT need to be listed
+// here — they register their own Ginkgo blocks directly.
+var enabledApps = []string{
+	"kagent",
 }
 
 func init() {
 	catalog.InitSuite()
-
-	repoRoot, _ := filepath.Abs(filepath.Join("..", ".."))
-	if envRoot := os.Getenv("CATALOG_REPO_ROOT"); envRoot != "" {
-		repoRoot = envRoot
+	for _, app := range enabledApps {
+		catalog.RegisterDefaultTests(app)
 	}
-	catalog.ScanAndRegister(repoRoot, registeredLabels)
 }
 
 func TestApplications(t *testing.T) { catalog.RunSuite(t) }
