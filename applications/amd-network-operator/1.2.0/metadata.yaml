@@ -47,6 +47,7 @@ overview: |-
       feature.node.kubernetes.io/amd-nic: "true"
     driver:
       enable: true
+      blacklist: true
       image: "<registry-host>:<port>/<project>/amdnetwork_kmod"
       imageBuild:
         baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -58,12 +59,17 @@ overview: |-
       imageRegistryTLS:
         insecure: false
         insecureSkipTLSVerify: false
+    secondaryNetwork:
+      cniPlugins:
+        enable: true
   EOF
   ```
+  - `blacklist` — when `true`, unloads the in-tree `ionic` kernel module before loading the DKMS version. Required on nodes that ship a built-in `ionic` driver. Without this, the in-tree driver claims the NIC first and the DKMS driver fails to load.
   - `image` — the registry path where built NIC driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
   - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
   - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
   - Set `insecure`/`insecureSkipTLSVerify` to `true` only for registries using self-signed certificates or plain HTTP.
+  - `secondaryNetwork.cniPlugins.enable` — must be `true` to deploy the `amd-host-device` CNI plugin binary to `/opt/cni/bin` on each node. Without this, Multus cannot attach NICs to pods (`failed to find plugin "amd-host-device"`).
 
   ### Config Overrides (Helm)
   The Helm chart exposes controller-level settings (image, resources, tolerations, etc.) via config overrides. The `NetworkConfig` CR above is **not** managed by Helm and must be created separately. For the full list of Helm overrides, see [values.yaml](https://github.com/ROCm/network-operator/blob/v1.2.0/helm-charts-k8s/values.yaml).
@@ -109,10 +115,20 @@ overview: |-
   ```
   For full details including IB and RCCL test examples, see [Deploy a Workload with a Network Device](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/workload.html).
 
+  ## Troubleshooting: In-Tree Module Conflict
+  The `driver.blacklist: true` setting in the NetworkConfig prevents the in-tree `ionic` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot.
+
+  A one-time patch Job is included to force immediate removal without rebooting. It scales down the Network Operator controller, patches the KMM Module CR with `inTreeModulesToRemove: ["ionic"]`, waits for KMM to reload the DKMS driver, then scales the controller back up.
+  ```
+  kubectl apply -f patch-intree-ionic-job.yaml
+  kubectl logs -n kommander -l job-name=patch-intree-ionic -f
+  ```
+  The Job is idempotent — if the patch is already applied, it exits immediately. After a node reboot, the blacklist prevents the in-tree module from loading, so this Job is only needed once.
+
   ## Dependencies
   - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.
   - **Node Feature Discovery** — provided by the NKP platform layer (disabled in this chart).
-  - **Multus CNI** — required for `NetworkAttachmentDefinition` support. Provided by NKP v2.18+ (disabled in this chart).
+  - **Multus CNI** — required for `NetworkAttachmentDefinition` support. Provided by NKP v2.18+ (disabled in this chart). For NKP v2.17.x and earlier, add `multus.enabled: true` to the Helm config overrides.
 
   ## More Information
   - [AMD Network Operator - Kubernetes (Helm)](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/kubernetes-helm.html)
