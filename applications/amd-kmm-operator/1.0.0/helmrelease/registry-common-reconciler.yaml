@@ -178,12 +178,16 @@ spec:
 
               # Containerd needs config_path set to read per-registry hosts.toml files
               # from /etc/containerd/certs.d/<host>/ for OCI-compliant registries.
-              # NKP clusters with registry mirror configuration already get this from
-              # pkg/capi/generator/templates/containerd-mirror.toml.gotmpl, which renders
-              # v2 and v3 config_path stanzas into konvoy-conf.d/konvoy-mirror.toml.
-              # containerd-apply-patches.sh.gotmpl then merges those patches into
-              # config.toml at boot. Clusters without that mirror configuration still
-              # need this amd-kmm-operator-managed drop-in as a fallback.
+              #
+              # Standard NKP images (built by dkp-image-builder) bake config_path into
+              # config.toml via config.toml.v3.tmpl. No cluster creation flag removes it,
+              # so for the common case config_path is already present and this drop-in is
+              # skipped. The drop-in exists as a fallback for two edge cases:
+              #   - Custom-built images where default_image_registry_mirrors or
+              #     image_registries_with_auth was set at image build time, causing the
+              #     v3 template to emit legacy registry.mirrors instead of config_path.
+              #   - Pre-provisioned clusters where the user manages their own config.toml
+              #     and may not have config_path set.
               CONFIG_PATH_EXISTS=false
               for f in /host/etc/containerd/config.toml /host/etc/containerd/conf.d/*.toml /host/etc/containerd/konvoy-conf.d/*.toml; do
                 if [ -f \"\$f\" ] && grep -Eq '^[[:space:]]*config_path[[:space:]]*=' \"\$f\" 2>/dev/null; then
@@ -198,13 +202,9 @@ spec:
               elif [ ! -f \"\$CONFD_FILE\" ]; then
                 printf '%s\n' \
                   '# managed by amd-kmm-operator' \
-                  '# compatible with containerd config format v2' \
-                  '[plugins.\"io.containerd.grpc.v1.cri\".registry]' \
-                  '  config_path = \"/etc/containerd/certs.d\"' \
-                  '# compatible with containerd config format v3' \
                   '[plugins.\"io.containerd.cri.v1.images\".registry]' \
                   '  config_path = \"/etc/containerd/certs.d\"' > \"\$CONFD_FILE\"
-                echo INFO: wrote containerd config_path drop-in with v2+v3 support
+                echo INFO: wrote containerd config_path v3 drop-in
                 NEEDS_RESTART=true
               fi
 
