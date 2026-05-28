@@ -1,0 +1,85 @@
+# Copyright 2026 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Reusable workflow: discovers per-application licenses.yaml files
+# under applications/<name>/<version>/ and generates a BlackDuck scan
+# definition for each using dkp-licenses-cli.
+#
+# App name and version are derived from the directory structure:
+#   applications/kagent/0.7.13/licenses.yaml
+#                -> bundle-name=kagent, bundle-version=0.7.13
+
+name: licenses/generate-scan-definition
+
+on:
+  workflow_call:
+    inputs:
+      cli_image:
+        description: 'dkp-licenses-cli container image'
+        type: string
+        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.15'
+    outputs:
+      scan_definitions_dir:
+        description: 'Directory containing per-app scan definition files'
+        value: ${{ jobs.generate.outputs.scan_definitions_dir }}
+
+jobs:
+  generate:
+    runs-on:
+      - self-hosted-nutanix-docker-medium
+    permissions:
+      contents: read
+    outputs:
+      scan_definitions_dir: ${{ steps.generate.outputs.scan_definitions_dir }}
+    steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v4
+
+      - name: Generate per-app scan definitions
+        id: generate
+        run: |
+          set -euo pipefail
+          SCAN_DIR="scans"
+          mkdir -p "$SCAN_DIR"
+          count=0
+          skipped=0
+
+          for ver_dir in applications/*/*/; do
+            [ -d "$ver_dir" ] || continue
+            app_version=$(basename "$ver_dir")
+            app_name=$(basename "$(dirname "$ver_dir")")
+
+            licenses_file="${ver_dir}licenses.yaml"
+            if [ ! -f "$licenses_file" ]; then
+              echo "::notice::Skipping ${app_name} ${app_version} (no licenses.yaml)"
+              skipped=$((skipped + 1))
+              continue
+            fi
+
+            scan_file="${SCAN_DIR}/${app_name}-${app_version}.yaml"
+            echo "Generating scan definition: ${app_name} ${app_version}"
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}/${licenses_file}":/input/licenses.yaml:ro \
+              "${{ inputs.cli_image }}" \
+              generate scan airgapped-bundle \
+                --bundle-name "$app_name" \
+                --bundle-version "$app_version" \
+                --mapping-file /input/licenses.yaml \
+              > "$scan_file"
+
+            count=$((count + 1))
+          done
+
+          echo "Generated $count scan definition(s), skipped $skipped app(s)"
+          if [ "$count" -eq 0 ]; then
+            echo "::warning::No licenses.yaml files found under applications/*/*/"
+          fi
+          ls -la "$SCAN_DIR"/ 2>/dev/null || true
+          echo "scan_definitions_dir=${SCAN_DIR}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload scan definitions
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-definitions
+          path: scans/
+          retention-days: 7

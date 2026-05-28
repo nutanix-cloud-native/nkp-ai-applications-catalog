@@ -6,3 +6,4 @@ self-hosted-runner:
     # See https://confluence.eng.nutanix.com:8443/pages/viewpage.action?spaceKey=KAR&title=Github+Actions+for+NKP
     - self-hosted-nutanix-medium
     - self-hosted-nutanix-docker-medium
+    - self-hosted-nutanix-docker-large

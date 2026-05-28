@@ -1,0 +1,22 @@
+ignore: []
+resources:
+- container_image: docker.io/rocm/kernel-module-management-operator:v1.4.0
+  sources:
+  - ref: release-v1.4.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-webhook-server:v1.4.0
+  sources:
+  - ref: release-v1.4.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/network-operator:v1.0.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/network-operator.git
+- container_image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/k8snetworkplumbingwg/multus-cni.git
+- container_image: registry.k8s.io/nfd/node-feature-discovery:v0.16.1
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubernetes-sigs/node-feature-discovery.git

@@ -8,6 +8,7 @@ set unstable
 import 'just/tools.just'
 import 'just/validate.just'
 import 'just/release.just'
+import 'just/licenses.just'
 
 # Default: list available recipes
 default:
