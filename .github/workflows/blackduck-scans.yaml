@@ -4,9 +4,6 @@
 name: Black Duck Scans
 
 on:
-  push:
-    branches:
-      - tga/add-bd-scan # TODO: remove after testing
   workflow_dispatch:
     inputs:
       version:

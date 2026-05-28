@@ -41,7 +41,7 @@ on:
       infra_tools_ref:
         description: 'dkp-infra-tools git ref to use'
         type: string
-        default: 'tga/bd-parent-link-flag'
+        default: 'main'
     secrets:
       BLACKDUCK_API_TOKEN:
         required: true
