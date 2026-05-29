@@ -27,17 +27,17 @@ TMPDIR=$(mktemp -d)
 cd "$TMPDIR"
 
 case "$REPO_URL" in
-  oci://*)
-    echo "==> OCI repo detected, pulling directly: $REPO_URL/$CHART version $VERSION"
-    helm pull "$REPO_URL/$CHART" --version "$VERSION"
-    ;;
-  *)
-    echo "==> Adding Helm repo: $REPO_NAME ($REPO_URL)"
-    helm repo add "$REPO_NAME" "$REPO_URL"
-    helm repo update "$REPO_NAME"
-    echo "==> Pulling $REPO_NAME/$CHART version $VERSION"
-    helm pull "$REPO_NAME/$CHART" --version "$VERSION"
-    ;;
+oci://*)
+  echo "==> OCI repo detected, pulling directly: $REPO_URL/$CHART version $VERSION"
+  helm pull "$REPO_URL/$CHART" --version "$VERSION"
+  ;;
+*)
+  echo "==> Adding Helm repo: $REPO_NAME ($REPO_URL)"
+  helm repo add "$REPO_NAME" "$REPO_URL"
+  helm repo update "$REPO_NAME"
+  echo "==> Pulling $REPO_NAME/$CHART version $VERSION"
+  helm pull "$REPO_NAME/$CHART" --version "$VERSION"
+  ;;
 esac
 
 # Chart tarball name may vary (e.g. coder produces coder_helm_2.30.2.tgz)
