@@ -1,0 +1,30 @@
+applications:
+  - name: ""
+    version: ""
+    images:
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-device-metrics-exporter:1.4.2
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.4.1
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.0.0
+  - name: amd-device-metrics-exporter
+    version: 1.4.2
+    images:
+      - oci://ghcr.io/mesosphere/charts/device-metrics-exporter-charts:v1.4.2
+      - docker.io/library/busybox:1.36
+      - docker.io/rocm/device-metrics-exporter:v1.4.2
+  - name: amd-gpu-operator
+    version: 1.4.1
+    images:
+      - oci://ghcr.io/mesosphere/charts/gpu-operator-charts:v1.4.1
+      - docker.io/rocm/gpu-operator:v1.4.1
+      - docker.io/rocm/kernel-module-management-operator:v1.4.1
+      - docker.io/rocm/kernel-module-management-webhook-server:v1.4.1
+      - registry.k8s.io/nfd/node-feature-discovery:v0.16.1
+  - name: amd-network-operator
+    version: 1.0.0
+    images:
+      - oci://ghcr.io/mesosphere/charts/network-operator-charts:v1.0.0
+      - docker.io/rocm/kernel-module-management-operator:v1.4.0
+      - docker.io/rocm/kernel-module-management-webhook-server:v1.4.0
+      - docker.io/rocm/network-operator:v1.0.0
+      - ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2
+      - registry.k8s.io/nfd/node-feature-discovery:v0.16.1

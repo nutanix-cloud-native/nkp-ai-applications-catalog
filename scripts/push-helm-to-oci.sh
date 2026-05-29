@@ -5,11 +5,14 @@
 # Usage:
 #   ./scripts/push-helm-to-oci.sh <app-name> <repo-name> <repo-url> <chart> <version> <oci-registry>
 #
-# Example (ollama):
+# Example (ollama — from Helm repo):
 #   ./scripts/push-helm-to-oci.sh ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama 1.12.3 oci://ghcr.io/nutanix-cloud-native/charts
 #
-# Example (vllm):
+# Example (vllm — from Helm repo):
 #   ./scripts/push-helm-to-oci.sh vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm 0.1.1 oci://ghcr.io/nutanix-cloud-native/charts
+#
+# Example (gpu-operator — from Nutanix Internal OCI registry to public):
+#   ./scripts/push-helm-to-oci.sh amd-gpu-operator amd-operators oci://harbor.eng.nutanix.com/amd-operators gpu-operator-charts v1.4.1 oci://ghcr.io/nutanix-cloud-native/charts
 
 set -e
 
@@ -20,15 +23,22 @@ CHART="${4:?Missing chart}"
 VERSION="${5:?Missing version}"
 OCI_REGISTRY="${6:?Missing oci-registry}"
 
-echo "==> Adding Helm repo: $REPO_NAME ($REPO_URL)"
-helm repo add "$REPO_NAME" "$REPO_URL"
-helm repo update "$REPO_NAME"
-
-echo "==> Pulling $REPO_NAME/$CHART version $VERSION"
-# Create a temporary directory to ensure clean download
 TMPDIR=$(mktemp -d)
 cd "$TMPDIR"
-helm pull "$REPO_NAME/$CHART" --version "$VERSION"
+
+case "$REPO_URL" in
+oci://*)
+  echo "==> OCI repo detected, pulling directly: $REPO_URL/$CHART version $VERSION"
+  helm pull "$REPO_URL/$CHART" --version "$VERSION"
+  ;;
+*)
+  echo "==> Adding Helm repo: $REPO_NAME ($REPO_URL)"
+  helm repo add "$REPO_NAME" "$REPO_URL"
+  helm repo update "$REPO_NAME"
+  echo "==> Pulling $REPO_NAME/$CHART version $VERSION"
+  helm pull "$REPO_NAME/$CHART" --version "$VERSION"
+  ;;
+esac
 
 # Chart tarball name may vary (e.g. coder produces coder_helm_2.30.2.tgz)
 # Try standard format first

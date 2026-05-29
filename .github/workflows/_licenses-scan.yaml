@@ -1,0 +1,219 @@
+# Copyright 2026 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Reusable orchestrator workflow: discovers per-app licenses.yaml files,
+# generates scan definitions, runs BlackDuck scans, creates per-app parent
+# projects, and links them under an existing catalog-level parent project.
+#
+# The directory structure applications/<name>/<version>/licenses.yaml
+# drives the hierarchy:
+#   <parent_project> @ <version>  (existing BD project, from inputs)
+#     +-- <app-name> @ <app-version> (from directory structure)
+#          +-- source code scans
+#          +-- container image scans
+#
+# The parent_project must already exist in BlackDuck. Create it manually
+# in the BD UI before running this workflow.
+#
+# Usage from a catalog repo:
+#   jobs:
+#     scan:
+#       uses: ./.github/workflows/_licenses-scan.yaml
+#       with:
+#         version: v0.1.0
+#         parent_project: "NKP AI Applications Catalog"
+#       secrets: inherit
+
+name: licenses/scan
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Catalog version (used as the catalog parent project version in BD)'
+        type: string
+        required: true
+      parent_project:
+        description: 'Name of the existing BlackDuck parent project to group apps under'
+        type: string
+        required: true
+      source_code_scan:
+        description: 'Enable source code scanning'
+        type: boolean
+        default: true
+      container_image_scan:
+        description: 'Enable container image scanning'
+        type: boolean
+        default: true
+      parallel_scans:
+        description: 'Number of concurrent scans'
+        type: number
+        default: 4
+      timeout:
+        description: 'Total scan timeout'
+        type: string
+        default: '4h'
+      verbosity:
+        description: 'Logging verbosity level'
+        type: number
+        default: 1
+      infra_tools_ref: # TODO(takirala): use main branch
+        description: 'dkp-infra-tools git ref to use'
+        type: string
+        default: 'main' # TODO(takirala): remove after testing
+    secrets:
+      BLACKDUCK_API_TOKEN:
+        required: true
+      GHA_CHECKOUT_APP_ID:
+        required: true
+      GHA_CHECKOUT_APP_PRIVATE_KEY:
+        required: true
+
+jobs:
+  generate-scan-definitions:
+    uses: ./.github/workflows/_licenses-generate-scan-definition.yaml
+    secrets: inherit
+
+  scan-blackduck:
+    needs: generate-scan-definitions
+    uses: ./.github/workflows/_licenses-scan-blackduck.yaml
+    with:
+      scan_definitions_dir: ${{ needs.generate-scan-definitions.outputs.scan_definitions_dir }}
+      parallel_scans: ${{ inputs.parallel_scans }}
+      timeout: ${{ inputs.timeout }}
+      source_code_scan: ${{ inputs.source_code_scan }}
+      container_image_scan: ${{ inputs.container_image_scan }}
+      verbosity: ${{ inputs.verbosity }}
+      infra_tools_ref: ${{ inputs.infra_tools_ref }}
+    secrets: inherit
+
+  report-bom:
+    needs:
+      - generate-scan-definitions
+      - scan-blackduck
+    runs-on:
+      - self-hosted-nutanix-docker-large
+    permissions:
+      contents: read
+    env:
+      BLACKDUCK_URL: "https://nutanix.app.blackduck.com"
+      BLACKDUCK_API_TOKEN: "${{ secrets.BLACKDUCK_API_TOKEN }}"
+    steps:
+      - name: Download scan definitions
+        uses: actions/download-artifact@v4
+        with:
+          name: scan-definitions
+          path: scans/
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
+          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
+          owner: mesosphere
+
+      - name: Configure git for private repo access
+        run: git config --global url."https://oauth2:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout dkp-infra-tools
+        uses: actions/checkout@v4
+        with:
+          repository: mesosphere/dkp-infra-tools
+          ref: ${{ inputs.infra_tools_ref }}
+          path: dkp-infra-tools
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "dkp-infra-tools/licenses/go.mod"
+
+      - name: Restore scan cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/bd-cache
+          key: bd-scan-cache-${{ hashFiles('scans/*.yaml') }}
+          restore-keys: bd-scan-cache-
+
+      - name: Generate BOM reports
+        working-directory: dkp-infra-tools/licenses
+        run: |
+          set -euo pipefail
+          mkdir -p bom-reports
+          for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
+            app=$(basename "$scan_file" .yaml)
+            echo "::group::BOM for $app"
+            go run main.go generate bom "$scan_file" \
+              --blackduck-url "$BLACKDUCK_URL" \
+              --cache-local-storage-path /tmp/bd-cache \
+              -v ${{ inputs.verbosity }} | tee "bom-reports/${app}.csv"
+            echo "::endgroup::"
+          done
+
+      - name: Upload BOM reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: bom-reports
+          path: dkp-infra-tools/licenses/bom-reports/
+          retention-days: 7
+
+  link-to-parent-project:
+    needs:
+      - generate-scan-definitions
+      - scan-blackduck
+    runs-on:
+      - self-hosted-nutanix-docker-large
+    permissions:
+      contents: read
+    env:
+      BLACKDUCK_URL: "https://nutanix.app.blackduck.com"
+      BLACKDUCK_API_TOKEN: "${{ secrets.BLACKDUCK_API_TOKEN }}"
+    steps:
+      - name: Download scan definitions
+        uses: actions/download-artifact@v4
+        with:
+          name: scan-definitions
+          path: scans/
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
+          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
+          owner: mesosphere
+
+      - name: Configure git for private repo access
+        run: git config --global url."https://oauth2:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout dkp-infra-tools
+        uses: actions/checkout@v4
+        with:
+          repository: mesosphere/dkp-infra-tools
+          ref: ${{ inputs.infra_tools_ref }}
+          path: dkp-infra-tools
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "dkp-infra-tools/licenses/go.mod"
+
+      - name: Create per-app parent projects and link to catalog parent
+        working-directory: dkp-infra-tools/licenses
+        run: |
+          set -euo pipefail
+          for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
+            echo "::group::Parent project for $(basename "$scan_file" .yaml)"
+            go run main.go generate bd-parent-project "$scan_file" \
+              --blackduck-url "$BLACKDUCK_URL" \
+              --link-to-parent "${{ inputs.parent_project }}" \
+              --link-to-parent-version "${{ inputs.version }}" \
+              -v ${{ inputs.verbosity }}
+            echo "::endgroup::"
+          done
