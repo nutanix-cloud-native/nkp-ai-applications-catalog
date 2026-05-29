@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       chart_repo:
-        description: 'Source Helm repository URL (e.g., https://weaviate.github.io/weaviate-helm/)'
+        description: 'Source Helm/OCI repository URL (e.g., https://weaviate.github.io/weaviate-helm/, oci://harbor.eng.nutanix.com/amd-operators)'
         type: string
         required: true
       repo_name:
