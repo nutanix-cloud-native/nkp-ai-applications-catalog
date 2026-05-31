@@ -7,7 +7,8 @@ metadata:
   namespace: ${releaseNamespace}
 spec:
   interval: 1m
-  url: "oci://ghcr.io/nutanix-cloud-native/charts/network-operator-charts"
+  # TODO: This needs to be changed to "oci://ghcr.io/mesosphere/charts/network-operator-charts" on Legal Approval
+  url: "oci://harbor.eng.nutanix.com/amd-operators/network-operator-charts"
   ref:
     tag: v1.2.0
 ---
