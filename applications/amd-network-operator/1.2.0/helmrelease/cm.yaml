@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-config-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    # Default values for AMD Network Operator (rocm-network/network-operator-charts).
+    # See https://github.com/ROCm/network-operator for full options.
+    # KMM is provided by the shared amd-kmm-operator component.
+    kmm:
+      enabled: false
+    # NFD is provided by the Kommander platform layer.
+    # IMPORTANT: Kommander's NFD worker must have the following toleration
+    # to discover AMD NICs on tainted nodes:
+    #   - key: "amd-dcm"
+    #     operator: "Equal"
+    #     value: "up"
+    #     effect: "NoExecute"
+    node-feature-discovery:
+      enabled: false
+    # Multus CNI — disabled; will be provided by NKP v2.18.
+    multus:
+      enabled: false
+      image:
+        repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+        tag: v4.2.2
+        pullPolicy: IfNotPresent
+    # Network operator controller manager
+    controllerManager:
+      manager:
+        image:
+          repository: docker.io/rocm/network-operator
+          tag: v1.2.0
+        imagePullPolicy: IfNotPresent
+        imagePullSecrets: ""
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi

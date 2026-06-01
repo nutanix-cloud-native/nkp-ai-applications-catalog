@@ -1,0 +1,300 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: amd-kmm-operator-registry-reconciler-init
+  namespace: ${releaseNamespace}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      serviceAccountName: amd-kmm-operator-registry-reconciler
+      restartPolicy: OnFailure
+      containers:
+      - name: reconciler
+        image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
+        envFrom:
+        - secretRef:
+            name: amd-kmm-operator-registry-reconciler-config
+        command: ["/bin/sh", "-e", "-c"]
+        args:
+        - |
+          CRONJOB_READY=false
+          for i in $(seq 1 30); do
+            if kubectl get cronjob amd-kmm-operator-registry-reconciler -n "${releaseNamespace}" > /dev/null 2>&1; then
+              CRONJOB_READY=true
+              break
+            fi
+            echo "INFO: Waiting for CronJob to be created... ($i/30)"
+            sleep 2
+          done
+          if [ "$CRONJOB_READY" = "false" ]; then
+            echo "ERROR: CronJob amd-kmm-operator-registry-reconciler not found after 60s"
+            exit 1
+          fi
+          echo "INFO: CronJob ready, running initial reconciliation..."
+          exec kubectl create job -n "${releaseNamespace}" \
+            amd-kmm-operator-registry-reconciler-initial \
+            --from=cronjob/amd-kmm-operator-registry-reconciler
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: amd-kmm-operator-registry-reconciler
+  namespace: ${releaseNamespace}
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: amd-kmm-operator-registry-reconciler
+          restartPolicy: Never
+          volumes:
+          - name: registry-creds
+            secret:
+              secretName: ${credentialsSecretName}
+              optional: true
+          containers:
+          - name: reconciler
+            image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
+            envFrom:
+            - secretRef:
+                name: amd-kmm-operator-registry-reconciler-config
+            volumeMounts:
+            - name: registry-creds
+              mountPath: /etc/secrets/kmm-registry-creds
+              readOnly: true
+            command: ["/bin/sh", "-e", "-c"]
+            args:
+            - |
+              if ! command -v jq > /dev/null 2>&1; then
+                echo "ERROR: jq is required but not found in the container image"
+                exit 1
+              fi
+
+              NAMESPACE="${releaseNamespace}"
+              KUBETOOLS_IMAGE="${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}"
+
+              CRONJOB_NAME="amd-kmm-operator-registry-reconciler"
+              CREDS_DIR="/etc/secrets/kmm-registry-creds"
+              K8S_NAME_REGEXP='^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$'
+
+              # Validate reconciler configuration before reading or writing resources.
+              if [ -z "$DOCKERCONFIG_SECRET" ] || ! printf '%s' "$DOCKERCONFIG_SECRET" | grep -Eq "$K8S_NAME_REGEXP"; then
+                echo "ERROR: DOCKERCONFIG_SECRET must be a valid Kubernetes resource name"
+                exit 1
+              fi
+              if [ -z "$DAEMONSET_NAME" ] || ! printf '%s' "$DAEMONSET_NAME" | grep -Eq "$K8S_NAME_REGEXP"; then
+                echo "ERROR: DAEMONSET_NAME must be a valid Kubernetes resource name"
+                exit 1
+              fi
+
+              # 1. Read and validate registry credentials; exit gracefully if absent.
+              if [ ! -f "$CREDS_DIR/registry-url" ]; then
+                echo "INFO: Secret ${credentialsSecretName} not found in $NAMESPACE. Registry plumbing will not be created."
+                exit 0
+              fi
+
+              REGISTRY_URL=$(cat "$CREDS_DIR/registry-url")
+              REGISTRY_USER=$(cat "$CREDS_DIR/username")
+              REGISTRY_PASS=$(cat "$CREDS_DIR/password")
+              HAS_CA=""
+              [ -f "$CREDS_DIR/ca.crt" ] && HAS_CA="true"
+
+              if [ -z "$REGISTRY_URL" ] || [ -z "$REGISTRY_USER" ]; then
+                echo "ERROR: registry-url or username is empty in ${credentialsSecretName}"
+                exit 1
+              fi
+
+              # Normalize registry URL: preserve the scheme for containerd hosts.toml,
+              # but use only host:port for certs.d paths and the dockerconfig key.
+              case "$REGISTRY_URL" in
+                http://*) REGISTRY_SCHEME="http" ;;
+                https://*) REGISTRY_SCHEME="https" ;;
+                *)
+                  echo "ERROR: registry-url must start with http:// or https://. Got: $REGISTRY_URL"
+                  exit 1
+                  ;;
+              esac
+
+              # Strip http(s):// and any project path so certs.d/dockerconfig use host[:port] only.
+              REGISTRY_HOST=$(echo "$REGISTRY_URL" | sed 's|^https\?://||; s|/.*||')
+              # Reject empty or whitespace-bearing hosts before the regex check.
+              # grep -E "^...$" matches line-by-line, so a multi-line value could
+              # bypass the shape regex if any single line happened to match. The
+              # case check looks at the whole string, so it catches newlines, tabs,
+              # spaces, and other whitespace that should never appear in a host.
+              case "$REGISTRY_HOST" in
+                ""|*[[:space:]]*)
+                  echo "ERROR: registry-url host is empty or contains whitespace. Got: $REGISTRY_URL"
+                  exit 1
+                  ;;
+              esac
+              # Match Docker/distribution DomainRegexp: DNS-style host or bracketed IPv6,
+              # each with an optional numeric port. Hostname labels may contain hyphens
+              # but cannot start or end with one; underscores are not valid registry hosts.
+              DOMAIN_COMPONENT='[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?'
+              DOMAIN_REGEXP="^$DOMAIN_COMPONENT(\.$DOMAIN_COMPONENT)*(:[0-9]+)?$"
+              IPV6_REGEXP='^\[[A-Fa-f0-9:]+\](:[0-9]+)?$'
+              if ! printf '%s' "$REGISTRY_HOST" | grep -Eq "$DOMAIN_REGEXP|$IPV6_REGEXP"; then
+                echo "ERROR: registry-url must include a valid registry host[:port]. Got: $REGISTRY_URL"
+                exit 1
+              fi
+              echo "INFO: Registry endpoint: $REGISTRY_SCHEME://$REGISTRY_HOST (from registry-url: $REGISTRY_URL)"
+
+              # All inputs are validated. Only now resolve ownership and mutate resources.
+              CRONJOB_UID=$(kubectl get cronjob "$CRONJOB_NAME" -n "$NAMESPACE" -o jsonpath='{.metadata.uid}')
+
+              # 2. Create/update dockerconfig secret (owned by CronJob for GC).
+              kubectl create secret docker-registry "$DOCKERCONFIG_SECRET" \
+                --docker-server="$REGISTRY_HOST" \
+                --docker-username="$REGISTRY_USER" \
+                --docker-password="$REGISTRY_PASS" \
+                --namespace="$NAMESPACE" \
+                --dry-run=client -o json \
+              | jq --arg crName "$CRONJOB_NAME" --arg crUid "$CRONJOB_UID" \
+                '.metadata.ownerReferences = [{ apiVersion:"batch/v1", kind:"CronJob", name:$crName, uid:$crUid, blockOwnerDeletion:true }]' \
+              | kubectl apply -f -
+              echo "INFO: Secret $DOCKERCONFIG_SECRET reconciled."
+
+              # 3. Build the node containerd configuration script.
+              TOML_CA_LINE=""
+              CA_CMD="true"
+              if [ "$REGISTRY_SCHEME" = "https" ] && [ -n "$HAS_CA" ]; then
+                TOML_CA_LINE="  ca = \"/etc/containerd/certs.d/$${REGISTRY_HOST}/ca.crt\""
+                CA_CMD="printf '%s' \"\$CA_CERT\" > \"/host/etc/containerd/certs.d/$${REGISTRY_HOST}/ca.crt\""
+              fi
+
+              INIT_SCRIPT="set -e
+              CONFD=/host/etc/containerd/conf.d
+              mkdir -p \"\$CONFD\"
+              CONFD_FILE=\$CONFD/kmm-registry.toml
+
+              # Containerd needs config_path set to read per-registry hosts.toml files
+              # from /etc/containerd/certs.d/<host>/ for OCI-compliant registries.
+              #
+              # Standard NKP images (built by dkp-image-builder) bake config_path into
+              # config.toml via config.toml.v3.tmpl. No cluster creation flag removes it,
+              # so for the common case config_path is already present and this drop-in is
+              # skipped. The drop-in exists as a fallback for two edge cases:
+              #   - Custom-built images where default_image_registry_mirrors or
+              #     image_registries_with_auth was set at image build time, causing the
+              #     v3 template to emit legacy registry.mirrors instead of config_path.
+              #   - Pre-provisioned clusters where the user manages their own config.toml
+              #     and may not have config_path set.
+              CONFIG_PATH_EXISTS=false
+              for f in /host/etc/containerd/config.toml /host/etc/containerd/conf.d/*.toml /host/etc/containerd/konvoy-conf.d/*.toml; do
+                if [ -f \"\$f\" ] && grep -Eq '^[[:space:]]*config_path[[:space:]]*=' \"\$f\" 2>/dev/null; then
+                  CONFIG_PATH_EXISTS=true
+                  break
+                fi
+              done
+
+              NEEDS_RESTART=false
+              if [ \"\$CONFIG_PATH_EXISTS\" = \"true\" ]; then
+                echo INFO: config_path already configured in containerd, skipping drop-in
+              elif [ ! -f \"\$CONFD_FILE\" ]; then
+                printf '%s\n' \
+                  '# managed by amd-kmm-operator' \
+                  '[plugins.\"io.containerd.cri.v1.images\".registry]' \
+                  '  config_path = \"/etc/containerd/certs.d\"' > \"\$CONFD_FILE\"
+                echo INFO: wrote containerd config_path v3 drop-in
+                NEEDS_RESTART=true
+              fi
+
+              DIR=/host/etc/containerd/certs.d/$${REGISTRY_HOST}
+              mkdir -p \"\$DIR\"
+              printf '%s\n' 'server = \"$${REGISTRY_SCHEME}://$${REGISTRY_HOST}\"' '' '[host.\"$${REGISTRY_SCHEME}://$${REGISTRY_HOST}\"]' '  capabilities = [\"pull\", \"resolve\", \"push\"]' '$${TOML_CA_LINE}' > \"\$DIR/hosts.toml\"
+              $${CA_CMD}
+              echo INFO: containerd certs.d configured for $${REGISTRY_HOST}
+              # Containerd does not hot-reload imported plugin configs (config_path
+              # is a CRI plugin setting). If we wrote a new conf.d drop-in, we must
+              # restart containerd so it picks up config_path and begins reading
+              # certs.d/<host>/hosts.toml. Running containers are unaffected; only
+              # new image pull operations are briefly paused during restart.
+              if [ \"\$NEEDS_RESTART\" = \"true\" ]; then
+                echo INFO: restarting containerd to load config_path drop-in...
+                nsenter --target 1 --mount -- systemctl restart containerd
+                for i in \$(seq 1 30); do
+                  if nsenter --target 1 --mount -- ctr --connect-timeout 1s version >/dev/null 2>&1; then
+                    echo INFO: containerd restarted with config_path support
+                    break
+                  fi
+                  if [ \"\$i\" = \"30\" ]; then
+                    echo ERROR: containerd did not come back within 30s
+                    exit 1
+                  fi
+                  sleep 1
+                done
+              fi
+              trap '[ -n \"$${REGISTRY_HOST}\" ] && rm -f \"\$DIR/hosts.toml\" \"\$DIR/ca.crt\" && rmdir \"\$DIR\" 2>/dev/null; grep -q \"managed by amd-kmm-operator\" \"\$CONFD_FILE\" 2>/dev/null && rm -f \"\$CONFD_FILE\"' TERM INT
+              # Keep the container alive; sleep in the background so the
+              # trap can fire immediately on TERM/INT without waiting for
+              # sleep to finish.
+              while true; do sleep 3600 & wait; done"
+
+              # 4. Build DaemonSet manifest via jq and apply (owned by CronJob for GC)
+              jq -n \
+                --arg name "$DAEMONSET_NAME" \
+                --arg ns "$NAMESPACE" \
+                --arg image "$KUBETOOLS_IMAGE" \
+                --arg script "$INIT_SCRIPT" \
+                --arg credSecret "${credentialsSecretName}" \
+                --arg regUrl "$REGISTRY_HOST" \
+                --arg cronjobName "$CRONJOB_NAME" \
+                --arg cronjobUid "$CRONJOB_UID" \
+              '{
+                apiVersion: "apps/v1",
+                kind: "DaemonSet",
+                metadata: {
+                  name: $name,
+                  namespace: $ns,
+                  ownerReferences: [{
+                    apiVersion: "batch/v1",
+                    kind: "CronJob",
+                    name: $cronjobName,
+                    uid: $cronjobUid,
+                    blockOwnerDeletion: true
+                  }]
+                },
+                spec: {
+                  selector: { matchLabels: { app: "amd-kmm-operator-registry-node-config" } },
+                  template: {
+                    metadata: { labels: { app: "amd-kmm-operator-registry-node-config" } },
+                    spec: {
+                      hostPID: true,
+                      hostNetwork: false,
+                      containers: [{
+                        name: "configure",
+                        image: $image,
+                        securityContext: { privileged: true },
+                        command: ["/bin/sh", "-c"],
+                        args: [$script],
+                        env: [{
+                          name: "CA_CERT",
+                          valueFrom: { secretKeyRef: { name: $credSecret, key: "ca.crt", optional: true } }
+                        }],
+                        volumeMounts: [
+                          { name: "containerd-root", mountPath: "/host/etc/containerd", readOnly: false }
+                        ],
+                        lifecycle: {
+                          preStop: {
+                            exec: { command: ["/bin/sh", "-c", ("[ -n \"" + $regUrl + "\" ] && rm -f \"/host/etc/containerd/certs.d/" + $regUrl + "/hosts.toml\" \"/host/etc/containerd/certs.d/" + $regUrl + "/ca.crt\" && rmdir \"/host/etc/containerd/certs.d/" + $regUrl + "\" 2>/dev/null; grep -q \"managed by amd-kmm-operator\" /host/etc/containerd/conf.d/kmm-registry.toml 2>/dev/null && rm -f /host/etc/containerd/conf.d/kmm-registry.toml; echo INFO: cleaned up certs.d/" + $regUrl)] }
+                          }
+                        }
+                      }],
+                      volumes: [
+                        { name: "containerd-root", hostPath: { path: "/etc/containerd", type: "Directory" } }
+                      ],
+                      tolerations: [{ operator: "Exists" }]
+                    }
+                  }
+                }
+              }' | kubectl apply -f -
+              echo "INFO: DaemonSet $DAEMONSET_NAME reconciled."

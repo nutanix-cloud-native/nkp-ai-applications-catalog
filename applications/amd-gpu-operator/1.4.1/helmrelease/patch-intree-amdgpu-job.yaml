@@ -1,0 +1,118 @@
+# Post-install Job: remove the in-tree amdgpu kernel module so the DKMS driver can load.
+# Deployed as part of the kustomization alongside the HelmRelease.
+# Waits for the operator to create the KMM Module, then patches it if needed.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: patch-intree-amdgpu
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: patch-intree-amdgpu
+  namespace: ${releaseNamespace}
+rules:
+- apiGroups: ["kmm.sigs.x-k8s.io"]
+  resources: ["modules"]
+  resourceNames: ["default"]
+  verbs: ["get", "patch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  resourceNames: ["amd-gpu-operator-gpu-operator-charts-controller-manager"]
+  verbs: ["get"]
+- apiGroups: ["apps"]
+  resources: ["deployments/scale"]
+  resourceNames: ["amd-gpu-operator-gpu-operator-charts-controller-manager"]
+  verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: patch-intree-amdgpu
+  namespace: ${releaseNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: patch-intree-amdgpu
+subjects:
+- kind: ServiceAccount
+  name: patch-intree-amdgpu
+  namespace: ${releaseNamespace}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: patch-intree-amdgpu
+  namespace: ${releaseNamespace}
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: patch-intree-amdgpu
+      restartPolicy: Never
+      containers:
+      - name: patch
+        image: ${kubetoolsImageRepository:=docker.io/mesosphere/kubectl}:${kubetoolsImageTag:=v1.35.2-alpine}
+        command: ["/bin/sh", "-e", "-c"]
+        args:
+        - |
+          NAMESPACE="${releaseNamespace}"
+          MODULE="default"
+          IN_TREE_MODULE="amdgpu"
+          CONTROLLER_DEPLOYMENT="amd-gpu-operator-gpu-operator-charts-controller-manager"
+
+          echo "INFO: Waiting for KMM Module '$MODULE' to be created by the GPU Operator..."
+          for i in $(seq 1 60); do
+            if kubectl get module "$MODULE" -n "$NAMESPACE" > /dev/null 2>&1; then
+              echo "INFO: Module '$MODULE' found."
+              break
+            fi
+            if [ "$i" = "60" ]; then
+              echo "ERROR: Module '$MODULE' not found after 5 minutes. Is driver.enable=true in the DeviceConfig?"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          CURRENT=$(kubectl get module "$MODULE" -n "$NAMESPACE" \
+            -o jsonpath='{.spec.moduleLoader.container.kernelMappings[0].inTreeModulesToRemove}' 2>/dev/null || true)
+          if echo "$CURRENT" | grep -q "$IN_TREE_MODULE"; then
+            echo "INFO: inTreeModulesToRemove already contains '$IN_TREE_MODULE' — nothing to do."
+            exit 0
+          fi
+
+          echo "INFO: Scaling down GPU Operator controller..."
+          kubectl scale deployment "$CONTROLLER_DEPLOYMENT" -n "$NAMESPACE" --replicas=0
+          for i in $(seq 1 12); do
+            READY=$(kubectl get deployment "$CONTROLLER_DEPLOYMENT" -n "$NAMESPACE" \
+              -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo 0)
+            [ "${READY:-0}" = "0" ] && break
+            sleep 5
+          done
+
+          echo "INFO: Patching KMM Module '$MODULE' with inTreeModulesToRemove=[$IN_TREE_MODULE]"
+          kubectl patch module "$MODULE" -n "$NAMESPACE" --type=json \
+            -p="[{\"op\":\"add\",\"path\":\"/spec/moduleLoader/container/kernelMappings/0/inTreeModulesToRemove\",\"value\":[\"$IN_TREE_MODULE\"]}]"
+
+          echo "INFO: Waiting for KMM to rebuild and load the DKMS driver..."
+          ATTEMPTS=0
+          while [ $ATTEMPTS -lt 60 ]; do
+            sleep 10
+            ATTEMPTS=$((ATTEMPTS + 1))
+            LOADER_READY=$(kubectl get module "$MODULE" -n "$NAMESPACE" \
+              -o jsonpath='{.status.moduleLoader.availableNumber}' 2>/dev/null || echo 0)
+            LOADER_DESIRED=$(kubectl get module "$MODULE" -n "$NAMESPACE" \
+              -o jsonpath='{.status.moduleLoader.desiredNumber}' 2>/dev/null || echo 0)
+            if [ "${LOADER_READY:-0}" -gt 0 ] && [ "$LOADER_READY" = "$LOADER_DESIRED" ]; then
+              echo "INFO: DKMS amdgpu driver loaded on all $LOADER_READY GPU nodes."
+              break
+            fi
+            echo "  ... waiting (attempt $ATTEMPTS/60, ready=$LOADER_READY/$LOADER_DESIRED)"
+          done
+
+          echo "INFO: Scaling GPU Operator controller back up..."
+          kubectl scale deployment "$CONTROLLER_DEPLOYMENT" -n "$NAMESPACE" --replicas=1
+          echo "INFO: Done."

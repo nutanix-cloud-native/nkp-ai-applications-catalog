@@ -1,56 +1,166 @@
 # AMD GPU Operator
 
-This application deploys the **AMD GPU Operator** on Kubernetes via Flux (HelmRepository + HelmRelease), using the official ROCm Helm chart.
+NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator).
 
-## Overview
+## Architecture
 
-The AMD GPU Operator automates the management of AMD software components needed to provision GPU nodes:
+```mermaid
+graph TD
+    subgraph "NKP Platform Layer"
+        NFD["Node Feature Discovery<br/>(Kommander)"]
+    end
 
-- **Node Feature Discovery (NFD)** – Detects AMD GPU hardware and labels nodes (e.g. `feature.node.kubernetes.io/amd-gpu=true`).
-- **Kernel Module Management (KMM)** – Optional out-of-tree AMD GPU driver installation and lifecycle.
-- **Device plugin** – Exposes `amd.com/gpu` as a schedulable resource.
-- **Device Config Manager (DCM)** – GPU partitioning and configuration.
-- **Metrics** – Optional device metrics exporter integration.
+    subgraph "AMD KMM Operator"
+        KMM["KMM Controller"]
+        DC_SECRET["kmm-registry-dockerconfig<br/>(auto-created)"]
+        DS["Registry DaemonSet<br/>(containerd trust)"]
+    end
 
-You can use **inbox or pre-installed drivers** (`spec.driver.enable: false` in DeviceConfig) or let the operator install **out-of-tree drivers** via KMM.
+    subgraph "AMD GPU Operator"
+        CTRL["GPU Operator Controller"]
+        DC["DeviceConfig 'default'<br/>selector: amd-gpu=true"]
+        DP["Device Plugin DaemonSet"]
+        NL["Node Labeller DaemonSet"]
+        ME["Metrics Exporter DaemonSet"]
+    end
 
-## Documentation
+    subgraph "KMM-Managed (per node)"
+        MOD["Module CR<br/>(auto-generated)"]
+        KANIKO["Kaniko Build Pod<br/>(driver compilation)"]
+        WORKER["KMM Worker Pod<br/>(modprobe load)"]
+    end
 
-| Resource | Link |
-|----------|------|
-| **Installation (Helm)** | [Kubernetes (Helm) — AMD GPU Operator](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html) |
-| **Release notes** | [Release Notes](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/release_notes.html) |
-| **Full config reference** | [Full Reference Config](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/full_reference_config.html) |
-| **DeviceConfig / CRDs** | [Custom Resource Installation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html#install-custom-resource) |
-| **Troubleshooting** | [Troubleshooting](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/troubleshooting.html) |
-| **Uninstall** | [Uninstallation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/uninstallation/uninstallation.html) |
-| **GitHub** | [ROCm/gpu-operator](https://github.com/ROCm/gpu-operator) |
+    subgraph "Worker Node"
+        GPU["AMD GPU Hardware"]
+        KMOD["amdgpu kernel module"]
+    end
 
-## Prerequisites
+    NFD -->|"labels node<br/>amd-gpu=true"| DC
+    DC -->|"watched by"| CTRL
+    CTRL -->|"creates"| MOD
+    CTRL -->|"deploys"| DP
+    CTRL -->|"deploys"| NL
+    CTRL -->|"deploys"| ME
+    MOD -->|"triggers build"| KANIKO
+    KANIKO -->|"pushes image to<br/>private registry"| DC_SECRET
+    MOD -->|"triggers load"| WORKER
+    WORKER -->|"modprobe"| KMOD
+    DS -->|"configures containerd<br/>on every node"| WORKER
+    KMOD --- GPU
+```
 
-- Kubernetes cluster **v1.29.0 or later**
-- Helm **v3.2.0 or later** (for catalog/Flux tooling)
-- **cert-manager** installed (required for TLS; the operator uses it for webhooks)
-- Worker nodes with **AMD GPUs**
-- CNI and system pods healthy
+### Driver Build Flow
 
-## How This App Deploys It
+```mermaid
+sequenceDiagram
+    participant NFD as NFD Worker
+    participant Node as Worker Node
+    participant Ctrl as GPU Operator Controller
+    participant KMM as KMM Controller
+    participant Kaniko as Kaniko Build Pod
+    participant Reg as Private Registry
+    participant Worker as KMM Worker Pod
 
-- **Helm repository:** `https://rocm.github.io/gpu-operator`
-- **Chart:** `gpu-operator-charts`
-- **Version:** `v1.4.1`
-- **Release name:** `amd-gpu-operator`
-- **Target namespace:** Workspace release namespace (`releaseNamespace`)
+    NFD->>Node: Detects AMD GPU, sets label amd-gpu=true
+    Ctrl->>Ctrl: DeviceConfig selector matches node
+    Ctrl->>KMM: Creates Module CR (driver image + build spec)
+    KMM->>Kaniko: Spawns Kaniko pod for kernel version
+    Kaniko->>Kaniko: Builds driver from OS base image + kernel headers
+    Kaniko->>Reg: Pushes built driver image (tagged by kernel version)
+    KMM->>Worker: Deploys worker pod on target node
+    Worker->>Reg: Pulls driver image (via kmm-registry-dockerconfig)
+    Worker->>Node: Runs modprobe to load amdgpu kernel module
+    Ctrl->>Node: Deploys device plugin + labeller + metrics exporter
+```
 
-Default values (ConfigMap) can enable the default DeviceConfig (`crds.defaultCR.install: true`). After install, create or edit a `DeviceConfig` in the operator namespace to select nodes (e.g. `selector: feature.node.kubernetes.io/amd-gpu: "true"`) and choose driver strategy (inbox vs out-of-tree).
+## Dependencies
 
-## Configuration
+| Dependency | Purpose | Enforcement |
+|---|---|---|
+| `amd-kmm-operator` | Shared KMM instance + registry plumbing | `metadata.yaml` (`requiredDependencies`) + Flux `dependsOn` |
+| Node Feature Discovery | GPU hardware detection and labelling | Provided by Kommander platform layer |
 
-- Override defaults via the app’s ConfigMap or your platform’s override mechanism.
-- Key chart options: `node-feature-discovery.enabled`, `kmm.enabled`, `crds.defaultCR.install`, and sub-chart values (see [Helm chart customization](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html#helm-chart-customization-parameters)).
-- For **inbox/pre-installed drivers**, set `spec.driver.enable: false` in your DeviceConfig.
-- For **out-of-tree drivers**, set `spec.driver.enable: true` and `spec.driver.blacklist: true` (and reboot nodes as per AMD docs).
+## Default Configuration
 
-## Installing With AMD Network Operator
+The following subcharts are **disabled** by default because they are provided by other NKP components:
 
-If you install both AMD GPU Operator and AMD Network Operator on the same cluster, follow AMD’s combined guide to avoid duplicate NFD/KMM and version conflicts: [Installation of GPU Operator and Network Operator together](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm-operators.html).
+| Subchart | Disabled | Provided By |
+|---|---|---|
+| `kmm` | `kmm.enabled: false` | `amd-kmm-operator` |
+| `node-feature-discovery` | `node-feature-discovery.enabled: false` | Kommander |
+
+The chart auto-creates a `DeviceConfig` CR named `default` with:
+- `spec.selector: { feature.node.kubernetes.io/amd-gpu: "true" }` (physical GPUs)
+- `spec.driver.enable: true`
+- Built-in device plugin, node labeller, and metrics exporter
+
+## NFD Toleration Requirement
+
+Kommander's NFD worker DaemonSet must include the following toleration to discover AMD GPUs on tainted nodes:
+
+```yaml
+tolerations:
+  - key: "amd-dcm"
+    operator: "Equal"
+    value: "up"
+    effect: "NoExecute"
+```
+
+Without this, NFD workers won't run on nodes with the `amd-dcm` taint, and those nodes won't receive AMD GPU feature labels.
+
+## Node Feature Labels
+
+The GPU Operator installs NFD rules that produce two labels. Each requires its own `DeviceConfig` CR:
+
+| NFD Label | Meaning | Default CR |
+|---|---|---|
+| `feature.node.kubernetes.io/amd-gpu: "true"` | Physical GPU (PF) detected | `default` (auto-created) |
+| `feature.node.kubernetes.io/amd-vgpu: "true"` | Virtual GPU (SR-IOV VF) detected | User must create a second `DeviceConfig` |
+
+## Config Overrides (Private Registry)
+
+When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values:
+
+```yaml
+deviceConfig:
+  spec:
+    driver:
+      enable: true
+      image: "<registry-host>:<port>/<project>/amdgpu_kmod"
+      imageBuild:
+        baseImageRegistry: "<registry-host>:<port>/<project>"
+        baseImageRegistryTLS:
+          insecure: false
+          insecureSkipTLSVerify: false
+      imageRegistrySecret:
+        name: "kmm-registry-dockerconfig"
+      imageRegistryTLS:
+        insecure: false
+        insecureSkipTLSVerify: false
+```
+
+### Override Fields
+
+| Field | Description |
+|---|---|
+| `driver.image` | Registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically. |
+| `driver.imageRegistrySecret.name` | Must be `kmm-registry-dockerconfig`, auto-created by the AMD KMM Operator reconciler. |
+| `driver.imageBuild.baseImageRegistry` | Private mirror hosting OS base images (e.g. `ubuntu:24.04`) for Kaniko builds. Avoids Docker Hub rate limits. |
+| `driver.imageRegistryTLS.insecure` | Set `true` for plain HTTP registries. |
+| `driver.imageRegistryTLS.insecureSkipTLSVerify` | Set `true` for self-signed certificates. |
+
+### Credential Flow
+
+```mermaid
+graph LR
+    A["kmm-registry-dockerconfig<br/>(auto-created by KMM Operator)"] -->|"referenced in"| B["DeviceConfig<br/>imageRegistrySecret"]
+    B -->|"propagated to"| C["Module CR<br/>imageRepoSecret"]
+    C -->|"injected into"| D["Kaniko Build Pod<br/>(push auth)"]
+    C -->|"injected into"| E["KMM Worker Pod<br/>(pull auth)"]
+```
+
+## Install / Uninstall
+
+**Install:** Enable `amd-kmm-operator` first, then `amd-gpu-operator`.
+
+**Uninstall:** Disable `amd-gpu-operator` first, then `amd-kmm-operator`.

@@ -1,9 +1,16 @@
 ignore: []
 resources:
-- container_image: docker.io/rocm/gpu-operator:v1.4.1
+- container_image: docker.io/rocm/network-operator:v1.2.0
   sources:
   - ref: ${image_tag}
-    url: https://github.com/ROCm/gpu-operator.git
+    url: https://github.com/ROCm/network-operator.git
+# CNI plugins image is pulled by the operator at runtime when a NetworkConfig CR
+# with secondaryNetwork.cniPlugins.enable: true is applied (the default in the
+# example NetworkConfig in metadata.yaml).
+- container_image: docker.io/rocm/k8s-cni-plugins:v1.2.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/network-operator.git
 # KMM is provided by the shared amd-kmm-operator by default (kmm.enabled: false),
 # but retained here so license tracking remains correct if the user re-enables
 # the embedded KMM subchart via Helm value overrides. Versions align with the
@@ -16,6 +23,12 @@ resources:
   sources:
   - ref: release-v1.0.0
     url: https://github.com/ROCm/kernel-module-management.git
+# Multus is provided by NKP v2.18+ by default (multus.enabled: false),
+# but retained for users on NKP < v2.18 who re-enable the embedded subchart.
+- container_image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/k8snetworkplumbingwg/multus-cni.git
 # NFD is provided by the Kommander platform layer by default
 # (node-feature-discovery.enabled: false), but retained for users who
 # re-enable the embedded subchart via Helm value overrides.

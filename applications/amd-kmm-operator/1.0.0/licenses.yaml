@@ -1,0 +1,22 @@
+ignore: []
+resources:
+- container_image: docker.io/rocm/kernel-module-management-operator:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-signimage:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-worker:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: gcr.io/kaniko-project/executor:v1.23.2
+  sources:
+  - ref: v1.23.2
+    url: https://github.com/GoogleContainerTools/kaniko.git

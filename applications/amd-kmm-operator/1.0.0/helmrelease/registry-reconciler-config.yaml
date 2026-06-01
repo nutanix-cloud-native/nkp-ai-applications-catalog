@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: amd-kmm-operator-registry-reconciler-config
+  namespace: ${releaseNamespace}
+type: Opaque
+stringData:
+  DOCKERCONFIG_SECRET: "${dockerconfigSecretName}"
+  DAEMONSET_NAME: "${daemonsetName}"

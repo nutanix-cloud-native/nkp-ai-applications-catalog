@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: amd-gpu-operator-helmrelease
+  name: amd-kmm-operator-helmrelease
   namespace: ${releaseNamespace}
 spec:
   force: false
@@ -20,3 +20,10 @@ spec:
       appVersion: ${appVersion}
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
+      credentialsSecretName: kmm-registry-credentials
+      dockerconfigSecretName: kmm-registry-dockerconfig
+      daemonsetName: amd-kmm-operator-registry-node-config
+    substituteFrom:
+      - kind: Secret
+        name: kmm-registry-user-config
+        optional: true

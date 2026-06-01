@@ -1,0 +1,136 @@
+schema: "catalog.nkp.nutanix.com/v1/application-metadata"
+displayName: AMD Network Operator
+description: The AMD Network Operator simplifies deployment and management of AMD AI NICs (AINICs) in Kubernetes and works with the AMD GPU Operator for high-performance networking in AI/ML and HPC workloads.
+category:
+  - general
+type: nkp-core-platform
+allowMultipleInstances: false
+scope:
+  - workspace
+licensing:
+  - Pro
+  - Ultimate
+certifications:
+  - qualified
+requiredDependencies:
+  - amd-kmm-operator
+overview: |-
+  # Overview
+  The AMD Network Operator automates NIC discovery and driver management for AMD AI NICs (e.g. AMD Pensando Pollara), with RDMA/RoCE support, Prometheus metrics, and dynamic resource allocation. It can be installed alongside the AMD GPU Operator on the same cluster. For a detailed overview of the operator's architecture and components, see the [Network Operator Overview](https://instinct.docs.amd.com/projects/network-operator/en/main/overview.html).
+
+  ## Key Features
+  ### Automated Network Driver Builds
+  Builds and loads out-of-tree AMD NIC kernel modules (ionic, ionic_rdma, pds_core, tawk_ipc) on target nodes using KMM and Kaniko for in-cluster driver compilation.
+
+  ### Device Plugin and Metrics
+  Deploys an AMD NIC device plugin and an optional metrics exporter with Prometheus integration.
+
+  ### RDMA/RoCE Support
+  Enables RDMA over Converged Ethernet for high-performance inter-node communication in AI/ML and HPC workloads.
+
+  ## Configuration
+  After enabling this operator, create a `NetworkConfig` CR to target specific nodes and trigger driver builds. The chart **does not** auto-create a `NetworkConfig` (unlike the GPU Operator's `DeviceConfig`). Choose a CR name other than `default` to avoid conflicts with the GPU Operator.
+
+  For physical NICs (PF), use the selector `feature.node.kubernetes.io/amd-nic: "true"`. For SR-IOV virtual function (VF) environments, use `feature.node.kubernetes.io/amd-vnic: "true"` instead.
+
+  ### NetworkConfig CR (Private Registry)
+  Create a `NetworkConfig` CR that aligns with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values:
+  ```
+  kubectl apply -f - <<EOF
+  apiVersion: amd.com/v1alpha1
+  kind: NetworkConfig
+  metadata:
+    name: network
+    namespace: <workspace-namespace>
+  spec:
+    selector:
+      feature.node.kubernetes.io/amd-nic: "true"
+    driver:
+      enable: true
+      blacklist: true
+      image: "<registry-host>:<port>/<project>/amdnetwork_kmod"
+      imageBuild:
+        baseImageRegistry: "<registry-host>:<port>/<project>"
+        baseImageRegistryTLS:
+          insecure: false
+          insecureSkipTLSVerify: false
+      imageRegistrySecret:
+        name: "kmm-registry-dockerconfig"
+      imageRegistryTLS:
+        insecure: false
+        insecureSkipTLSVerify: false
+    secondaryNetwork:
+      cniPlugins:
+        enable: true
+  EOF
+  ```
+  - `blacklist` — when `true`, unloads the in-tree `ionic` kernel module before loading the DKMS version. Required on nodes that ship a built-in `ionic` driver. Without this, the in-tree driver claims the NIC first and the DKMS driver fails to load.
+  - `image` — the registry path where built NIC driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
+  - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
+  - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
+  - Set `insecure`/`insecureSkipTLSVerify` to `true` only for registries using self-signed certificates or plain HTTP.
+  - `secondaryNetwork.cniPlugins.enable` — must be `true` to deploy the `amd-host-device` CNI plugin binary to `/opt/cni/bin` on each node. Without this, Multus cannot attach NICs to pods (`failed to find plugin "amd-host-device"`).
+
+  ### Config Overrides (Helm)
+  The Helm chart exposes controller-level settings (image, resources, tolerations, etc.) via config overrides. The `NetworkConfig` CR above is **not** managed by Helm and must be created separately. For the full list of Helm overrides, see [values.yaml](https://github.com/ROCm/network-operator/blob/v1.2.0/helm-charts-k8s/values.yaml).
+
+  ## Deploying Workloads with Network Devices
+  Once the operator is installed and NIC drivers are loaded, workloads can request AMD NIC/vNIC devices. This requires Multus CNI and a `NetworkAttachmentDefinition`.
+
+  ### 1. Create a NetworkAttachmentDefinition
+  ```
+  apiVersion: k8s.cni.cncf.io/v1
+  kind: NetworkAttachmentDefinition
+  metadata:
+    name: amd-host-device-nad
+    annotations:
+      k8s.v1.cni.cncf.io/resourceName: amd.com/vnic
+  spec:
+    config: '{
+      "name": "amd-host-device-nad",
+      "cniVersion": "0.3.1",
+      "type": "amd-host-device"
+    }'
+  ```
+
+  ### 2. Request NIC Resources in the Workload
+  Annotate pods with `k8s.v1.cni.cncf.io/networks: amd-host-device-nad` and request `amd.com/nic` or `amd.com/vnic` in resource limits:
+  ```
+  spec:
+    template:
+      metadata:
+        annotations:
+          k8s.v1.cni.cncf.io/networks: amd-host-device-nad
+      spec:
+        containers:
+        - name: app
+          resources:
+            requests:
+              amd.com/nic: 1
+            limits:
+              amd.com/nic: 1
+          securityContext:
+            capabilities:
+              add: [IPC_LOCK, NET_ADMIN, NET_RAW]
+  ```
+  For full details including IB and RCCL test examples, see [Deploy a Workload with a Network Device](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/workload.html).
+
+  ## Troubleshooting: In-Tree Module Conflict
+  The `driver.blacklist: true` setting in the NetworkConfig prevents the in-tree `ionic` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot.
+
+  A one-time patch Job is included to force immediate removal without rebooting. It scales down the Network Operator controller, patches the KMM Module CR with `inTreeModulesToRemove: ["ionic"]`, waits for KMM to reload the DKMS driver, then scales the controller back up.
+  ```
+  kubectl apply -f patch-intree-ionic-job.yaml
+  kubectl logs -n kommander -l job-name=patch-intree-ionic -f
+  ```
+  The Job is idempotent — if the patch is already applied, it exits immediately. After a node reboot, the blacklist prevents the in-tree module from loading, so this Job is only needed once.
+
+  ## Dependencies
+  - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.
+  - **Node Feature Discovery** — provided by the NKP platform layer (disabled in this chart).
+  - **Multus CNI** — required for `NetworkAttachmentDefinition` support. Provided by NKP v2.18+ (disabled in this chart). For NKP v2.17.x and earlier, add `multus.enabled: true` to the Helm config overrides.
+
+  ## More Information
+  - [AMD Network Operator - Kubernetes (Helm)](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/kubernetes-helm.html)
+  - [AMD Network Operator - GitHub](https://github.com/ROCm/network-operator)
+icon: PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNTMwIDE1MzAiIHdpZHRoPSIxNTMwIiBoZWlnaHQ9IjE1MzAiPgoJPHRpdGxlPkFNRF9Mb2dvLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zaHAwIHsgZmlsbDogIzAwMDAwMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgY2xhc3M9InNocDAiIGQ9Ik00MzEuMzUgNDE2LjM5TDE1LjI4IDBMMTUzMCAwTDE1MzAgMTUxNS42NkwxMTEzLjkyIDEwOTkuMzJMMTExMy45MiA0MTYuMzlMNDMxLjM1IDQxNi4zOVpNNDMwLjg3IDQ5OS44M0wyLjQ5IDkyOC40NEwyLjQ5IDE1MjguNDFMNjAyLjA0IDE1MjguNDFMMTAzMC4zOSAxMDk5LjgxTDQzMC44NyAxMDk5LjgxTDQzMC44NyA0OTkuODNaIiAvPgo8L3N2Zz4=
