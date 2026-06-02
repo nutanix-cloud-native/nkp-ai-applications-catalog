@@ -249,6 +249,8 @@ github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/mesosphere/kommander-applications/apptests v0.0.0-20260520072905-8be1db814b3b h1:s0SAPt3IOKairKwkGtzeSJps+ieGyZ6ulMwu048/z7o=
 github.com/mesosphere/kommander-applications/apptests v0.0.0-20260520072905-8be1db814b3b/go.mod h1:Hw2dUXD1WKCoYty48TJnJJiXup5+W8pn+8Cfwj0Klh8=
+github.com/mesosphere/kommander-applications/apptests v0.0.0-20260602203912-22d7748db63a h1:juUBAXpSzOlHLh18dCm0Xrh6R2wQ/HKi8JvtErAl5JI=
+github.com/mesosphere/kommander-applications/apptests v0.0.0-20260602203912-22d7748db63a/go.mod h1:Hw2dUXD1WKCoYty48TJnJJiXup5+W8pn+8Cfwj0Klh8=
 github.com/mfridman/tparse v0.18.0 h1:wh6dzOKaIwkUGyKgOntDW4liXSo37qg5AXbIhkMV3vE=
 github.com/mfridman/tparse v0.18.0/go.mod h1:gEvqZTuCgEhPbYk/2lS3Kcxg1GmTxxU7kTC8DvP0i/A=
 github.com/miekg/dns v1.1.57 h1:Jzi7ApEIzwEPLHWRcafCN9LZSBbqQpxjt/wpgvg7wcM=
