@@ -57,10 +57,10 @@ on:
         description: 'Logging verbosity level'
         type: number
         default: 1
-      infra_tools_ref: # TODO(takirala): use main branch
+      infra_tools_ref: # TODO(kjoshi): use main branch
         description: 'dkp-infra-tools git ref to use'
         type: string
-        default: 'main' # TODO(takirala): remove after testing
+        default: 'kjoshi/bd-scan-recursive-checkout' # TODO(kjoshi): remove after testing
     secrets:
       BLACKDUCK_API_TOKEN:
         required: true
