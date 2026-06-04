@@ -62,7 +62,7 @@ jobs:
       parent_project: "NKP AI Applications Catalog"
       source_code_scan: ${{ inputs.source_code_scan == '' && true || inputs.source_code_scan }}
       container_image_scan: ${{ inputs.container_image_scan == '' && true || inputs.container_image_scan }}
-      parallel_scans: ${{ inputs.parallel_scans || 4 }}
+      parallel_scans: ${{ fromJSON(inputs.parallel_scans || '4') }}
       timeout: ${{ inputs.timeout || '4h' }}
-      verbosity: ${{ inputs.verbosity || 1 }}
+      verbosity: ${{ fromJSON(inputs.verbosity || '1') }}
     secrets: inherit
