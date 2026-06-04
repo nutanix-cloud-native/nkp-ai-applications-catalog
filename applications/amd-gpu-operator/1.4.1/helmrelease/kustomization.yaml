@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - cm.yaml
   - amd-gpu-operator.yaml
-  - patch-intree-amdgpu-job.yaml

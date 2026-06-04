@@ -62,14 +62,7 @@ overview: |-
   - Set `insecure`/`insecureSkipTLSVerify` to `true` only for registries using self-signed certificates or plain HTTP.
 
   ## Troubleshooting: In-Tree Module Conflict
-  The `driver.blacklist: true` setting prevents the in-tree `amdgpu` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot.
-
-  A one-time patch Job is included to force immediate removal without rebooting. It scales down the GPU Operator controller, patches the KMM Module CR with `inTreeModulesToRemove: ["amdgpu"]`, waits for KMM to reload the DKMS driver, then scales the controller back up.
-  ```
-  kubectl apply -f patch-intree-amdgpu-job.yaml
-  kubectl logs -n kommander -l job-name=patch-intree-amdgpu -f
-  ```
-  The Job is idempotent — if the patch is already applied, it exits immediately. After a node reboot, the blacklist prevents the in-tree module from loading, so this Job is only needed once.
+  The `driver.blacklist: true` setting prevents the in-tree `amdgpu` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot. A node reboot is required for the blacklist to take effect in this case.
 
   ## Dependencies
   - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.

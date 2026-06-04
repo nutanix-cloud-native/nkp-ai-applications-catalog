@@ -116,14 +116,7 @@ overview: |-
   For full details including IB and RCCL test examples, see [Deploy a Workload with a Network Device](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/workload.html).
 
   ## Troubleshooting: In-Tree Module Conflict
-  The `driver.blacklist: true` setting in the NetworkConfig prevents the in-tree `ionic` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot.
-
-  A one-time patch Job is included to force immediate removal without rebooting. It scales down the Network Operator controller, patches the KMM Module CR with `inTreeModulesToRemove: ["ionic"]`, waits for KMM to reload the DKMS driver, then scales the controller back up.
-  ```
-  kubectl apply -f patch-intree-ionic-job.yaml
-  kubectl logs -n kommander -l job-name=patch-intree-ionic -f
-  ```
-  The Job is idempotent — if the patch is already applied, it exits immediately. After a node reboot, the blacklist prevents the in-tree module from loading, so this Job is only needed once.
+  The `driver.blacklist: true` setting in the NetworkConfig prevents the in-tree `ionic` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot. A node reboot is required for the blacklist to take effect in this case.
 
   ## Dependencies
   - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.
