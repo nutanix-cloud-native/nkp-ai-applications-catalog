@@ -14,6 +14,7 @@ certifications:
   - qualified
 requiredDependencies:
   - amd-kmm-operator
+nkpVersionSupport: ">=2.18.0"
 overview: |-
   # Overview
   The AMD Network Operator automates NIC discovery and driver management for AMD AI NICs (e.g. AMD Pensando Pollara), with RDMA/RoCE support, Prometheus metrics, and dynamic resource allocation. It can be installed alongside the AMD GPU Operator on the same cluster. For a detailed overview of the operator's architecture and components, see the [Network Operator Overview](https://instinct.docs.amd.com/projects/network-operator/en/main/overview.html).
