@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-config-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    # Default values for AMD GPU Operator (rocm/gpu-operator-charts).
+    # See https://github.com/ROCm/gpu-operator for full options.
+    # KMM is provided by the shared amd-kmm-operator component.
+    kmm:
+      enabled: false
+      watch: true
+    # NFD is provided by the Kommander platform layer.
+    # IMPORTANT: Kommander's NFD worker must have the following toleration
+    # to discover AMD GPUs on tainted nodes:
+    #   - key: "amd-dcm"
+    #     operator: "Equal"
+    #     value: "up"
+    #     effect: "NoExecute"
+    # NFD is enabled via the NKP platform layer (Kommander).
+    node-feature-discovery:
+      enabled: false
+    # Auto Node Remediation requires Argo Workflows; disabled by default.
+    remediation:
+      enabled: false
+      installCRDs: false
+    crds:
+      defaultCR:
+        install: true
+    # GPU operator controller manager
+    controllerManager:
+      manager:
+        image:
+          repository: docker.io/rocm/gpu-operator
+          tag: v1.5.0
+        imagePullPolicy: IfNotPresent
+        imagePullSecrets: ""
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+    # Override deviceConfig to point at the private registry.
+    # Users must update spec.driver.image to their actual registry path.
+    deviceConfig:
+      spec:
+        driver:
+          enable: true
+          blacklist: true
+          version: "30.30.3"
+          image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          imageBuild:
+            baseImageRegistry: "registry.example.com:5000/amd-driver-images"
+            baseImageRegistryTLS:
+              insecure: false
+              insecureSkipTLSVerify: false
+          imageRegistrySecret:
+            name: "kmm-registry-dockerconfig"
+          imageRegistryTLS:
+            insecure: false
+            insecureSkipTLSVerify: false
+        commonConfig:
+          initContainerImage: busybox:1.36
+          utilsContainer:
+            image: docker.io/rocm/gpu-operator-utils:v1.5.0
+            imagePullPolicy: IfNotPresent
+        # Device Plugin is disabled in favor of DRA (see draDriver below).
+        # To revert to the traditional Device Plugin, set enableDevicePlugin: true
+        # and draDriver.enable: false (they are mutually exclusive).
+        devicePlugin:
+          enableDevicePlugin: false
+          devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
+          devicePluginImagePullPolicy: IfNotPresent
+          enableNodeLabeller: true
+          nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
+          nodeLabellerImagePullPolicy: IfNotPresent
+        metricsExporter:
+          enable: true
+          image: rocm/device-metrics-exporter:v1.5.0
+          imagePullPolicy: IfNotPresent
+        # DRA replaces Device Plugin for GPU resource allocation.
+        # Mutually exclusive with devicePlugin — only one can be enabled per DeviceConfig.
+        # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
+        draDriver:
+          enable: true
+          image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+          imagePullPolicy: IfNotPresent

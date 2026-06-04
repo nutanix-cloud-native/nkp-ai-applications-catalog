@@ -1,0 +1,150 @@
+schema: "catalog.nkp.nutanix.com/v1/application-metadata"
+displayName: AMD GPU Operator
+description: The AMD GPU Operator manages AMD GPU resources in a Kubernetes cluster and automates tasks related to bootstrapping GPU nodes (drivers, device plugin, NFD, KMM, metrics, DRA, auto-remediation).
+category:
+  - general
+type: nkp-core-platform
+allowMultipleInstances: false
+scope:
+  - workspace
+licensing:
+  - Pro
+  - Ultimate
+certifications:
+  - qualified
+requiredDependencies:
+  - amd-kmm-operator
+nkpVersionSupport: ">=2.18.0"
+overview: |-
+  # Overview
+  The AMD GPU Operator uses the operator framework within Kubernetes to automate the management of AMD software components needed to provision GPUs. For a detailed overview of the operator's architecture and components, see the [GPU Operator Overview](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/overview.html).
+
+  ## What's New in v1.5.0
+  ### Dynamic Resource Allocation (DRA) Driver
+  An alternative to the traditional Device Plugin using the Kubernetes DRA API (`resource.k8s.io/v1`). Deploys `rocm/k8s-gpu-dra-driver` to expose GPUs as structured resources. DRA and the Device Plugin are mutually exclusive — enable only one per `DeviceConfig`. DRA is GA on Kubernetes 1.35+ (NKP v2.18.0+) and CDI is enabled by default in containerd 2.1+, so all prerequisites are met out of the box.
+
+  ### Auto Node Remediation (ANR)
+  Automatically remediates unhealthy GPU worker nodes using Argo Workflows. Configurable drain policies, recovery policies, parallel workflow limits, and reboot timeouts. Disabled by default — requires `remediation.enabled: true` in Helm values and Argo Workflows v4.0.3.
+
+  ### Node Problem Detector (NPD) Integration
+  Surfaces GPU hardware issues (e.g. inband-RAS errors) as Kubernetes node conditions, which can trigger ANR. Requires separate NPD installation.
+
+  ### Enhanced KMM Configuration
+  New `kmm.watch` parameter provides independent control over KMM installation vs. usage. NKP default: `kmm.enabled: false, kmm.watch: true` — uses the shared `amd-kmm-operator` instance.
+
+  ### Global Image Pull Secrets
+  `spec.commonConfig.imageRegistrySecrets` and `global.imagePullSecrets` inject pull secrets into all operator-managed workloads, simplifying air-gapped deployments.
+
+  ### Custom Package Repository URLs
+  `spec.driver.imageBuild.packageRepoURL` and `gpgKeyURL` allow overriding `repo.radeon.com` for environments where it is mirrored or unreachable.
+
+  ### Device Metrics Exporter Enhancements
+  - GPU Agent now communicates via Unix Domain Socket (`/var/run/gpuagent.sock`)
+  - New metrics: `GPU_PROCESS_CU_OCCUPANCY`, `GPU_ECC_DEFERRED_*`
+  - Configurable profiler `SamplingInterval` and health `PollingRate`
+
+  ## Key Features
+  ### Automated GPU Driver Builds
+  Automatically builds and loads out-of-tree AMD GPU kernel modules using KMM and Kaniko for in-cluster driver compilation. The default `DeviceConfig` targets nodes labeled `feature.node.kubernetes.io/amd-gpu: "true"` (physical GPUs). For SR-IOV virtual function (VF) environments, create an additional `DeviceConfig` with selector `feature.node.kubernetes.io/amd-vgpu: "true"`.
+
+  ### Device Plugin and Node Labelling
+  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a node labeller for automatic GPU topology discovery.
+
+  ### Metrics Integration
+  Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
+
+  ## Configuration
+  The chart auto-creates a `DeviceConfig` CR named `default` targeting `amd-gpu` labeled nodes. Users configure the driver image registry, TLS, and build settings via Helm value overrides.
+
+  For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
+
+  ### Config Overrides (Private Registry)
+  When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.0/helm-charts-k8s/values.yaml).
+  ```
+  deviceConfig:
+    spec:
+      driver:
+        enable: true
+        blacklist: true
+        version: "30.30.3"
+        image: "<registry-host>:<port>/<project>/amdgpu_kmod"
+        imageBuild:
+          baseImageRegistry: "<registry-host>:<port>/<project>"
+          baseImageRegistryTLS:
+            insecure: false
+            insecureSkipTLSVerify: false
+        imageRegistrySecret:
+          name: "kmm-registry-dockerconfig"
+        imageRegistryTLS:
+          insecure: false
+          insecureSkipTLSVerify: false
+  ```
+  - `blacklist` — when `true`, unloads the in-tree `amdgpu` kernel module before loading the DKMS version. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). Without this, the in-tree driver claims the GPU first and the DKMS driver fails to load.
+  - `version` — the amdgpu DKMS driver version to build. Must match a ROCm release that supports your GPU generation (e.g. `30.30.3` for ROCm 7.2.1, `30.10.1`+ for MI350X/ROCm 7.0+). See the [User and AMD GPU Driver (amdgpu) support matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html) for the full compatibility table.
+  - `image` — the registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
+  - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
+  - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
+  - Set `insecure`/`insecureSkipTLSVerify` to `true` only for registries using self-signed certificates or plain HTTP.
+
+  ### DRA Driver Configuration (Optional)
+  To use the DRA driver instead of the traditional Device Plugin:
+  ```
+  deviceConfig:
+    spec:
+      draDriver:
+        enable: true
+        image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+      devicePlugin:
+        enableDevicePlugin: false
+  ```
+  All prerequisites (DRA GA, CDI) are met on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+).
+
+  ### Global Image Pull Secrets (Optional)
+  Instead of configuring `imageRegistrySecret` on each component, set a global pull secret:
+  ```
+  global:
+    imagePullSecrets:
+      - name: "kmm-registry-dockerconfig"
+  ```
+  Or at the DeviceConfig level:
+  ```
+  deviceConfig:
+    spec:
+      commonConfig:
+        imageRegistrySecrets:
+          - name: "kmm-registry-dockerconfig"
+  ```
+
+  ### Custom Package Repository (Optional)
+  For air-gapped environments mirroring `repo.radeon.com`:
+  ```
+  deviceConfig:
+    spec:
+      driver:
+        imageBuild:
+          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/30.30.3"
+          gpgKeyURL: "https://my-mirror.internal/rocm.gpg.key"
+  ```
+
+  ## Troubleshooting: In-Tree Module Conflict
+  The `driver.blacklist: true` setting prevents the in-tree `amdgpu` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot.
+
+  A one-time patch Job is included to force immediate removal without rebooting. It scales down the GPU Operator controller, patches the KMM Module CR with `inTreeModulesToRemove: ["amdgpu"]`, waits for KMM to reload the DKMS driver, then scales the controller back up.
+  ```
+  kubectl apply -f patch-intree-amdgpu-job.yaml
+  kubectl logs -n kommander -l job-name=patch-intree-amdgpu -f
+  ```
+  The Job is idempotent — if the patch is already applied, it exits immediately. After a node reboot, the blacklist prevents the in-tree module from loading, so this Job is only needed once.
+
+  ## Dependencies
+  - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.
+  - **Node Feature Discovery** — provided by the NKP platform layer (disabled in this chart).
+  - **Argo Workflows v4.0.3** — required only if enabling Auto Node Remediation (`remediation.enabled: true`).
+
+  ## More Information
+  - [AMD GPU Operator - Kubernetes (Helm)](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html)
+  - [AMD GPU Operator - GitHub](https://github.com/ROCm/gpu-operator)
+  - [DRA Driver Documentation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/dra/dra-driver.html)
+  - [Auto Node Remediation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/autoremediation/auto-remediation.html)
+  - [Node Problem Detector](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/npd/node-problem-detector.html)
+icon: PHN2ZyB2ZXJzaW9uPSIxLjIiIGJhc2VQcm9maWxlPSJ0aW55LXBzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNTMwIDE1MzAiIHdpZHRoPSIxNTMwIiBoZWlnaHQ9IjE1MzAiPgoJPHRpdGxlPkFNRF9Mb2dvLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJdHNwYW4geyB3aGl0ZS1zcGFjZTpwcmUgfQoJCS5zaHAwIHsgZmlsbDogIzAwMDAwMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgY2xhc3M9InNocDAiIGQ9Ik00MzEuMzUgNDE2LjM5TDE1LjI4IDBMMTUzMCAwTDE1MzAgMTUxNS42NkwxMTEzLjkyIDEwOTkuMzJMMTExMy45MiA0MTYuMzlMNDMxLjM1IDQxNi4zOVpNNDMwLjg3IDQ5OS44M0wyLjQ5IDkyOC40NEwyLjQ5IDE1MjguNDFMNjAyLjA0IDE1MjguNDFMMTAzMC4zOSAxMDk5LjgxTDQzMC44NyAxMDk5LjgxTDQzMC44NyA0OTkuODNaIiAvPgo8L3N2Zz4=
