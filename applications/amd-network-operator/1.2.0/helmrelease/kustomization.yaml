@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - cm.yaml
   - amd-network-operator.yaml
-  - patch-intree-ionic-job.yaml
