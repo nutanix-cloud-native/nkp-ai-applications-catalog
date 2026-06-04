@@ -13,6 +13,7 @@ licensing:
 certifications:
   - qualified
 requiredDependencies: []
+nkpVersionSupport: ">=2.18.0"
 overview: |-
   # Overview
   The AMD KMM Operator installs a shared Kernel Module Management (KMM) instance and manages private container registry integration for AMD GPU and Network operators.
