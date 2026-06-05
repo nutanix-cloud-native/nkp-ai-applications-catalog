@@ -57,11 +57,6 @@ jobs:
       - name: Create and publish catalog bundle
         env:
           CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
-          # Use /tmp to avoid kustomize LoadRestrictionsRootOnly failures.
-          # When TMPDIR is under the GHA workspace, bloodhound's temp dirs
-          # trigger kustomize fs-security-constraint errors on apps with
-          # ../../base overlay paths (e.g. Kubeflow apps).
-          TMPDIR: /tmp
         run: |
           if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
             if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
@@ -72,4 +67,5 @@ jobs:
           else
             TAG="${{ inputs.COLLECTION_TAG }}"
           fi
-          devbox run -- just publish-artifacts ${{ inputs.REGISTRY }} "$TAG"
+
+          devbox run -- just publish-artifacts "${{ inputs.REGISTRY }}" "$TAG"
