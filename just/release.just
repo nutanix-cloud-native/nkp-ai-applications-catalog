@@ -34,8 +34,9 @@ release tag=DEFAULT_TAG registry=DEFAULT_REGISTRY:
   just push-bundle {{ tag }} {{ registry }}
 
 # Create bundle and push to registry (for CI workflow_dispatch)
-# Usage: just publish-artifacts <registry> <tag>
-publish-artifacts registry tag:
-  just validate
-  just create-bundle {{ tag }}
-  just push-bundle {{ tag }} {{ registry }}
+# Usage: just publish-artifacts <registry> <tag> [skip]
+# skip: comma-separated app=version to exclude from validate and bundle
+publish-artifacts registry tag skip="":
+  just validate "{{ skip }}"
+  just create-bundle "{{ tag }}" "{{ skip }}"
+  just push-bundle "{{ tag }}" "{{ registry }}" "{{ skip }}"
