@@ -25,6 +25,15 @@ on:
         required: false
         type: string
         default: "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
+      SKIP_APPS:
+        description: >-
+          Comma-separated app=version to exclude from the bundle.
+          Kubeflow apps use cross-directory kustomize refs (e.g. ../katib-cert-manager)
+          that violate nkp's LoadRestrictionsRootOnly policy during bundle creation.
+          Clear this field to include all apps once the upstream charts are fixed.
+        required: false
+        type: string
+        default: "katib=0.19.0,kserve=0.16.0,kubeflow-central-dashboard=1.10.0,kubeflow-pipelines=2.15.0,kubeflow-model-registry=0.3.6,tensorboard-controller=1.10.0,training-operator=1.9.2"
 
 jobs:
   publish-oci-artifacts:
@@ -68,8 +77,10 @@ jobs:
             TAG="${{ inputs.COLLECTION_TAG }}"
           fi
 
+          SKIP="${{ inputs.SKIP_APPS }}"
+
           # Skip validate — it runs separately via Manifest validation workflow.
           # Kubeflow apps use cross-directory kustomize refs that fail with
-          # nkp validate's LoadRestrictionsRootOnly policy in CI.
-          devbox run -- just create-bundle "$TAG"
-          devbox run -- just push-bundle "$TAG" "${{ inputs.REGISTRY }}"
+          # nkp's LoadRestrictionsRootOnly policy in CI.
+          devbox run -- just create-bundle "$TAG" "$SKIP"
+          devbox run -- just push-bundle "$TAG" "${{ inputs.REGISTRY }}" "$SKIP"
