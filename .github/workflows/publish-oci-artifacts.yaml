@@ -24,7 +24,7 @@ on:
         description: "OCI registry URL (e.g. oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog)"
         required: false
         type: string
-        default: "oci://ghcr.io/deepak-muley/nkp-ai-applications-catalog"
+        default: "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
 
 jobs:
   publish-oci-artifacts:
@@ -56,7 +56,7 @@ jobs:
 
       - name: Create and publish catalog bundle
         env:
-          CHART_REGISTRY: oci://ghcr.io/deepak-muley/charts
+          CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
         run: |
           if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
             if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
