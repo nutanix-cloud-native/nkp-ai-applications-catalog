@@ -57,6 +57,7 @@ jobs:
       - name: Create and publish catalog bundle
         env:
           CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
             if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
