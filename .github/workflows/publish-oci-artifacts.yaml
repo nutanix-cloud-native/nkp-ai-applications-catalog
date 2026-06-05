@@ -54,18 +54,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Mesosphere GitHub App Token
-        id: app-token-mesosphere
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
-          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
-          owner: mesosphere
-
       - name: Create and publish catalog bundle
         env:
           CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
-          GH_TOKEN: ${{ steps.app-token-mesosphere.outputs.token }}
         run: |
           if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
             if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
@@ -77,4 +68,8 @@ jobs:
             TAG="${{ inputs.COLLECTION_TAG }}"
           fi
 
-          devbox run -- just publish-artifacts "${{ inputs.REGISTRY }}" "$TAG"
+          # Skip validate — it runs separately via Manifest validation workflow.
+          # Kubeflow apps use cross-directory kustomize refs that fail with
+          # nkp validate's LoadRestrictionsRootOnly policy in CI.
+          devbox run -- just create-bundle "$TAG"
+          devbox run -- just push-bundle "$TAG" "${{ inputs.REGISTRY }}"
