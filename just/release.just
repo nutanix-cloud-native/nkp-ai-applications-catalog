@@ -1,5 +1,5 @@
 BUNDLE_NAME := "nkp-ai-applications-catalog"
-DEFAULT_REGISTRY := "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
+DEFAULT_REGISTRY := "oci://ghcr.io/nutanix-cloud-native"
 DEFAULT_TAG := "v0.1.0"
 # Base OCI registry for Helm charts in helmreleases. Override for testing:
 #   CHART_REGISTRY=oci://ghcr.io/deepak-muley/charts just create-bundle

@@ -21,10 +21,10 @@ on:
         required: false
         type: string
       REGISTRY:
-        description: "OCI registry URL (e.g. oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog)"
+        description: "OCI registry base URL. nkp appends the bundle name automatically."
         required: false
         type: string
-        default: "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
+        default: "oci://ghcr.io/nutanix-cloud-native"
       SKIP_APPS:
         description: >-
           Comma-separated app=version to exclude from the bundle.
