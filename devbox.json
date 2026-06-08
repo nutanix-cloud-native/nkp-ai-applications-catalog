@@ -3,13 +3,18 @@
   "packages": [
     "git@latest",
     "go@latest",
+    "gettext@latest",
     "just@latest",
     "kubernetes-helm@latest",
-    "gettext@latest",
+    "actionlint@latest",
     "shfmt@latest",
     "yq-go@latest",
     "pre-commit@latest",
-    "shellcheck@latest"
+    "shellcheck@latest",
+    "golangci-lint@latest",
+    "go@latest",
+    "jq@latest",
+    "kind@latest"
   ],
   "shell": {
     "init_hook": [
