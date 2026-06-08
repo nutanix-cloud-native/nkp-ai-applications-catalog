@@ -11,11 +11,11 @@ on:
         required: true
         type: choice
         options:
+          - custom
           - v2.16.0
           - v2.17.0
           - v2.18.0
           - v2.19.0
-          - custom
       CUSTOM_TAG:
         description: "Use when 'custom' is selected above. Enter the tag (e.g. v2.20.0)"
         required: false
