@@ -14,6 +14,7 @@ var enabledApps = []string{
 	"kagent",
 }
 
+//nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
 	catalog.InitSuite()
 	for _, app := range enabledApps {
