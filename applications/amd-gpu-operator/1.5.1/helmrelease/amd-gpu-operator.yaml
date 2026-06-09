@@ -1,0 +1,42 @@
+---
+# OCIRepository for AMD GPU Operator chart (push via docs/AMD_OCI_PUSH_STEPS.md)
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-${appVersion}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 1m
+  url: "oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts"
+  ref:
+    # Stable catalog tag. Re-push newer upstream builds (v1.5.1-beta.1 … GA v1.5.1)
+    # under this same tag so the catalog manifest does not need to change.
+    tag: v1.5.1
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: amd-gpu-operator
+  namespace: ${releaseNamespace}
+spec:
+  dependsOn:
+  - name: amd-kmm-operator
+    namespace: ${releaseNamespace}
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-${appVersion}-chart
+    namespace: ${releaseNamespace}
+  interval: 15s
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+  releaseName: amd-gpu-operator
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-config-defaults
+  targetNamespace: ${releaseNamespace}
