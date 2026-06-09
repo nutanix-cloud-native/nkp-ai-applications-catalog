@@ -6,34 +6,19 @@ name: Publish OCI Artifacts
 on:
   workflow_dispatch:
     inputs:
-      COLLECTION_TAG:
-        description: "Tag for the collection to publish"
+      release_spec:
+        description: "dev uses .release/dev.yaml; stable uses .release/stable.yaml"
         required: true
         type: choice
         options:
-          - custom
-          - v2.16.0
-          - v2.17.0
-          - v2.18.0
-          - v2.19.0
-      CUSTOM_TAG:
-        description: "Use when 'custom' is selected above. Enter the tag (e.g. v2.20.0)"
-        required: false
-        type: string
-      REGISTRY:
-        description: "OCI registry base URL. nkp appends the bundle name automatically."
-        required: false
-        type: string
-        default: "oci://ghcr.io/nutanix-cloud-native"
-      SKIP_APPS:
-        description: >-
-          Comma-separated app=version to exclude from the bundle.
-          Kubeflow apps use cross-directory kustomize refs (e.g. ../katib-cert-manager)
-          that violate nkp's LoadRestrictionsRootOnly policy during bundle creation.
-          Clear this field to include all apps once the upstream charts are fixed.
-        required: false
-        type: string
-        default: "katib=0.19.0,kserve=0.16.0,kubeflow-central-dashboard=1.10.0,kubeflow-pipelines=2.15.0,kubeflow-model-registry=0.3.6,spark-operator=2.4.0,tensorboard-controller=1.10.0,training-operator=1.9.2"
+          - dev
+          - stable
+  push:
+    branches:
+      - main
+    paths:
+      - ".release/**"
+      - "applications/**"
 
 jobs:
   publish-oci-artifacts:
@@ -63,6 +48,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build Dev Release
+        if: github.event_name == 'push' || github.event.inputs.release_spec == 'dev'
+        run: devbox run -- just publish-artifacts ./.release/dev.yaml ghcr.io/nutanix-cloud-native
+
+      # - name: Build Stable Release
+      #   # Production artifacts can be published only on the release-2.x branch.
+      #   if: github.ref_name == 'release-2.x' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
+      #   run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
+
       - name: Create and publish catalog bundle
         env:
           CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
@@ -77,4 +71,4 @@ jobs:
             TAG="${{ inputs.COLLECTION_TAG }}"
           fi
 
-          devbox run -- just publish-artifacts "${{ inputs.REGISTRY }}" "$TAG" "${{ inputs.SKIP_APPS }}"
+          devbox run -- just publish-artifacts "./.release/stable.yaml" "${{ inputs.REGISTRY }}" --push-to-registry

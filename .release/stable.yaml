@@ -1,0 +1,5 @@
+# schema: catalog.nkp.nutanix.com/v1/catalog-release-spec
+# releases:
+#   - tagName: 2.18
+#     fileName: stable-nkp-ai-applications-catalog-2.18.tar
+#     applications: []
