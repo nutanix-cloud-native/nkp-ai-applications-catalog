@@ -100,23 +100,25 @@ jobs:
 
           NKP_CLI="$(pwd)/.local/bin/nkp"
 
-          # Create an empty catalog repository in a temp directory
-          tmpdir="$(mktemp -d)"
-          trap 'rm -rf "$tmpdir"' EXIT
+          # nkp derives the bundle name from the repo directory basename, so keep
+          # the generated repository in a directory named after the catalog.
+          tmp_parent="$(mktemp -d)"
+          trap 'rm -rf "$tmp_parent"' EXIT
+          repo_dir="${tmp_parent}/${BUNDLE_NAME}"
 
-          echo "Generating empty catalog repository in $tmpdir..."
-          "$NKP_CLI" generate catalog-repository --repo-dir "$tmpdir"
+          echo "Generating empty catalog repository in $repo_dir..."
+          "$NKP_CLI" generate catalog-repository --repo-dir "$repo_dir"
 
-          bundle="$tmpdir/${BUNDLE_NAME}-${TAG}.tar"
+          bundle="${tmp_parent}/${BUNDLE_NAME}-${TAG}.tar"
           echo "Creating empty catalog bundle with tag '$TAG'..."
           "$NKP_CLI" create catalog-bundle \
-            --repo-dir "$tmpdir" \
+            --repo-dir "$repo_dir" \
             --collection-tag "$TAG" \
             --output-file "$bundle"
 
           if [ ! -f "$bundle" ]; then
             echo "::error::Bundle file not found after creation."
-            ls -la "$tmpdir/" || true
+            ls -la "$tmp_parent/" "$repo_dir/" || true
             exit 1
           fi
 
