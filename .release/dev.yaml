@@ -45,5 +45,3 @@ releases:
         version: "0.1.1"
       - name: weaviate
         version: "17.7.0"
-
-
