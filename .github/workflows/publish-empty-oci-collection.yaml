@@ -105,6 +105,7 @@ jobs:
           tmp_parent="$(mktemp -d)"
           trap 'rm -rf "$tmp_parent"' EXIT
           repo_dir="${tmp_parent}/${BUNDLE_NAME}"
+          mkdir -p "$repo_dir"
 
           echo "Generating empty catalog repository in $repo_dir..."
           "$NKP_CLI" generate catalog-repository --repo-dir "$repo_dir"
