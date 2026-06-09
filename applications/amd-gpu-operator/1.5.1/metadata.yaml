@@ -19,8 +19,8 @@ overview: |-
   # Overview
   The AMD GPU Operator uses the operator framework within Kubernetes to automate the management of AMD software components needed to provision GPUs. For a detailed overview of the operator's architecture and components, see the [GPU Operator Overview](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/overview.html).
 
-  ## What's New in v1.5.1
-  v1.5.1 builds on the v1.5.0 feature set (DRA, ANR, NPD integration, enhanced KMM configuration, global image pull secrets, custom package repositories, and metrics exporter enhancements — all described below). The OCI chart is published under the stable `v1.5.1` tag; the pinned operator controller, utils, and device metrics exporter images currently reference the `v1.5.1-beta.0` build. The DRA driver (`v1.0.0`), device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
+  ## What's New in v1.5.1-beta.0
+  v1.5.1-beta.0 is a maintenance/beta release that builds on the v1.5.0 feature set (DRA, ANR, NPD integration, enhanced KMM configuration, global image pull secrets, custom package repositories, and metrics exporter enhancements — all described below). It bumps the operator controller, utils, and device metrics exporter images to `v1.5.1-beta.0`. The DRA driver (`v1.0.0`), device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
 
   ## v1.5.0 Feature Set
   ### Dynamic Resource Allocation (DRA) Driver

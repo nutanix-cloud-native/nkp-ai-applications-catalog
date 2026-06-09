@@ -1,12 +1,10 @@
 # AMD GPU Operator
 
-NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.1.
+NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.1-beta.0.
 
-> **Note:** This entry tracks AMD GPU Operator **v1.5.1**, which builds on the v1.5.0 feature set. The
-> OCI chart is published under the stable `v1.5.1` tag so newer upstream builds (`v1.5.1-beta.1` …
-> GA `v1.5.1`) can be re-pushed under the same tag without changing this manifest. The pinned component
-> images below currently reference the `v1.5.1-beta.0` build. The DRA driver (`v1.0.0`), device plugin
-> (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
+> **Note:** v1.5.1-beta.0 is a beta/maintenance release built on the v1.5.0 feature set. It bumps the
+> operator controller, utils, and device metrics exporter images to `v1.5.1-beta.0`. The DRA driver
+> (`v1.0.0`), device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
 
 ## Architecture
 

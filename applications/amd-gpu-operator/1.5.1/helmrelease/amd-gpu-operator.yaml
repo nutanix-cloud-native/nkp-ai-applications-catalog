@@ -9,9 +9,7 @@ spec:
   interval: 1m
   url: "oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts"
   ref:
-    # Stable catalog tag. Re-push newer upstream builds (v1.5.1-beta.1 … GA v1.5.1)
-    # under this same tag so the catalog manifest does not need to change.
-    tag: v1.5.1
+    tag: v1.5.1-beta.0
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
