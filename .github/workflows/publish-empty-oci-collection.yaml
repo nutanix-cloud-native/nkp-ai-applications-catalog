@@ -2,22 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: Publish Empty OCI Collection
-
 on:
-  workflow_dispatch:
-    inputs:
-      COLLECTION_TAG:
-        description: "Semver tag for the empty collection (e.g. v2.20.0)"
-        required: true
-        type: string
-      REGISTRY:
-        description: "OCI registry base URL. Must remain oci://ghcr.io/nutanix-cloud-native."
-        required: false
-        type: string
-        default: "oci://ghcr.io/nutanix-cloud-native"
-
+  push:
+    branches:
+      - kjoshi/add-empty-publish
 env:
   BUNDLE_NAME: nkp-ai-applications-catalog
+  TAG: '0.0.0-ci-test.2'
+  REGISTRY: 'oci://ghcr.io/nutanix-cloud-native'
 jobs:
   publish-empty-oci-collection:
     name: Publish Empty OCI Collection
@@ -47,16 +39,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Validate collection tag
-        env:
-          TAG: "${{ inputs.COLLECTION_TAG }}"
-          REGISTRY: "${{ inputs.REGISTRY }}"
         run: |
           set -euo pipefail
 
           # OCI tags do not allow '+', so allow SemVer core plus optional pre-release only.
-          semver_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+          semver_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
           if [[ ! "$TAG" =~ $semver_regex ]]; then
-            echo "::error::Invalid tag: '$TAG'. Expected OCI-compatible SemVer: vX.Y.Z or vX.Y.Z-pre.release"
+            echo "::error::Invalid tag: '$TAG'. Expected OCI-compatible SemVer: X.Y.Z or X.Y.Z-pre.release"
             exit 1
           fi
           echo "Tag '$TAG' is valid semver."
@@ -82,10 +71,6 @@ jobs:
         run: devbox run -- just nkp-cli
 
       - name: Publish empty OCI collection
-        env:
-          TAG: "${{ inputs.COLLECTION_TAG }}"
-          REGISTRY: "${{ inputs.REGISTRY }}"
-
         run: |
           set -euo pipefail
 
