@@ -1,5 +1,5 @@
 BUNDLE_NAME := "nkp-ai-applications-catalog"
-DEFAULT_REGISTRY := "oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog"
+DEFAULT_REGISTRY := "oci://ghcr.io/nutanix-cloud-native"
 DEFAULT_TAG := "v0.1.0"
 # Base OCI registry for Helm charts in helmreleases. Override for testing:
 #   CHART_REGISTRY=oci://ghcr.io/deepak-muley/charts just create-bundle
@@ -33,9 +33,7 @@ release tag=DEFAULT_TAG registry=DEFAULT_REGISTRY:
   just create-bundle {{ tag }}
   just push-bundle {{ tag }} {{ registry }}
 
-# Create bundle and push to registry (for CI workflow_dispatch)
-# Usage: just publish-artifacts <registry> <tag>
-publish-artifacts registry tag:
-  just validate
-  just create-bundle {{ tag }}
-  just push-bundle {{ tag }} {{ registry }}
+# Release oci artifacts for catalog applications
+[no-exit-message]
+publish-artifacts release-spec registry: nkp-cli
+  {{ NKP_CLI }} experimental catalog release --release-spec {{ release-spec }} --repo-dir "{{ REPO_ROOT }}" --push-to-registry {{ registry}}
