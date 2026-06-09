@@ -55,8 +55,9 @@ jobs:
 
       - name: Validate collection tag
         env:
-          TAG: ${{ inputs.COLLECTION_TAG }}
-          REGISTRY: ${{ inputs.REGISTRY }}
+          # Remove TEST_* environment variables after testing
+          TAG: "${{ inputs.COLLECTION_TAG || env.TEST_COLLECTION_TAG }}"
+          REGISTRY: "${{ inputs.REGISTRY || env.TEST_REGISTRY }}"
         run: |
           set -euo pipefail
 
