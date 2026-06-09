@@ -4,6 +4,11 @@
 name: Publish Empty OCI Collection
 
 on:
+
+  # Remove this after testing
+  push:
+    branches:
+      - kjoshi/add-empty-publish
   workflow_dispatch:
     inputs:
       COLLECTION_TAG:
@@ -18,7 +23,8 @@ on:
 
 env:
   BUNDLE_NAME: nkp-ai-applications-catalog
-
+  TEST_COLLECTION_TAG: v0.0.0-ci-test.1
+  TEST_REGISTRY: oci://ghcr.io/nutanix-cloud-native
 jobs:
   publish-empty-oci-collection:
     name: Publish Empty OCI Collection
@@ -84,8 +90,10 @@ jobs:
 
       - name: Publish empty OCI collection
         env:
-          TAG: ${{ inputs.COLLECTION_TAG }}
-          REGISTRY: ${{ inputs.REGISTRY }}
+          # Remove TEST_* environment variables after testing
+          TAG: "${{ inputs.COLLECTION_TAG || env.TEST_COLLECTION_TAG }}"
+          REGISTRY: "${{ inputs.REGISTRY || env.TEST_REGISTRY }}"
+
         run: |
           set -euo pipefail
 
