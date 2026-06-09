@@ -56,19 +56,3 @@ jobs:
       #   # Production artifacts can be published only on the release-2.x branch.
       #   if: github.ref_name == 'release-2.x' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
       #   run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
-
-      - name: Create and publish catalog bundle
-        env:
-          CHART_REGISTRY: oci://ghcr.io/nutanix-cloud-native/charts
-        run: |
-          if [ "${{ inputs.COLLECTION_TAG }}" = "custom" ]; then
-            if [ -z "${{ inputs.CUSTOM_TAG }}" ]; then
-              echo "::error::CUSTOM_TAG is required when COLLECTION_TAG is 'custom'"
-              exit 1
-            fi
-            TAG="${{ inputs.CUSTOM_TAG }}"
-          else
-            TAG="${{ inputs.COLLECTION_TAG }}"
-          fi
-
-          devbox run -- just publish-artifacts "./.release/stable.yaml" "${{ inputs.REGISTRY }}" --push-to-registry
