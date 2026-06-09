@@ -22,6 +22,18 @@ service at `ollama.${releaseNamespace}.svc.cluster.local:11434`.
 To use a different provider, override the values via the NKP app
 configuration UI or update `helmrelease/cm.yaml`.
 
+The catalog defaults include:
+
+- `fullnameOverride: "kagent"` to keep resource names stable (`kagent-*`) so
+  Agent/RemoteMCPServer references resolve consistently.
+- `tag: "0.7.13"` to force OCI-compatible image tags. Flux OCI resolution can
+  append build metadata (`+<digest>`) to chart versions; that suffix is invalid
+  in container image tags and Kubernetes label values.
+
+The `helmrelease/helmrelease.yaml` uses an OCI `HelmRepository` source with an
+explicit chart version (`0.7.13`) to avoid digest-appended version strings in
+rendered labels during install/upgrade tests.
+
 ## Dashboard (Launch button)
 
 This catalog does **not** include a Traefik IngressRoute or Middleware. The kagent UI is exposed via a **LoadBalancer** service
