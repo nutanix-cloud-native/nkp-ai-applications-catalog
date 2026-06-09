@@ -1,0 +1,120 @@
+# Copyright 2025 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish Empty OCI Collection
+
+on:
+  workflow_dispatch:
+    inputs:
+      COLLECTION_TAG:
+        description: "Semver tag for the empty collection (e.g. v2.20.0)"
+        required: true
+        type: string
+      REGISTRY:
+        description: "OCI registry base URL. Must remain oci://ghcr.io/nutanix-cloud-native."
+        required: false
+        type: string
+        default: "oci://ghcr.io/nutanix-cloud-native"
+
+env:
+  BUNDLE_NAME: nkp-ai-applications-catalog
+
+jobs:
+  publish-empty-oci-collection:
+    name: Publish Empty OCI Collection
+    runs-on:
+      - self-hosted-nutanix-medium
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NIX
+        uses: cachix/install-nix-action@v31
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+          skip-nix-installation: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate collection tag
+        env:
+          TAG: ${{ inputs.COLLECTION_TAG }}
+          REGISTRY: ${{ inputs.REGISTRY }}
+        run: |
+          set -euo pipefail
+
+          # OCI tags do not allow '+', so allow SemVer core plus optional pre-release only.
+          semver_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+          if [[ ! "$TAG" =~ $semver_regex ]]; then
+            echo "::error::Invalid tag: '$TAG'. Expected OCI-compatible SemVer: vX.Y.Z or vX.Y.Z-pre.release"
+            exit 1
+          fi
+          echo "Tag '$TAG' is valid semver."
+
+          if [[ "$REGISTRY" != "oci://ghcr.io/nutanix-cloud-native" ]]; then
+            echo "::error::REGISTRY must be exactly oci://ghcr.io/nutanix-cloud-native"
+            exit 1
+          fi
+
+          registry_path="${REGISTRY#oci://}"
+          # Collection lives at <registry>/<bundle-name>/collection:<tag>
+          collection_ref="${registry_path}/${BUNDLE_NAME}/collection:${TAG}"
+          echo "Checking if '${collection_ref}' already exists..."
+
+          # docker/login-action writes ~/.docker/config.json which gives us auth.
+          if docker manifest inspect "${collection_ref}" > /dev/null 2>&1; then
+            echo "::error::Collection tag '${TAG}' already exists at '${collection_ref}'. Refusing to overwrite."
+            exit 1
+          fi
+          echo "Tag '${TAG}' is not yet published. Proceeding."
+
+      - name: Download NKP CLI
+        run: devbox run -- just nkp-cli
+
+      - name: Publish empty OCI collection
+        env:
+          TAG: ${{ inputs.COLLECTION_TAG }}
+          REGISTRY: ${{ inputs.REGISTRY }}
+        run: |
+          set -euo pipefail
+
+          NKP_CLI="$(pwd)/.local/bin/nkp"
+
+          # Create an empty catalog repository in a temp directory
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          echo "Generating empty catalog repository in $tmpdir..."
+          "$NKP_CLI" generate catalog-repository --repo-dir "$tmpdir"
+
+          bundle="$tmpdir/${BUNDLE_NAME}-${TAG}.tar"
+          echo "Creating empty catalog bundle with tag '$TAG'..."
+          "$NKP_CLI" create catalog-bundle \
+            --repo-dir "$tmpdir" \
+            --collection-tag "$TAG" \
+            --output-file "$bundle"
+
+          if [ ! -f "$bundle" ]; then
+            echo "::error::Bundle file not found after creation."
+            ls -la "$tmpdir/" || true
+            exit 1
+          fi
+
+          echo "Pushing empty collection bundle to $REGISTRY..."
+          "$NKP_CLI" push bundle \
+            --bundle "$bundle" \
+            --to-registry "$REGISTRY" \
+            --on-existing-tag error
+
+          echo "Empty collection published: ${REGISTRY}/${BUNDLE_NAME}/collection:${TAG}"
