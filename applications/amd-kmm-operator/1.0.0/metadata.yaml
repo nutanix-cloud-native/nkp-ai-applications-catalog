@@ -3,7 +3,7 @@ displayName: AMD KMM Operator
 description: Shared Kernel Module Management (KMM) operator for AMD GPU and Network operators. Provides standalone KMM, private registry credential plumbing, and node containerd trust configuration.
 category:
   - general
-type: nkp-core-platform
+type: nkp-catalog
 allowMultipleInstances: false
 scope:
   - workspace

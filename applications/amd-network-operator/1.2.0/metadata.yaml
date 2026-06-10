@@ -3,7 +3,7 @@ displayName: AMD Network Operator
 description: The AMD Network Operator simplifies deployment and management of AMD AI NICs (AINICs) in Kubernetes and works with the AMD GPU Operator for high-performance networking in AI/ML and HPC workloads.
 category:
   - general
-type: nkp-core-platform
+type: nkp-catalog
 allowMultipleInstances: false
 scope:
   - workspace
