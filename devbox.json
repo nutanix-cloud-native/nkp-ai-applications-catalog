@@ -18,8 +18,7 @@
   ],
   "shell": {
     "init_hook": [
-      "export PATH=$(pwd)/.local/bin:$PATH",
-      "unset GOROOT"
+      "export PATH=$(pwd)/.local/bin:$PATH"
     ]
   }
 }
