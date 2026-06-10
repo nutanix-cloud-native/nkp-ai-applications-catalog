@@ -1,12 +1,13 @@
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
   name: ${releaseName}-chart
   namespace: ${releaseNamespace}
 spec:
-  type: oci
   interval: 6h0m0s
-  url: oci://ghcr.io/kagent-dev/kagent/helm
+  ref:
+    tag: 0.7.13
+  url: oci://ghcr.io/kagent-dev/kagent/helm/kagent
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -14,14 +15,10 @@ metadata:
   name: kagent
   namespace: ${releaseNamespace}
 spec:
-  chart:
-    spec:
-      chart: kagent
-      version: "0.7.13"
-      sourceRef:
-        kind: HelmRepository
-        name: ${releaseName}-chart
-        namespace: ${releaseNamespace}
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
   dependsOn:
   - name: ${releaseName}-crds
     namespace: ${releaseNamespace}
@@ -36,6 +33,15 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 30
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          labelSelector: app.kubernetes.io/version
+        patch: |
+          - op: replace
+            path: /metadata/labels/app.kubernetes.io~1version
+            value: "0.7.13"
   valuesFrom:
   - kind: ConfigMap
     name: ${releaseName}-${appVersion}-defaults

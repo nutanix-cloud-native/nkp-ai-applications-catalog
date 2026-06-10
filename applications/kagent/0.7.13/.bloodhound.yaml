@@ -1,6 +1,7 @@
 # Kubernetes versions (match https://github.com/yannh/kubernetes-json-schema)
 k8s_versions:
   - 1.34.0
+  - 1.35.0
 
 # Use non-strict validation for kagent: the chart may emit resources with fields
 # that the standalone-strict schema disallows. Non-strict allows these.
