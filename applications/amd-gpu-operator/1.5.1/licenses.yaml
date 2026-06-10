@@ -1,0 +1,57 @@
+ignore: []
+resources:
+- container_image: docker.io/rocm/gpu-operator:v1.5.1-beta.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/gpu-operator.git
+# KMM is provided by the shared amd-kmm-operator by default (kmm.enabled: false),
+# but retained here so license tracking remains correct if the user re-enables
+# the embedded KMM subchart via Helm value overrides. Versions align with the
+# shared amd-kmm-operator/1.0.0 pin.
+- container_image: docker.io/rocm/kernel-module-management-operator:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
+  sources:
+  - ref: release-v1.0.0
+    url: https://github.com/ROCm/kernel-module-management.git
+# NFD is provided by the Kommander platform layer by default
+# (node-feature-discovery.enabled: false), but retained for users who
+# re-enable the embedded subchart via Helm value overrides.
+- container_image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubernetes-sigs/node-feature-discovery.git
+# Device plugin (disabled by default; DRA is used instead) and node labeller.
+# Retained for license tracking — users can re-enable the device plugin
+# by setting enableDevicePlugin: true and draDriver.enable: false.
+- container_image: docker.io/rocm/k8s-device-plugin:1.31.0.10
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/k8s-device-plugin.git
+- container_image: docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/k8s-device-plugin.git
+# Device metrics exporter
+- container_image: docker.io/rocm/device-metrics-exporter:v1.5.1-beta.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/device-metrics-exporter.git
+# GPU operator utils
+- container_image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/gpu-operator.git
+# DRA driver — enabled by default as the GPU resource allocation mechanism.
+- container_image: docker.io/rocm/k8s-gpu-dra-driver:v1.0.0
+  sources:
+  - ref: v1.0.0
+    url: https://github.com/ROCm/k8s-gpu-dra-driver.git
+# Argo Workflow controller — used by Auto Node Remediation (ANR).
+# Disabled by default in NKP catalog (remediation.enabled: false).
+- container_image: quay.io/argoproj/workflow-controller:v4.0.3
+  sources:
+  - ref: v4.0.3
+    url: https://github.com/argoproj/argo-workflows.git
