@@ -60,11 +60,11 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.15'
+        default: 'takirala/dkp-licenses-cli:licenses-v0.0.15'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
-        default: 'mesosphere/license-scanner-blackduck:9.5.0'
+        default: 'takirala/license-scanner-blackduck:9.5.0'
     secrets:
       BLACKDUCK_API_TOKEN:
         required: true
