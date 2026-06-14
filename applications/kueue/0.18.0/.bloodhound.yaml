@@ -1,0 +1,18 @@
+# Bloodhound config for Kueue 0.18.0
+# The chart ships with empty default values (no ClusterQueue/LocalQueue/ResourceFlavor),
+# so it renders only the controller, CRDs, RBAC, and webhooks — all core/standard types.
+# Add skip_types here only if a validate run reports an "unknown type".
+k8s_versions:
+  - 1.34.0
+
+strict: true
+
+skip_types: []
+
+additional_crds: []
+
+substitution_vars:
+  releaseNamespace: kommander
+  releaseName: kueue
+  workspaceNamespace: workspace
+  appVersion: "0.18.0"

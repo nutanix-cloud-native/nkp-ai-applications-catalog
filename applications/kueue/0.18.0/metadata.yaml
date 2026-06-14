@@ -1,0 +1,32 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Kueue
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: Kubernetes-native job queueing with quota management and all-or-nothing (gang) admission for batch and AI/ML workloads.
+dependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **What it is** — Kueue is a Kubernetes-native job queueing system. It does not replace the scheduler; it decides *whether and when* a job is admitted to run, based on quotas, fair sharing, and all-or-nothing (gang) admission. This prevents resource deadlock and starvation on shared clusters — especially expensive GPU clusters used for AI/ML training and batch jobs.
+
+  **Highlights**
+  - Quota-based admission via `ClusterQueue` / `LocalQueue` / `ResourceFlavor` CRDs
+  - Gang scheduling — multi-pod workloads are admitted all-or-nothing
+  - Fair sharing, borrowing across cohorts, and preemption
+  - Out-of-the-box integrations for `batch/Job`, `JobSet`, Ray, Kubeflow training jobs, plain Pods, Deployments, and StatefulSets (activated only when the corresponding CRDs are installed)
+
+  **Getting started**
+
+  Kueue installs the controller and CRDs but ships **no queues** by default — quotas are cluster-specific. To start admitting work, create a `ResourceFlavor`, a `ClusterQueue` with a quota, and a `LocalQueue` in your namespace, then submit a Job carrying the `kueue.x-k8s.io/queue-name` label. See the catalog `README.md` for a copy-paste starter and the [Kueue docs](https://kueue.sigs.k8s.io/docs/) for full configuration.
+
+  **Documentation:** [Kueue docs](https://kueue.sigs.k8s.io/docs/) | **Project:** [GitHub](https://github.com/kubernetes-sigs/kueue)
+requiredDependencies: []
+scope:
+  - workspace
+nkpVersionSupport: ">=2.16.0"
+supportLink: https://kueue.sigs.k8s.io/docs/
+type: custom
+---
