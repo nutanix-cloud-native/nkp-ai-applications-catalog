@@ -20,8 +20,6 @@ nkp
 # Personal dev notes
 dev-commands.md
 
-# Local docs (keep files, exclude from repo)
-docs/
 
 # Local IDE rules
 .cursor/

@@ -1,0 +1,41 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: KAI Scheduler
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-share scheduling.
+dependencies: []
+requiredDependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  KAI Scheduler is a Kubernetes-native scheduler designed for AI and ML workloads at scale. It supports queue-based scheduling, fairness policies, gang-style scheduling patterns, and topology-aware placement for modern accelerator-heavy environments.
+
+  KAI runs alongside the default Kubernetes scheduler and acts only on workloads that explicitly target `schedulerName: kai-scheduler`.
+
+  **Key capabilities**
+
+  - **Queue-based scheduling** - Organize workloads using queue objects and hierarchy.
+  - **AI workload policies** - Fair-share and resource management controls for multi-tenant clusters.
+  - **Advanced placement** - Supports topology-aware and batch-oriented scheduling workflows.
+  - **Kubernetes-native operation** - Deploys as standard controller/scheduler components via Helm.
+
+  **Prerequisites**
+
+  - Kubernetes cluster.
+  - For GPU workloads, GPU resources must be available on cluster nodes.
+
+  **Resources**
+
+  [Documentation](https://github.com/kai-scheduler/KAI-Scheduler) · [Project](https://github.com/kai-scheduler/KAI-Scheduler)
+scope:
+  - workspace
+  - project
+nkpVersionSupport: ">=2.17.0"
+supportLink: https://github.com/kai-scheduler/KAI-Scheduler
+type: custom
+---
