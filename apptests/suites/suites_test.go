@@ -6,20 +6,30 @@ import (
 	"github.com/mesosphere/kommander-applications/apptests/catalog"
 )
 
-// enabledApps lists applications that have opt-in E2E tests.
-// Add an app name here to get the default install + upgrade template test.
-// Apps with a custom <app>_test.go in this package do NOT need to be listed
-// here — they register their own Ginkgo blocks directly.
-var enabledApps = []string{
-	"kagent",
+// skipApps are excluded from auto-registered E2E tests; every other app under
+// applications/ gets a default install + upgrade test.
+var skipApps = []string{
+	// TODO: Flux Kustomization apps. Only HelmRelease is asserted currently.
+	"katib", "kubeflow-central-dashboard", "kubeflow-model-registry",
+	"kubeflow-pipelines", "spark-operator", "tensorboard-controller", "training-operator",
+	// TODO: need dependencies
+	"agentgateway", "demo-full-rag",
+	// not implemented yet
+	"kueue",
+	"amd-gpu-operator", "amd-network-operator",
+	// needs GPU / AMD device hardware
+	"vllm", "amd-device-metrics-exporter",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
 	catalog.InitSuite()
-	for _, app := range enabledApps {
-		catalog.RegisterDefaultTests(app)
+	skip := make(map[string]bool, len(skipApps))
+	for _, a := range skipApps {
+		skip[a] = true
 	}
+	// repoRoot is two levels up from apptests/suites/.
+	catalog.ScanAndRegister("../..", skip)
 }
 
 func TestApplications(t *testing.T) { catalog.RunSuite(t) }

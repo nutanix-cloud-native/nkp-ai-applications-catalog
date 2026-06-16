@@ -77,9 +77,9 @@ export DOCKER_HOST=unix://$HOME/.colima/default/docker.sock
 
 ## CI Workflow
 
-The E2E tests are **opt-in** per application. Tests only run for applications
-explicitly registered in the `enabledApps` list in
-`apptests/suites/suites_test.go`.
+The E2E tests are **opt-out** per application. A default install + upgrade test
+is auto-registered for every folder under `applications/`, except those listed
+in the `skipApps` slice in `apptests/suites/suites_test.go`.
 
 The workflow is defined in `.github/workflows/e2e.yaml`.
 
@@ -87,17 +87,19 @@ The workflow is defined in `.github/workflows/e2e.yaml`.
 
 | Event | Behavior |
 |---|---|
-| PR with `e2e-<app>` label | Tests the named app (must be in `enabledApps`). |
-| PR with `run-e2e-all` label | Tests all apps in `enabledApps`. |
+| PR with `e2e-<app>` label | Tests the named app (unless it is in `skipApps`). |
+| PR with `run-e2e-all` label | Tests all apps not in `skipApps`. |
 | PR with no `e2e-*` labels | No tests run. |
 | `workflow_dispatch` with app input | Tests the specified app. |
-| `workflow_dispatch` without app input | Tests all apps in `enabledApps`. |
-| Push to `main` (touching `apptests/`) | Tests all apps in `enabledApps`. |
+| `workflow_dispatch` without app input | Tests all apps not in `skipApps`. |
+| Push to `main` (touching `apptests/`) | Tests all apps not in `skipApps`. |
 
 ### How matrix detection works
 
-The `detect-apps` job reads the `enabledApps` slice from `suites_test.go` to
-determine which applications have tests. It intersects this list with any
+The `detect-apps` job enumerates every folder under `applications/` and
+subtracts the `skipApps` slice parsed from `suites_test.go` — mirroring the
+`catalog.ScanAndRegister` auto-discovery used by the Go suite, so CI and the
+test code always agree on which apps run. It then intersects the result with any
 `e2e-<app>` PR labels to build the matrix. Each `app/version` pair becomes a
 separate CI job. If no labels are present on a PR, the matrix is empty and the
 e2e job is skipped.
@@ -137,18 +139,24 @@ waste time provisioning clusters.
 
 ## Enabling Tests for an Application
 
-Add the application name to the `enabledApps` slice in
-`apptests/suites/suites_test.go`:
+Tests are registered automatically. `catalog.ScanAndRegister`
+walks `applications/` and registers a default install + upgrade template test
+for every app folder that is **not** in `skipApps`. Adding a new app folder
+gives it E2E coverage with no code change.
+
+### Excluding an Application
+
+If an app cannot pass the generic test (e.g. it ships a Flux `Kustomization`
+instead of a `HelmRelease`, needs dependencies the harness does not install, or
+requires GPU/special hardware), add it to the `skipApps` slice in
+`apptests/suites/suites_test.go` with a short reason:
 
 ```go
-var enabledApps = []string{
-	"kagent",
-	"your-new-app",
+var skipApps = []string{
+	// TODO: need dependencies the harness does not install
+	"agentgateway",
 }
 ```
-
-This registers the default install + upgrade template test for the app. No
-other files are needed.
 
 ## Custom Test Files
 
@@ -160,5 +168,6 @@ etc.), create a dedicated `apptests/suites/<app>_test.go` file instead:
 2. Use `catalog.SetupKindCluster()`, `catalog.Env`, `catalog.K8sClient`, and
    `catalog.NewAppScenario("<app>", *catalog.AppVersion)` from the shared
    package.
-3. Do **not** add the app to `enabledApps` -- the custom test file registers
-   its own Ginkgo blocks directly.
+3. Add the app to `skipApps` in `suites_test.go` so the generic auto-registered
+   test does not also run for it -- the custom test file registers its own
+   Ginkgo blocks directly.

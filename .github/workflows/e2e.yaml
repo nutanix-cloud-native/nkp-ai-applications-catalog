@@ -49,8 +49,11 @@ jobs:
 
           latest() { find "applications/$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -V | tail -1; }
 
-          # Source of truth: enabledApps slice in suites_test.go
-          enabled=$(sed -n '/enabledApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
+          # Source of truth: every folder under applications/ minus the skipApps
+          # slice in suites_test.go (mirrors catalog.ScanAndRegister auto-discovery).
+          all_apps=$(find applications -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -u)
+          skip=$(sed -n '/skipApps = \[\]string{/,/^}/p' apptests/suites/suites_test.go | grep -oE '"[^"]+"' | tr -d '"' | sort -u || true)
+          enabled=$(comm -23 <(echo "$all_apps") <(echo "$skip"))
 
           if [[ -n "${INPUT_APP}" ]]; then
             apps="${INPUT_APP}"
