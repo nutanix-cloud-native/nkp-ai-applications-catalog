@@ -109,8 +109,63 @@ Observed smoke test result:
   - `Successfully assigned pod kai-test/kai-cpu-smoke ...`
   - scheduler shown as `kai-scheduler`.
 
-## Notes about this cluster
+## 4) GPU-cluster validation run
 
-- This cluster currently has no allocatable GPUs on nodes.
-- NVIDIA GPU Operator components are present in `workload-cluster-01-jvslk`.
-- Conclusion: KAI installation and CPU scheduling are validated; GPU scheduling remains untestable on this cluster until GPU-capable nodes are available.
+Cluster access used:
+
+```bash
+export KUBECONFIG="/Users/navid.malekghaini/project/gpu-workload-cluster-01.conf"
+```
+
+KAI deployment status on this cluster:
+
+- KAI Scheduler `v0.15.2` installed successfully in `kai-scheduler`.
+- All KAI deployments became `Available`.
+- Default queues were present (`default-parent-queue`, `default-queue`).
+
+CPU smoke test result on this cluster:
+
+- `kai-cpu-smoke` reached `Running`.
+- Event confirmed scheduling by `kai-scheduler`.
+
+GPU smoke pod applied:
+
+```bash
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-gpu-smoke
+  labels:
+    kai.scheduler/queue: default-queue
+spec:
+  schedulerName: kai-scheduler
+  restartPolicy: Never
+  containers:
+  - name: cuda
+    image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+EOF
+```
+
+GPU smoke result on this cluster:
+
+- `kai-gpu-smoke` remained `Pending`.
+- KAI scheduler event:
+  - `No node in the default node-pool has GPU resources.`
+- Node allocatable checks showed empty `nvidia.com/gpu` on all nodes at test time.
+
+## Notes and conclusions
+
+- `workload-cluster-01.conf`:
+  - No allocatable GPUs on nodes.
+  - NVIDIA GPU Operator components present in `workload-cluster-01-jvslk`.
+  - CPU scheduling by KAI validated; GPU scheduling not testable.
+- `gpu-workload-cluster-01.conf`:
+  - NVIDIA GPU Operator pod present in `gpu-workspace-7hhhv`.
+  - CPU scheduling by KAI validated.
+  - GPU pod still unschedulable due to missing node-level GPU allocatable resources.
+
+Overall: KAI Scheduler installation and queue-based scheduling are validated. GPU scheduling is blocked by cluster GPU resource exposure, not by KAI installation.
