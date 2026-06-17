@@ -17,16 +17,18 @@ push step is required, and the chart bundles its CRDs (installed via
 | Field | Value |
 |-------|-------|
 | Chart OCI URL | `oci://registry.k8s.io/kueue/charts/kueue` |
-| Chart version | `0.18.0` |
-| App version | `v0.18.0` |
 | Namespace | `kueue-system` |
+
+The pinned chart/app version lives in the per-version directory (e.g.
+`0.x.0/helmrelease/helmrelease.yaml`), not here.
 
 ## Default Configuration
 
 `helmrelease/cm.yaml` ships empty default values (`values.yaml: ""`), so the
 upstream chart defaults apply. Those defaults are production-appropriate:
 
-- **Controller image** — `registry.k8s.io/kueue/kueue:v0.18.0`, `pullPolicy: IfNotPresent`.
+- **Controller image** — pulled from `registry.k8s.io/kueue/kueue` at the chart's
+  pinned tag, `pullPolicy: IfNotPresent`.
 - **Certificates** — internal cert management for the webhook (`enableCertManager: false`).
   No `cert-manager` dependency.
 - **KueueViz dashboard** — disabled (`enableKueueViz: false`). Enabling it would add
@@ -44,12 +46,12 @@ After install, create a flavor, a cluster-wide quota pool, and a namespaced
 queue:
 
 ```yaml
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: ResourceFlavor
 metadata:
   name: default-flavor
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: ClusterQueue
 metadata:
   name: smoke-cq
@@ -65,7 +67,7 @@ spec:
       - name: "memory"
         nominalQuota: "4Gi"
 ---
-apiVersion: kueue.x-k8s.io/v1beta1
+apiVersion: kueue.x-k8s.io/v1beta2
 kind: LocalQueue
 metadata:
   name: smoke-lq

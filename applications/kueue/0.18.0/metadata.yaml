@@ -31,7 +31,7 @@ overview: |
 requiredDependencies: []
 scope:
   - workspace
-nkpVersionSupport: ">=2.17.0"
+nkpVersionSupport: ">=2.19.0"
 supportLink: https://kueue.sigs.k8s.io/docs/
 type: custom
 ---
