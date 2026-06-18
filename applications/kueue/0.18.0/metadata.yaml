@@ -19,7 +19,7 @@ overview: |
   - **Quota-based admission** — `ClusterQueue` / `LocalQueue` / `ResourceFlavor` CRDs manage cluster quotas.
   - **Gang scheduling** — multi-pod workloads are admitted all-or-nothing.
   - **Fair sharing** — borrowing across cohorts and preemption.
-  - **Integrations** — out-of-the-box support for `batch/Job`, `JobSet`, Ray, Kubeflow training jobs, plain Pods, Deployments, and StatefulSets (activated when the corresponding CRDs are installed).
+  - **Integrations** — `batch/Job`, `JobSet`, Ray, and Kubeflow training jobs are enabled by default; plain Pods, Deployments, and StatefulSets are supported when their integration is enabled (each non-core integration also needs its CRD/controller present).
 
   **Getting started**
 
