@@ -66,7 +66,7 @@ overview: |-
       driver:
         enable: true
         blacklist: true
-        version: "30.30.3"
+        version: "30.20.1"
         image: "<registry-host>:<port>/<project>/amdgpu_kmod"
         imageBuild:
           baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -84,7 +84,7 @@ overview: |-
           insecureSkipTLSVerify: false
   ```
   - `blacklist` — when `true`, unloads the in-tree `amdgpu` kernel module before loading the DKMS version. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). Without this, the in-tree driver claims the GPU first and the DKMS driver fails to load.
-  - `version` — the amdgpu DKMS driver version to build. Must match a ROCm release that supports your GPU generation (e.g. `30.30.3` for ROCm 7.2.1, `30.10.1`+ for MI350X/ROCm 7.0+). See the [User and AMD GPU Driver (amdgpu) support matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html) for the full compatibility table.
+  - `version` — the amdgpu DKMS driver version to build. Must match a ROCm release that supports your GPU generation. See the [User and AMD GPU Driver (amdgpu) support matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html) for the full compatibility table.
   - `image` — the registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
   - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
   - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.

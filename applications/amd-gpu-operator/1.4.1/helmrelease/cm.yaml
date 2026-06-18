@@ -44,7 +44,7 @@ data:
         driver:
           enable: true
           blacklist: true
-          version: "30.30.3"
+          version: "30.20.1"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           imageBuild:
             baseImageRegistry: "docker.io"
