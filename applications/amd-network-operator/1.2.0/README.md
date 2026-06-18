@@ -82,7 +82,7 @@ The Network Operator **does not** auto-create a `NetworkConfig` CR from Helm val
 
 | Dependency | Purpose | Enforcement |
 |---|---|---|
-| `amd-kmm-operator` | Shared KMM instance + registry plumbing | `metadata.yaml` (`requiredDependencies`) + Flux `dependsOn` |
+| `amd-kmm-operator` | Shared KMM instance + registry plumbing | `metadata.yaml` (`dependencies`) -- strongly recommended, not required |
 | Node Feature Discovery | NIC hardware detection and labelling | Provided by Kommander platform layer |
 
 ## Default Configuration
@@ -168,6 +168,6 @@ graph LR
 
 ## Install / Uninstall
 
-**Install:** Enable `amd-kmm-operator` first, then `amd-network-operator`.
+**Install:** It is strongly recommended to enable `amd-kmm-operator` first, then `amd-network-operator`. Without a KMM instance, driver builds will not function.
 
 **Uninstall:** Disable `amd-network-operator` first, then `amd-kmm-operator`.
