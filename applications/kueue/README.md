@@ -21,7 +21,6 @@ admission for batch and AI/ML workloads.
 - [Testing and validation](#testing-and-validation)
 - [FAQ](#faq)
 - [For administrators](#for-administrators)
-
 - [Links](#links)
 
 ## Chart Source
