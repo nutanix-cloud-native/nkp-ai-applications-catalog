@@ -53,7 +53,7 @@ data:
           version: "30.30.3"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           imageBuild:
-            baseImageRegistry: "registry.example.com:5000/amd-driver-images"
+            baseImageRegistry: "docker.io"
             baseImageRegistryTLS:
               insecure: false
               insecureSkipTLSVerify: false
