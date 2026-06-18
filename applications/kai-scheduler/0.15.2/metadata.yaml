@@ -27,7 +27,7 @@ overview: |
   **Prerequisites**
 
   - Kubernetes cluster.
-  - For GPU workloads, GPU resources must be available on cluster nodes.
+  - For GPU workloads, vendor-specific accelerator resources (for example, `nvidia.com/gpu` or `amd.com/gpu`) must be available on cluster nodes.
 
   **Resources**
 

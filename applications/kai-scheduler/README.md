@@ -11,7 +11,6 @@ additional push step is required.
 | Field | Value |
 |-------|-------|
 | Chart OCI URL | `oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler` |
-| Version | `v0.15.2` |
 
 ## Dependencies
 
@@ -21,7 +20,7 @@ Prerequisites for workload behavior:
 
 - For CPU scheduling tests, no GPU prerequisite is needed.
 - For GPU scheduling tests, cluster nodes must expose allocatable
-  `nvidia.com/gpu` resources.
+  accelerator resources (for example, `nvidia.com/gpu` or `amd.com/gpu`).
 
 ## Smoke Test Validation
 
@@ -36,7 +35,7 @@ This section captures what was validated and how.
   - `spec.schedulerName: kai-scheduler`
   - `kai.scheduler/queue: default-queue` (or another valid queue).
 - CPU workload scheduling path is functional.
-- GPU scheduling depends on node-level `nvidia.com/gpu` capacity exposure.
+- GPU scheduling depends on node-level accelerator capacity exposure (for example, `nvidia.com/gpu` or `amd.com/gpu`).
 
 ### Installation and verification commands used
 
@@ -45,7 +44,7 @@ helm upgrade -i kai-scheduler \
   oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler \
   -n kai-scheduler \
   --create-namespace \
-  --version v0.15.2
+  --version <chart-version>
 
 kubectl get pods -n kai-scheduler
 kubectl wait --for=condition=Available deployment --all -n kai-scheduler --timeout=180s
