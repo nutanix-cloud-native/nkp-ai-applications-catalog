@@ -33,5 +33,5 @@ scope:
   - workspace
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://kueue.sigs.k8s.io/docs/
-type: custom
+type: nkp-catalog
 ---
