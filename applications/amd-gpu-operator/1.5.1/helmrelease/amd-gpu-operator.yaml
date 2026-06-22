@@ -17,9 +17,6 @@ metadata:
   name: amd-gpu-operator
   namespace: ${releaseNamespace}
 spec:
-  dependsOn:
-  - name: amd-kmm-operator
-    namespace: ${releaseNamespace}
   chartRef:
     kind: OCIRepository
     name: ${releaseName}-${appVersion}-chart
