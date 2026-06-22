@@ -35,7 +35,7 @@ overview: |
 scope:
   - workspace
   - project
-nkpVersionSupport: ">=2.17.0"
+nkpVersionSupport: ">=2.19.0"
 supportLink: https://github.com/kai-scheduler/KAI-Scheduler
 type: custom
 ---
