@@ -21,6 +21,8 @@ The Slurm Operator chart is published natively as an OCI artifact.
 
 - The catalog entry deploys the Helm release into a dedicated namespace:
   `slurm-operator`.
+- The catalog entry also installs `slurm-operator-crds` first, then deploys the
+  main `slurm-operator` chart with a Flux `dependsOn` relationship.
 - Default values are provided by `<version>/helmrelease/cm.yaml`.
 - Validation overrides are in `<version>/.bloodhound.yaml` for cert-manager
   resource kinds.

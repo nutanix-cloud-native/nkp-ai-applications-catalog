@@ -9,6 +9,37 @@ spec:
     tag: 1.1.1
   url: oci://ghcr.io/slinkyproject/charts/slurm-operator
 ---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-crds-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 1.1.1
+  url: oci://ghcr.io/slinkyproject/charts/slurm-operator-crds
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${releaseName}-crds
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-crds-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  targetNamespace: slurm-operator
+  upgrade:
+    remediation:
+      retries: 30
+---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -18,6 +49,9 @@ spec:
   chartRef:
     kind: OCIRepository
     name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  dependsOn:
+  - name: ${releaseName}-crds
     namespace: ${releaseNamespace}
   install:
     crds: CreateReplace
