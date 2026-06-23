@@ -21,10 +21,16 @@ NKP_CLI="${NKP_CLI:?NKP_CLI must be set}"
 # artifacts into the tarball so it can be deployed on a disconnected cluster.
 # Default (unset) keeps the lightweight connected bundle (manifests + refs).
 AIRGAPPED="${AIRGAPPED:-}"
-airgapped_args=""
-if [ -n "$AIRGAPPED" ]; then
-  airgapped_args="--airgapped --platform linux/amd64"
-fi
+
+# Run "nkp create catalog-bundle" with the given args, appending the airgapped
+# flags when enabled. Using a function with "set --" keeps every arg properly
+# quoted (no word-splitting) while still allowing conditional extra flags.
+create_bundle() {
+  if [ -n "$AIRGAPPED" ]; then
+    set -- "$@" --airgapped --platform linux/amd64
+  fi
+  "$NKP_CLI" create catalog-bundle "$@"
+}
 
 rm -f "./${BUNDLE_NAME}-${TAG}.tar"
 
@@ -42,7 +48,7 @@ else
 fi
 
 if [ -z "$SKIP" ]; then
-  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG" $airgapped_args
+  create_bundle --repo-dir "$repodir" --collection-tag "$TAG"
 else
   apps_dir="$REPO_ROOT/applications"
   all_apps=""
@@ -66,7 +72,7 @@ else
   done
   include_apps="${include_apps%,}"
   [ -z "$include_apps" ] && echo "No apps to bundle after skipping" && exit 1
-  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG" --apps="$include_apps" $airgapped_args
+  create_bundle --repo-dir "$repodir" --collection-tag "$TAG" --apps="$include_apps"
 fi
 
 if [ -n "$use_custom_registry" ]; then
