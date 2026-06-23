@@ -2,12 +2,6 @@
 
 Kubernetes operator for running and managing Slurm clusters on NKP.
 
-## Catalog Versions
-
-| Catalog version | Upstream chart |
-|-----------------|----------------|
-| `1.1.1` | `slurm-operator` `1.1.1` |
-
 ## Chart Source
 
 The Slurm Operator chart is published natively as an OCI artifact.
@@ -15,7 +9,7 @@ The Slurm Operator chart is published natively as an OCI artifact.
 | Field | Value |
 |-------|-------|
 | Chart OCI URL | `oci://ghcr.io/slinkyproject/charts/slurm-operator` |
-| Version | `1.1.1` |
+| Version | See the active catalog version directory under `applications/slurm-operator/` |
 
 ## Dependencies
 
@@ -27,8 +21,8 @@ The Slurm Operator chart is published natively as an OCI artifact.
 
 - The catalog entry deploys the Helm release into a dedicated namespace:
   `slurm-operator`.
-- Default values are provided by `1.1.1/helmrelease/cm.yaml`.
-- Validation overrides are in `1.1.1/.bloodhound.yaml` for cert-manager
+- Default values are provided by `<version>/helmrelease/cm.yaml`.
+- Validation overrides are in `<version>/.bloodhound.yaml` for cert-manager
   resource kinds.
 
 ## Links
