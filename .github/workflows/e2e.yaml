@@ -69,6 +69,10 @@ jobs:
             apps=""
           fi
 
+          echo "DEBUG apps (before dedup): $apps"
+          apps=$(echo "$apps" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          echo "DEBUG apps (after dedup):  $apps"
+
           pairs=""
           for app in $apps; do
             # Only include if the app is in the enabled list
