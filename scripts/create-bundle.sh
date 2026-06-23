@@ -17,6 +17,15 @@ SKIP="${5:-}"
 CHART_REGISTRY="${6:-}"
 NKP_CLI="${NKP_CLI:?NKP_CLI must be set}"
 
+# When AIRGAPPED is set (non-empty), bundle the container images and OCI
+# artifacts into the tarball so it can be deployed on a disconnected cluster.
+# Default (unset) keeps the lightweight connected bundle (manifests + refs).
+AIRGAPPED="${AIRGAPPED:-}"
+airgapped_args=""
+if [ -n "$AIRGAPPED" ]; then
+  airgapped_args="--airgapped --platform linux/amd64"
+fi
+
 rm -f "./${BUNDLE_NAME}-${TAG}.tar"
 
 use_custom_registry=""
@@ -33,7 +42,7 @@ else
 fi
 
 if [ -z "$SKIP" ]; then
-  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG"
+  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG" $airgapped_args
 else
   apps_dir="$REPO_ROOT/applications"
   all_apps=""
@@ -57,7 +66,7 @@ else
   done
   include_apps="${include_apps%,}"
   [ -z "$include_apps" ] && echo "No apps to bundle after skipping" && exit 1
-  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG" --apps="$include_apps"
+  "$NKP_CLI" create catalog-bundle --repo-dir "$repodir" --collection-tag "$TAG" --apps="$include_apps" $airgapped_args
 fi
 
 if [ -n "$use_custom_registry" ]; then

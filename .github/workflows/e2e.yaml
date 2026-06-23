@@ -116,6 +116,8 @@ jobs:
 
       - name: Build airgapped bundle
         if: success()
+        env:
+          AIRGAPPED: "true"
         run: |
           set -euo pipefail
           current="${{ matrix.app }}=${{ matrix.version }}"
