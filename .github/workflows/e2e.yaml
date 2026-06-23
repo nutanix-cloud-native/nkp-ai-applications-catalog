@@ -69,9 +69,8 @@ jobs:
             apps=""
           fi
 
-          echo "DEBUG apps (before dedup): $apps"
+          # remove duplicates
           apps=$(echo "$apps" | tr ' ' '\n' | sort -u | tr '\n' ' ')
-          echo "DEBUG apps (after dedup):  $apps"
 
           pairs=""
           for app in $apps; do
