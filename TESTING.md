@@ -112,6 +112,18 @@ When a test fails in CI, the workflow automatically:
 
 You can download these from the workflow run's **Artifacts** section.
 
+### Airgapped bundle artifacts
+
+When an app's E2E test passes, the workflow also builds an **airgapped** catalog
+bundle for the `app/version` under test (every other catalog entry is skipped so
+unrelated apps don't block artifact generation). Because the build runs
+`just create-bundle ... AIRGAPPED=true`, the `nkp create catalog-bundle` call is
+invoked with `--airgapped --platform linux/amd64`, so the tarball includes the
+container images and OCI artifacts needed to deploy on a disconnected cluster —
+not just the manifests and image references. The generated
+`nkp-ai-applications-catalog*.tar` is uploaded as a GitHub Actions artifact named
+`airgapped-bundle-<app>-<version>`.
+
 ## Test Structure
 
 Tests use the shared `catalog` package from
