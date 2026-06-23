@@ -1,0 +1,38 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 1.1.1
+  url: oci://ghcr.io/slinkyproject/charts/slurm-operator
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: slurm-operator
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  targetNamespace: slurm-operator
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+  values:
+    fullnameOverride: slurm-operator
+---
