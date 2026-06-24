@@ -17,7 +17,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.15'
+        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16-dev'
     outputs:
       scan_definitions_dir:
         description: 'Directory containing per-app scan definition files'

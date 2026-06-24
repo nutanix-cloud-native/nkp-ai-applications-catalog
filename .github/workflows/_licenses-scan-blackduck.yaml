@@ -41,7 +41,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.15'
+        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16-dev'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
