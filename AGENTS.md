@@ -41,11 +41,12 @@ nkp generate catalog-repository --apps=<app-name>=<version>
 # 3. Validate the catalog repository
 nkp validate catalog-repository --repo-dir=.
 
-# 4. Create the catalog bundle
+# 4. Create the catalog bundle (writes ./nkp-ai-applications-catalog.tar).
+rm -f nkp-ai-applications-catalog.tar
 nkp create catalog-bundle --collection-tag v0.1.0
 
-# 5. Push the bundle to an OCI registry
-nkp push bundle --bundle ./nkp-ai-app-catalog.tar --to-registry <registry>
+# 5. Push the bundle to an OCI registry (the file is nkp-ai-applications-catalog.tar)
+nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>
 ```
 
 ### Deploying the Catalog on a Cluster
@@ -56,6 +57,8 @@ nkp create catalog-collection \
   --tag v0.1.0 \
   --workspace <workspace-name>
 ```
+
+
 
 ### Handling Helm Repository Charts (non-OCI)
 
@@ -184,7 +187,7 @@ Required fields:
 - Per-app overrides go in `applications/<app>/<version>/.bloodhound.yaml` (e.g. `strict: false` for charts that emit non-standard fields).
 - Validate with: `nkp validate catalog-repository --repo-dir=.`
 - Create bundle with: `nkp create catalog-bundle --collection-tag v0.1.0`
-- Push bundle with: `nkp push bundle --bundle ./nkp-ai-app-catalog.tar --to-registry <registry>`
+- Push bundle with: `nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>` (delete any stale `nkp-ai-applications-catalog.tar` before rebuilding; nkp reuses an existing file)
 - Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
 
@@ -208,6 +211,7 @@ Every application must deploy workloads to its **own dedicated namespace** (e.g.
 - Missing required fields in `metadata.yaml`.
 - For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to include `namespace.yaml` in helmrelease/kustomization.yaml — Flux does not create the target namespace; the namespace must be created by our manifests.
 - For Helm-based apps that need charts pushed to OCI: forgetting to add `push-<app>` and `add-<app>` to the justfile and dev-commands.md.
+- Rebuilding the bundle without deleting the previous `nkp-ai-applications-catalog.tar` — `nkp create catalog-bundle` skips and reuses the existing file, so your edits never make it into the pushed bundle.
 
 ## Commit Messages
 

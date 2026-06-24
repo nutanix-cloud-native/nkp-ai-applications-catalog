@@ -22,6 +22,8 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        # Preserve markdown hard line breaks (2 trailing spaces) in .md files.
+        args: ["--markdown-linebreak-ext=md"]
         stages: [pre-commit]
       - id: check-yaml
         args: ["-m", "--unsafe"]
