@@ -77,7 +77,9 @@ jobs:
           find scans -maxdepth 1 -type f -name '*.yaml' -print
 
       - name: Pull scanner image
-        run: docker pull "${{ inputs.scanner_image }}"
+        run: |
+          docker pull "${{ inputs.scanner_image }}"
+          docker tag "${{ inputs.scanner_image }}" "mesosphere/license-scanner-blackduck:9.5.0"
 
       - name: Restore scan cache
         uses: actions/cache@v4
