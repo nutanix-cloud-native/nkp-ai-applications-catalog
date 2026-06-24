@@ -25,11 +25,8 @@ Runs in parallel:
 
 Runs only if there are changes under `applications/**` (`if: hashFiles('applications/**') != ''`).
 
-On PRs, the workflow is gated by [action-check-approvals](https://github.com/nutanix-cloud-native/action-check-approvals): validation runs only after the PR has one of `integration-test` or `skip_integration` and the required number of approvals (default: 1).
-
 | Step | What it does |
 |------|-------------------------------|
-| Check integration test allowance status | On PRs only: gates until approvals + labels are met. |
 | Checkout | Current commit. |
 | Install Nix | Needed for devbox. |
 | Install devbox | Uses `devbox.json` / `devbox.lock`. |
