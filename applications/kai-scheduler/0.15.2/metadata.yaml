@@ -34,8 +34,9 @@ overview: |
   [Documentation](https://github.com/kai-scheduler/KAI-Scheduler) · [Project](https://github.com/kai-scheduler/KAI-Scheduler)
 scope:
   - workspace
-  - project
+certifications:
+  - qualified
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://github.com/kai-scheduler/KAI-Scheduler
-type: custom
+type: nkp-catalog
 ---
