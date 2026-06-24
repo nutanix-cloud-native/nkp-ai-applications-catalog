@@ -44,6 +44,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Java 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+
       - name: Black Duck Full Scan
         uses: blackduck-inc/black-duck-security-scan@v2.8.0
         with:
