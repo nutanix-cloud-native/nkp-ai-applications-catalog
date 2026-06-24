@@ -91,6 +91,19 @@ jobs:
           BLACKDUCK_API_TOKEN: ${{ secrets.BLACKDUCK_API_TOKEN }}
         run: |
           set -euo pipefail
+
+          echo "::group::Docker binary diagnostics"
+          echo "which docker: $(which docker)"
+          ls -la "$(which docker)"
+          file "$(which docker)"
+          docker_path="$(which docker)"
+          echo "Resolved path: $docker_path"
+          docker run --rm \
+            -v "$docker_path:/usr/bin/docker:ro" \
+            "${{ inputs.cli_image }}" \
+            /bin/sh -c "ls -la /usr/bin/docker && /usr/bin/docker --version" || echo "Mount test failed"
+          echo "::endgroup::"
+
           TMPDIR="$(mktemp -d)"
           export TMPDIR
           mkdir -p "$TMPDIR/go/pkg/mod"
