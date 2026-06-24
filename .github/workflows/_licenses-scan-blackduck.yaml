@@ -110,6 +110,7 @@ jobs:
               -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
               -v /tmp/bd-cache:/cache \
               -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$(which docker):/usr/bin/docker:ro" \
               -e BLACKDUCK_API_TOKEN \
               "${{ inputs.cli_image }}" \
               scan bd "/scans/${scan_name}" \
