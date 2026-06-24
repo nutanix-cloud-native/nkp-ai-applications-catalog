@@ -91,6 +91,7 @@ jobs:
       matrix: ${{ fromJson(needs.detect-apps.outputs.matrix) }}
     permissions:
       contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
 
@@ -101,10 +102,43 @@ jobs:
           enable-cache: true
           skip-nix-installation: true
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run E2E tests
         env:
           SKIP_CLUSTER_TEARDOWN: "true"
         run: devbox run -- just e2e-test "${{ matrix.app }}" "${{ matrix.version }}"
+
+      - name: Build airgapped bundle
+        if: success()
+        env:
+          AIRGAPPED: "true"
+        run: |
+          set -euo pipefail
+          current="${{ matrix.app }}=${{ matrix.version }}"
+          skip=$(
+            for dir in applications/*/*/; do
+              app="$(basename "$(dirname "$dir")")"
+              ver="$(basename "$dir")"
+              item="${app}=${ver}"
+              if [ "$item" != "$current" ]; then
+                printf '%s\n' "$item"
+              fi
+            done | paste -sd, -
+          )
+          devbox run -- just create-bundle "e2e-${{ matrix.app }}-${{ matrix.version }}" "$skip"
+
+      - name: Upload airgapped bundle
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airgapped-bundle-${{ matrix.app }}-${{ matrix.version }}
+          path: nkp-ai-applications-catalog*.tar
 
       - name: Collect diagnostic bundle
         if: failure()

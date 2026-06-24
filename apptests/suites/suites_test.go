@@ -12,6 +12,7 @@ import (
 // here — they register their own Ginkgo blocks directly.
 var enabledApps = []string{
 	"kagent",
+	"kueue",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
