@@ -60,7 +60,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16-dev'
+        default: 'mesosphere/dkp-licenses-cli:kjoshi-licenses-add-docker-cli'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string

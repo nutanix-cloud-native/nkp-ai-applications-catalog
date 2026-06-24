@@ -41,7 +41,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16-dev'
+        default: 'mesosphere/dkp-licenses-cli:kjoshi-licenses-add-docker-cli'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
@@ -91,20 +91,6 @@ jobs:
           BLACKDUCK_API_TOKEN: ${{ secrets.BLACKDUCK_API_TOKEN }}
         run: |
           set -euo pipefail
-
-          echo "::group::Docker binary diagnostics"
-          echo "which docker: $(which docker)"
-          ls -la "$(which docker)"
-          file "$(which docker)"
-          docker_path="$(which docker)"
-          echo "Resolved path: $docker_path"
-          docker run --rm --entrypoint sh \
-            -v "$docker_path:/usr/bin/docker:ro" \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            "${{ inputs.cli_image }}" \
-            -c 'echo "PATH=$PATH"; ls -la /usr/bin/docker; /usr/bin/docker --version; echo "Mount OK"' || echo "Mount test FAILED"
-          echo "::endgroup::"
-
           TMPDIR="$(mktemp -d)"
           export TMPDIR
           mkdir -p "$TMPDIR/go/pkg/mod"
@@ -124,7 +110,6 @@ jobs:
               -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
               -v /tmp/bd-cache:/cache \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$(which docker):/usr/bin/docker:ro" \
               -e BLACKDUCK_API_TOKEN \
               "${{ inputs.cli_image }}" \
               scan bd "/scans/${scan_name}" \
