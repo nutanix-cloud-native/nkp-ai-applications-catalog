@@ -98,10 +98,11 @@ jobs:
           file "$(which docker)"
           docker_path="$(which docker)"
           echo "Resolved path: $docker_path"
-          docker run --rm \
+          docker run --rm --entrypoint sh \
             -v "$docker_path:/usr/bin/docker:ro" \
+            -v /var/run/docker.sock:/var/run/docker.sock \
             "${{ inputs.cli_image }}" \
-            /bin/sh -c "ls -la /usr/bin/docker && /usr/bin/docker --version" || echo "Mount test failed"
+            -c 'echo "PATH=$PATH"; ls -la /usr/bin/docker; /usr/bin/docker --version; echo "Mount OK"' || echo "Mount test FAILED"
           echo "::endgroup::"
 
           TMPDIR="$(mktemp -d)"
