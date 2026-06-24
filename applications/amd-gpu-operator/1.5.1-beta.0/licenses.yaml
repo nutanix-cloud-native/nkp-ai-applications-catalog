@@ -37,7 +37,7 @@ resources:
 # Device metrics exporter
 - container_image: docker.io/rocm/device-metrics-exporter:v1.5.1-beta.0
   sources:
-  - ref: ${image_tag}
+  - ref: v1.5.0
     url: https://github.com/ROCm/device-metrics-exporter.git
 # GPU operator utils
 - container_image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
