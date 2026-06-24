@@ -25,6 +25,13 @@ overview: |
 
   Kueue installs the controller and CRDs but ships **no queues** by default — quotas are cluster-specific. To start admitting work, create a `ResourceFlavor`, a `ClusterQueue` with a quota, and a `LocalQueue` in your namespace, then submit a Job carrying the `kueue.x-k8s.io/queue-name` label. See the catalog `README.md` for a copy-paste starter.
 
+  **Dependencies — Cluster Autoscaler / ProvisioningRequest (optional)**
+
+  Core Kueue queueing works on its own. The `ProvisioningRequest` `AdmissionCheck` — which lets Kueue ask the Kubernetes Cluster Autoscaler to provision capacity on demand before admitting a workload — has prerequisites that live **outside this catalog** and must be enabled at the platform/cluster level:
+
+  - **CRD** — `provisioningrequests.autoscaling.x-k8s.io` must be installed on the cluster (owned by the Cluster Autoscaler, not by Kueue).
+  - **Cluster Autoscaler flags** — the autoscaler must run with both `--enable-provisioning-requests=true` and `--kube-api-content-type=application/json`.
+
   **Resources**
 
   [Documentation](https://kueue.sigs.k8s.io/docs/) · [Project](https://github.com/kubernetes-sigs/kueue)
