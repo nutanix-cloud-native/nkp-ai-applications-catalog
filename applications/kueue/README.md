@@ -226,7 +226,7 @@ It depends on which GPU behavior you want to prove. Kueue itself is hardware-agn
 
 ## FAQ
 
-**Q: How does a `ClusterQueue` map its quota (for example 4 cpu) to actual nodes?**  
+**Q: How does a `ClusterQueue` map its quota (for example 4 cpu) to actual nodes?**
 A: It does not map to specific nodes at all. The `4 cpu` is a logical budget inside Kueue, not a reservation on any node. There are two independent layers:
 
 - **Layer 1, Kueue quota accounting (no node awareness):** `nominalQuota` is just a number Kueue tracks. When you submit jobs, Kueue sums the cpu requests of everything it has admitted and stops admitting once the total would pass 4. It never looks at nodes for this.
@@ -236,31 +236,31 @@ The only link between quota and real nodes is the `ResourceFlavor`. A flavor can
 
 > **ELI5:** the "4 cpu" is the number written in the section's reservation book, not the chairs themselves. The `ResourceFlavor` is which part of the restaurant that book covers. The real chairs still have to exist, and it is the manager's job to make the book match the real chair count.
 
-**Q: Does Kueue replace the Kubernetes scheduler?**  
+**Q: Does Kueue replace the Kubernetes scheduler?**
 A: No. Kueue is an admission gate that decides when a job is allowed to start. Once it admits a job, the normal kube-scheduler still decides which node.
 
-**Q: Is quota tied to real node capacity?**  
+**Q: Is quota tied to real node capacity?**
 A: No. `nominalQuota` is a logical budget Kueue tracks itself; it does not read node capacity. The admin is responsible for setting quota to match real hardware and for pointing `ResourceFlavor`s at the right nodes via labels.
 
-**Q: What happens if I set quota higher than real capacity?**  
+**Q: What happens if I set quota higher than real capacity?**
 A: Kueue over-admits. It grants the budget, the jobs unsuspend, then the pods sit `Pending` because no real node can place them. Kueue thinks there is room; Kubernetes cannot deliver it.
 
-**Q: My job was admitted but the pod is stuck `Pending`. Is Kueue broken?**  
+**Q: My job was admitted but the pod is stuck `Pending`. Is Kueue broken?**
 A: No. Admission and placement are two layers. Kueue admitted it (quota was fine), but kube-scheduler found no node with enough free resources. That is a cluster capacity issue, not a Kueue issue.
 
-**Q: Does Kueue need GPUs?**  
+**Q: Does Kueue need GPUs?**
 A: No. Kueue is resource-agnostic. The entire policy engine (quotas, gang, borrowing, preemption) works on CPU. GPUs are just another countable resource it can manage.
 
-**Q: How does a job become managed by Kueue?**  
+**Q: How does a job become managed by Kueue?**
 A: It must carry the `kueue.x-k8s.io/queue-name` label pointing at a `LocalQueue`. A job without that label runs normally and is not gated by Kueue.
 
-**Q: What workload types does it support?**  
+**Q: What workload types does it support?**
 A: `batch/Job`, `JobSet`, Ray (`RayJob`/`RayService`/`RayCluster`), and the Kubeflow training jobs (PyTorch, TF, MPI, XGBoost, JAX, PaddlePaddle, TrainJob) are enabled by default in this chart. Plain Pods, Deployments, and StatefulSets are supported but require enabling their integration. Any non-core integration also needs the matching CRD/controller present on the cluster.
 
-**Q: Difference between `ClusterQueue` and `LocalQueue`?**  
+**Q: Difference between `ClusterQueue` and `LocalQueue`?**
 A: `ClusterQueue` holds the actual quota and policy and is cluster-scoped. `LocalQueue` is a namespaced pointer to a `ClusterQueue` and is what users submit to. That is how a namespace gets a slice of cluster quota.
 
-**Q: Can one team use another team's idle capacity?**  
+**Q: Can one team use another team's idle capacity?**
 A: Yes, through `Cohort`s. `ClusterQueue`s in the same cohort can borrow each other's unused quota and give it back when the owner needs it.
 
 ## For administrators
@@ -269,7 +269,7 @@ The administrator installs Kueue, defines the quota model, and sets the rules te
 
 > **ELI5:** the admin is the restaurant manager who sets how many tables exist, which sections each party can use, and the seating rules. The user is just a diner who shows up and asks for a table.
 
-**Q: After installing Kueue from the catalog, what does an admin set up?**  
+**Q: After installing Kueue from the catalog, what does an admin set up?**
 A: Kueue installs with no queues, on purpose. The admin creates the quota model in three layers:
 
 1. **`ResourceFlavor`:** describes a kind of hardware (for example cpu-only, or A100 GPU nodes), optionally pinned to nodes via `nodeLabels`.
@@ -278,7 +278,7 @@ A: Kueue installs with no queues, on purpose. The admin creates the quota model 
 
 Admins own `ResourceFlavor` and `ClusterQueue` (cluster-scoped); teams get a `LocalQueue` in their namespace.
 
-**Q: How does RBAC split between admins and users?**  
+**Q: How does RBAC split between admins and users?**
 A: The split follows resource scope:
 
 - **Admins (cluster role):** create/edit `ResourceFlavor`, `ClusterQueue`, `Cohort`, `AdmissionCheck`, and Kueue config. These are cluster-scoped and decide fairness and capacity, so they should be locked down.
@@ -286,10 +286,10 @@ A: The split follows resource scope:
 
 A common policy: admins pre-create the `LocalQueue` per team namespace, and users only get permission to create Jobs, not queues. That stops a team from inventing its own queue to bypass quota.
 
-**Q: On NKP specifically, how does this map to workspaces and projects?**  
+**Q: On NKP specifically, how does this map to workspaces and projects?**
 A: NKP workspaces and projects are backed by namespaces. The clean model: the platform admin owns `ClusterQueue`s and flavors at the cluster level, then drops one `LocalQueue` into each workspace/project namespace. Each tenant submits to its own `LocalQueue`, and the shared `ClusterQueue` (or a `Cohort` of them) is where fairness between tenants is enforced.
 
-**Q: What policies can an admin enforce beyond raw quota?**  
+**Q: What policies can an admin enforce beyond raw quota?**
 A:
 
 - **Borrowing:** let a queue temporarily use another queue's idle quota within the same `Cohort`, with an optional `borrowingLimit`.
@@ -297,13 +297,13 @@ A:
 - **Preemption:** allow a higher-priority or under-its-quota workload to evict an admitted one. Configurable within a queue and across the cohort.
 - **Fair sharing:** weight how spare capacity is split between competing teams, instead of first-come-first-served.
 
-**Q: How does an admin guarantee gang admission actually holds (no half-started jobs)?**  
+**Q: How does an admin guarantee gang admission actually holds (no half-started jobs)?**
 A: Two layers. Kueue's admission already reserves the full quota for a workload before it starts (all-or-nothing on quota). To also guarantee all pods become Ready together, the admin enables `waitForPodsReady` in the Kueue config. That makes Kueue wait for the whole pod group to be schedulable and roll back/requeue if it stalls, which prevents one job from holding GPUs hostage while waiting for the rest.
 
-**Q: What are AdmissionChecks and ProvisioningRequest, and when does an admin care?**  
+**Q: What are AdmissionChecks and ProvisioningRequest, and when does an admin care?**
 A: They are extra gates an admin can attach to a `ClusterQueue` so a workload is admitted only after an external condition is met. The most common is `ProvisioningRequest`: do not admit the GPU job until the cluster autoscaler confirms it can actually provision the GPU nodes. This matters on elastic/cloud clusters where capacity is created on demand; on a fixed on-prem cluster it is usually optional.
 
-**Q: How does an admin change quota or observe what Kueue is doing?**  
+**Q: How does an admin change quota or observe what Kueue is doing?**
 A: Quotas are just fields on the `ClusterQueue`, so an admin edits `nominalQuota` and Kueue applies it live (newly submitted work respects the new numbers). For visibility, watch the `ClusterQueue` status (`admittedWorkloads`, `pendingWorkloads`, flavor usage) and Kueue's Prometheus metrics. That is how an admin answers "who is waiting, who is over their share, and is any quota sitting idle."
 
 ## Links
