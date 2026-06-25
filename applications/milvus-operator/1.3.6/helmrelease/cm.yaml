@@ -3,6 +3,6 @@ data:
   values.yaml: ""
 kind: ConfigMap
 metadata:
-  name: ${releaseName}-config-defaults
+  name: ${releaseName}-${appVersion}-defaults
   namespace: ${releaseNamespace}
 ---

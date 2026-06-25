@@ -10,6 +10,7 @@ spec:
     substitute:
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
+      appVersion: "1.3.6"
   prune: true
   retryInterval: 1m0s
   sourceRef:
