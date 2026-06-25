@@ -1,17 +1,19 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Slurm Operator
 allowMultipleInstances: false
 category:
-- artificial-intelligence
-- infrastructure
+  - artificial-intelligence
+  - infrastructure
+certifications:
+  - qualified
 description: Kubernetes operator for deploying and managing Slurm clusters, nodesets, and loginsets on NKP.
-displayName: Slurm Operator
 dependencies: []
 requiredDependencies:
-- cert-manager
+  - cert-manager
 icon: ""
 licensing:
-- Pro
-- Ultimate
+  - Pro
+  - Ultimate
 overview: |
   **Overview**
 
@@ -37,8 +39,8 @@ overview: |
 
   [Documentation](https://slinky.ai/) · [Project](https://github.com/SlinkyProject/slurm-operator) · [Helm Chart](https://github.com/SlinkyProject/slurm-operator/tree/main/helm/slurm-operator)
 scope:
-- workspace
+  - workspace
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://github.com/SlinkyProject/slurm-operator
-type: custom
+type: nkp-catalog
 ---
