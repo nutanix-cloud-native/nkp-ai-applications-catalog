@@ -15,13 +15,14 @@ var enabledApps = []string{
 	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
+	"slurm-operator",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
 	catalog.InitSuite()
 	for _, app := range enabledApps {
-		catalog.RegisterDefaultTests(app)
+		registerDefaultTestsWithDependencies(app)
 	}
 }
 
