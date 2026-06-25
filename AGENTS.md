@@ -191,6 +191,44 @@ Required fields:
 - Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
 
+## Airgapped Bundle Runbook (Generic)
+
+Use this flow to create, push, and validate disconnected (airgapped) catalog bundles.
+
+1. **Prepare environment**
+   - Start from repo root inside `devbox shell`.
+   - If Docker is not on the default socket, set `DOCKER_HOST` (for example, Rancher Desktop or Colima).
+
+2. **Validate manifests first**
+   - Run: `nkp validate catalog-repository --repo-dir=.`
+
+3. **Create the airgapped bundle**
+   - Remove stale artifacts first:
+     - `rm -f nkp-ai-applications-catalog.tar nkp-ai-applications-catalog-airgapped.tar`
+   - Full catalog:
+     - `AIRGAPPED=true just create-bundle <tag>`
+     - Example:
+       - `AIRGAPPED=true just create-bundle v0.1.0`
+   - Scoped app/version (recommended for CI or troubleshooting):
+     - Use `just create-bundle <tag> "<skip-list>"` where `skip-list` is comma-separated `app=version` entries to exclude.
+     - The resulting include set (all minus skip-list) is passed to `nkp create catalog-bundle --apps=...`.
+     - Example (bundle only `kai-scheduler=0.15.2` by skipping others):
+       - `AIRGAPPED=true just create-bundle e2e-kai-scheduler-0.15.2 "kagent=0.7.13,kueue=0.18.0,..." `
+
+4. **Push the bundle to an OCI registry**
+   - Authenticate to your registry first.
+   - Push:
+     - `nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry <registry>`
+     - Example:
+       - `nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>`
+
+5. **Deploy and validate on cluster**
+   - Create/update collection:
+     - `nkp create catalog-collection --url oci://<registry>/nkp-ai-applications-catalog/collection --tag <tag> --workspace <workspace-name>`
+     - Example:
+       - `nkp create catalog-collection --url oci://ghcr.io/<org-or-user>/nkp-ai-applications-catalog/collection --tag e2e-kai-scheduler-0.15.2 --workspace kommander-workspace`
+   - Verify Flux/Kustomization and HelmRelease become Ready, and verify no image pull errors.
+
 ## App namespace convention
 
 Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
