@@ -185,6 +185,7 @@ Required fields:
 
 - The root `.bloodhound.yml` configures Kubernetes schema validation (strict mode, k8s v1.34.0).
 - Per-app overrides go in `applications/<app>/<version>/.bloodhound.yaml` (e.g. `strict: false` for charts that emit non-standard fields).
+- Always run pre-commit before creating any commit and again before opening a PR: `devbox run -- just pre-commit`.
 - Validate with: `nkp validate catalog-repository --repo-dir=.`
 - Create bundle with: `nkp create catalog-bundle --collection-tag v0.1.0`
 - Push bundle with: `nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>` (delete any stale `nkp-ai-applications-catalog.tar` before rebuilding; nkp reuses an existing file)
