@@ -28,7 +28,7 @@ resources:
 # by setting enableDevicePlugin: true and draDriver.enable: false.
 - container_image: docker.io/rocm/k8s-device-plugin:1.31.0.10
   sources:
-  - ref: v1.31.0.10
+  - ref: v${image_tag}
     url: https://github.com/ROCm/k8s-device-plugin.git
 - container_image: docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
   sources:
