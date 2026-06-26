@@ -12,6 +12,10 @@
 #          +-- source code scans
 #          +-- container image scans
 #
+# BlackDuck parent BOM Components pages can show "Unknown License" for linked
+# SUB_PROJECT rows. Review the uploaded BOM report artifacts or the child
+# project BOM/license reports for detected license details.
+#
 # The parent_project must already exist in BlackDuck. Create it manually
 # in the BD UI before running this workflow.
 #
@@ -145,6 +149,14 @@ jobs:
           name: bom-reports
           path: bom-reports/
           retention-days: 7
+
+      - name: Summarize BOM report usage
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Black Duck BOM review
+
+          Parent BOM Components pages can show `Unknown License` for linked `SUB_PROJECT` rows. Use the uploaded `bom-reports` artifact and child project BOM/license reports for detected license details.
+          EOF
 
   link-to-parent-project:
     needs:
