@@ -34,6 +34,10 @@ on:
         description: 'Enable container image scanning'
         type: boolean
         default: true
+      force_rescan:
+        description: 'Force Black Duck scans to ignore existing cached project versions'
+        type: boolean
+        default: false
       verbosity:
         description: 'Logging verbosity level'
         type: number
@@ -105,6 +109,11 @@ jobs:
             echo "|---|---|"
           } >> "$GITHUB_STEP_SUMMARY"
 
+          force_args=()
+          if [ "${{ inputs.force_rescan }}" = "true" ]; then
+            force_args+=(--force)
+          fi
+
           for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
             scan_name="$(basename "$scan_file")"
             echo "::group::Scanning $scan_name"
@@ -122,6 +131,7 @@ jobs:
                 --source-code-scan=${{ inputs.source_code_scan }} \
                 --container-image-scan=${{ inputs.container_image_scan }} \
                 --timeout ${{ inputs.timeout }} \
+                "${force_args[@]}" \
                 -v ${{ inputs.verbosity }}; then
               echo "| ✅ PASS | \`$scan_name\` |" >> "$GITHUB_STEP_SUMMARY"
             else

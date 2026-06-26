@@ -45,6 +45,10 @@ on:
         description: 'Enable container image scanning'
         type: boolean
         default: true
+      force_rescan:
+        description: 'Force Black Duck scans to ignore existing cached project versions'
+        type: boolean
+        default: false
       parallel_scans:
         description: 'Number of concurrent scans'
         type: number
@@ -85,6 +89,7 @@ jobs:
       timeout: ${{ inputs.timeout }}
       source_code_scan: ${{ inputs.source_code_scan }}
       container_image_scan: ${{ inputs.container_image_scan }}
+      force_rescan: ${{ inputs.force_rescan }}
       verbosity: ${{ inputs.verbosity }}
       cli_image: ${{ inputs.cli_image }}
       scanner_image: ${{ inputs.scanner_image }}
