@@ -6,6 +6,7 @@ category:
   - infrastructure
 certifications:
   - qualified
+  - airgapped
 description: Kubernetes operator for deploying and managing Slurm clusters, nodesets, and loginsets on NKP.
 dependencies: []
 requiredDependencies:
@@ -32,7 +33,6 @@ overview: |
 
   **Prerequisites**
 
-  - Access to container images referenced by the chart
   - Cluster resources sized for control-plane and Slurm workloads
 
   **Resources**
