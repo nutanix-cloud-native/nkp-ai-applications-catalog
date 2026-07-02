@@ -12,7 +12,8 @@ licensing:
   - Ultimate
 certifications:
   - qualified
-requiredDependencies:
+requiredDependencies: []
+dependencies:
   - amd-kmm-operator
 nkpVersionSupport: ">=2.18.0"
 overview: |-
@@ -120,7 +121,7 @@ overview: |-
   The `driver.blacklist: true` setting in the NetworkConfig prevents the in-tree `ionic` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot. A node reboot is required for the blacklist to take effect in this case.
 
   ## Dependencies
-  - **AMD KMM Operator** — provides the shared KMM instance. Must be enabled first.
+  - **AMD KMM Operator** — provides the shared KMM instance. Strongly recommended to enable first; without it, driver builds will not function. To use the chart's embedded KMM subchart instead of the shared catalog app, set `kmm.enabled: true` in your config overrides and skip enabling `amd-kmm-operator`. You must also manually create the `kmm-registry-dockerconfig` secret (normally auto-created by the KMM Operator reconciler) with your registry credentials — see [Registry Secret Configuration](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/drivers/installation.html#registry-secret-configuration).
   - **Node Feature Discovery** — provided by the NKP platform layer (disabled in this chart).
   - **Multus CNI** — required for `NetworkAttachmentDefinition` support. Provided by NKP v2.18+ (disabled in this chart). For NKP v2.17.x and earlier, add `multus.enabled: true` to the Helm config overrides.
 

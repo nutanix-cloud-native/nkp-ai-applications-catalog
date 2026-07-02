@@ -18,13 +18,13 @@ releases:
       - name: amd-gpu-operator
         version: "1.5.0"
       - name: amd-gpu-operator
-        version: "1.5.1"
+        version: "1.5.1-beta.0"
       - name: amd-kmm-operator
         version: "1.0.0"
       - name: amd-network-operator
         version: "1.2.0"
   # Deprecated versioning, tag will be removed in the future
-  - tagName: "0.1.1"
+  - tagName: "0.1.2"
     fileName: nkp-ai-applications-catalog-2.18-dev.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
@@ -38,7 +38,7 @@ releases:
       - name: amd-gpu-operator
         version: "1.5.0"
       - name: amd-gpu-operator
-        version: "1.5.1"
+        version: "1.5.1-beta.0"
       - name: amd-kmm-operator
         version: "1.0.0"
       - name: amd-network-operator

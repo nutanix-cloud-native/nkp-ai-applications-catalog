@@ -13,6 +13,8 @@ import (
 var enabledApps = []string{
 	"kagent",
 	"milvus-operator",
+	"kueue",
+	"kai-scheduler",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs

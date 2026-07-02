@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Reusable workflow: runs BlackDuck source code and container image scans
-# against all scan definition YAMLs in a directory using the dkp-infra-tools
-# licenses CLI.
+# against all scan definition YAMLs in a directory using the pre-built
+# dkp-licenses-cli container image.
 #
 # Scan definitions must be uploaded as a GHA artifact named "scan-definitions"
 # by the calling workflow (or a prior job). Each YAML file in the directory
@@ -38,16 +38,16 @@ on:
         description: 'Logging verbosity level'
         type: number
         default: 1
-      infra_tools_ref:
-        description: 'dkp-infra-tools git ref to use'
+      cli_image:
+        description: 'dkp-licenses-cli container image'
         type: string
-        default: 'main'
+        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16'
+      scanner_image:
+        description: 'dkp-licenses-scanner container image'
+        type: string
+        default: 'harbor.eng.nutanix.com/dkp-infra-tools/license-scanner-blackduck:9.5.0'
     secrets:
       BLACKDUCK_API_TOKEN:
-        required: true
-      GHA_CHECKOUT_APP_ID:
-        required: true
-      GHA_CHECKOUT_APP_PRIVATE_KEY:
         required: true
 
 env:
@@ -76,31 +76,10 @@ jobs:
           echo "Found $count scan definition(s):"
           find scans -maxdepth 1 -type f -name '*.yaml' -print
 
-      - name: Generate GitHub App token
-        uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
-          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
-          owner: mesosphere
-
-      - name: Configure git for private repo access
-        run: git config --global url."https://oauth2:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Checkout dkp-infra-tools
-        uses: actions/checkout@v4
-        with:
-          repository: mesosphere/dkp-infra-tools
-          ref: ${{ inputs.infra_tools_ref }}
-          path: dkp-infra-tools
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "dkp-infra-tools/licenses/go.mod"
+      - name: Pull scanner image
+        run: |
+          docker pull "${{ inputs.scanner_image }}"
+          docker tag "${{ inputs.scanner_image }}" "mesosphere/license-scanner-blackduck:9.5.0"
 
       - name: Restore scan cache
         uses: actions/cache@v4
@@ -109,19 +88,12 @@ jobs:
           key: bd-scan-cache-${{ hashFiles('scans/*.yaml') }}
           restore-keys: bd-scan-cache-
 
-      - name: Build BlackDuck scanner image
-        working-directory: dkp-infra-tools/licenses
-        run: make scanner.blackduck
-
       - name: Run BlackDuck scans
-        working-directory: dkp-infra-tools/licenses
         env:
           BLACKDUCK_API_TOKEN: ${{ secrets.BLACKDUCK_API_TOKEN }}
         run: |
           set -euo pipefail
-          mkdir localtmp
-          tmpdir="$(mktemp -d --tmpdir=localtmp)"
-          TMPDIR="$(pwd)/$tmpdir"
+          TMPDIR="$(mktemp -d)"
           export TMPDIR
           mkdir -p "$TMPDIR/go/pkg/mod"
 
@@ -136,15 +108,21 @@ jobs:
           for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
             scan_name="$(basename "$scan_file")"
             echo "::group::Scanning $scan_name"
-            if go run main.go scan bd "$scan_file" \
-              --blackduck-url "$BLACKDUCK_URL" \
-              --parallel-scans ${{ inputs.parallel_scans }} \
-              --cache-local-storage-path /tmp/bd-cache \
-              --blackduck-dockerless-container-scan \
-              --source-code-scan=${{ inputs.source_code_scan }} \
-              --container-image-scan=${{ inputs.container_image_scan }} \
-              --timeout ${{ inputs.timeout }} \
-              -v ${{ inputs.verbosity }}; then
+            if docker run --rm \
+              -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
+              -v /tmp/bd-cache:/cache \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -e BLACKDUCK_API_TOKEN \
+              "${{ inputs.cli_image }}" \
+              scan bd "/scans/${scan_name}" \
+                --blackduck-url "$BLACKDUCK_URL" \
+                --parallel-scans ${{ inputs.parallel_scans }} \
+                --cache-local-storage-path /cache \
+                --blackduck-dockerless-container-scan \
+                --source-code-scan=${{ inputs.source_code_scan }} \
+                --container-image-scan=${{ inputs.container_image_scan }} \
+                --timeout ${{ inputs.timeout }} \
+                -v ${{ inputs.verbosity }}; then
               echo "| ✅ PASS | \`$scan_name\` |" >> "$GITHUB_STEP_SUMMARY"
             else
               echo "::error title=Scan failed::$scan_name"

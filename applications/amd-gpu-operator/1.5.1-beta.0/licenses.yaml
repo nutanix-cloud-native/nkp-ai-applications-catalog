@@ -28,16 +28,16 @@ resources:
 # by setting enableDevicePlugin: true and draDriver.enable: false.
 - container_image: docker.io/rocm/k8s-device-plugin:1.31.0.10
   sources:
-  - ref: ${image_tag}
+  - ref: v${image_tag}
     url: https://github.com/ROCm/k8s-device-plugin.git
 - container_image: docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
   sources:
-  - ref: ${image_tag}
+  - ref: v1.31.0.10
     url: https://github.com/ROCm/k8s-device-plugin.git
 # Device metrics exporter
 - container_image: docker.io/rocm/device-metrics-exporter:v1.5.1-beta.0
   sources:
-  - ref: ${image_tag}
+  - ref: v1.5.0
     url: https://github.com/ROCm/device-metrics-exporter.git
 # GPU operator utils
 - container_image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0

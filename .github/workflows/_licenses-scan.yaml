@@ -57,21 +57,23 @@ on:
         description: 'Logging verbosity level'
         type: number
         default: 1
-      infra_tools_ref:
-        description: 'dkp-infra-tools git ref to use'
+      cli_image:
+        description: 'dkp-licenses-cli container image'
         type: string
-        default: 'main'
+        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16'
+      scanner_image:
+        description: 'dkp-licenses-scanner container image'
+        type: string
+        default: 'harbor.eng.nutanix.com/dkp-infra-tools/license-scanner-blackduck:9.5.0'
     secrets:
       BLACKDUCK_API_TOKEN:
-        required: true
-      GHA_CHECKOUT_APP_ID:
-        required: true
-      GHA_CHECKOUT_APP_PRIVATE_KEY:
         required: true
 
 jobs:
   generate-scan-definitions:
     uses: ./.github/workflows/_licenses-generate-scan-definition.yaml
+    with:
+      cli_image: ${{ inputs.cli_image }}
     secrets: inherit
 
   scan-blackduck:
@@ -84,7 +86,8 @@ jobs:
       source_code_scan: ${{ inputs.source_code_scan }}
       container_image_scan: ${{ inputs.container_image_scan }}
       verbosity: ${{ inputs.verbosity }}
-      infra_tools_ref: ${{ inputs.infra_tools_ref }}
+      cli_image: ${{ inputs.cli_image }}
+      scanner_image: ${{ inputs.scanner_image }}
     secrets: inherit
 
   report-bom:
@@ -105,32 +108,6 @@ jobs:
           name: scan-definitions
           path: scans/
 
-      - name: Generate GitHub App token
-        uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
-          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
-          owner: mesosphere
-
-      - name: Configure git for private repo access
-        run: git config --global url."https://oauth2:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Checkout dkp-infra-tools
-        uses: actions/checkout@v4
-        with:
-          repository: mesosphere/dkp-infra-tools
-          ref: ${{ inputs.infra_tools_ref }}
-          path: dkp-infra-tools
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "dkp-infra-tools/licenses/go.mod"
-
       - name: Restore scan cache
         uses: actions/cache@v4
         with:
@@ -139,17 +116,21 @@ jobs:
           restore-keys: bd-scan-cache-
 
       - name: Generate BOM reports
-        working-directory: dkp-infra-tools/licenses
         run: |
           set -euo pipefail
           mkdir -p bom-reports
-          for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
+          for scan_file in scans/*.yaml; do
             app=$(basename "$scan_file" .yaml)
             echo "::group::BOM for $app"
-            go run main.go generate bom "$scan_file" \
-              --blackduck-url "$BLACKDUCK_URL" \
-              --cache-local-storage-path /tmp/bd-cache \
-              -v ${{ inputs.verbosity }} | tee "bom-reports/${app}.csv"
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
+              -v /tmp/bd-cache:/cache \
+              -e BLACKDUCK_API_TOKEN \
+              "${{ inputs.cli_image }}" \
+              generate bom "/scans/$(basename "$scan_file")" \
+                --blackduck-url "$BLACKDUCK_URL" \
+                --cache-local-storage-path /cache \
+                -v ${{ inputs.verbosity }} | tee "bom-reports/${app}.csv"
             echo "::endgroup::"
           done
 
@@ -157,7 +138,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bom-reports
-          path: dkp-infra-tools/licenses/bom-reports/
+          path: bom-reports/
           retention-days: 7
 
   link-to-parent-project:
@@ -178,42 +159,19 @@ jobs:
           name: scan-definitions
           path: scans/
 
-      - name: Generate GitHub App token
-        uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
-          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
-          owner: mesosphere
-
-      - name: Configure git for private repo access
-        run: git config --global url."https://oauth2:$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Checkout dkp-infra-tools
-        uses: actions/checkout@v4
-        with:
-          repository: mesosphere/dkp-infra-tools
-          ref: ${{ inputs.infra_tools_ref }}
-          path: dkp-infra-tools
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "dkp-infra-tools/licenses/go.mod"
-
       - name: Create per-app parent projects and link to catalog parent
-        working-directory: dkp-infra-tools/licenses
         run: |
           set -euo pipefail
-          for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
+          for scan_file in scans/*.yaml; do
             echo "::group::Parent project for $(basename "$scan_file" .yaml)"
-            go run main.go generate bd-parent-project "$scan_file" \
-              --blackduck-url "$BLACKDUCK_URL" \
-              --link-to-parent "${{ inputs.parent_project }}" \
-              --link-to-parent-version "${{ inputs.version }}" \
-              -v ${{ inputs.verbosity }}
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
+              -e BLACKDUCK_API_TOKEN \
+              "${{ inputs.cli_image }}" \
+              generate bd-parent-project "/scans/$(basename "$scan_file")" \
+                --blackduck-url "$BLACKDUCK_URL" \
+                --link-to-parent "${{ inputs.parent_project }}" \
+                --link-to-parent-version "${{ inputs.version }}" \
+                -v ${{ inputs.verbosity }}
             echo "::endgroup::"
           done

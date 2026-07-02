@@ -208,7 +208,7 @@ just add-to-cluster <workspace-name> v0.1.0
 
 # or directly:
 nkp create catalog-collection \
-  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection \
+  --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection \
   --tag v0.1.0 \
   --workspace <workspace-name>
 ```

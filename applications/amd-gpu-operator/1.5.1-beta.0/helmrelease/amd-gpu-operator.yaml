@@ -9,7 +9,7 @@ spec:
   interval: 1m
   url: "oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts"
   ref:
-    tag: v1.5.0
+    tag: v1.5.1-beta.0
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
