@@ -7,11 +7,11 @@ k8s_versions:
 
 strict: true
 
-skip_types:
-  - cert-manager.io/v1/Certificate
-  - cert-manager.io/v1/Issuer
+skip_types: []
 
-additional_crds: []
+additional_crds:
+  - https://raw.githubusercontent.com/cert-manager/cert-manager/master/deploy/crds/cert-manager.io_certificates.yaml
+  - https://raw.githubusercontent.com/cert-manager/cert-manager/master/deploy/crds/cert-manager.io_issuers.yaml
 
 substitution_vars:
   releaseNamespace: kommander

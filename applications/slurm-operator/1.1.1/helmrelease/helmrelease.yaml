@@ -1,7 +1,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ${releaseName}-chart
+  name: ${releaseName}-${appVersion}-chart
   namespace: ${releaseNamespace}
 spec:
   interval: 6h0m0s
@@ -12,7 +12,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ${releaseName}-crds-chart
+  name: ${releaseName}-${appVersion}-crds-chart
   namespace: ${releaseNamespace}
 spec:
   interval: 6h0m0s
@@ -23,12 +23,12 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ${releaseName}-crds
+  name: ${releaseName}-${appVersion}-crds
   namespace: ${releaseNamespace}
 spec:
   chartRef:
     kind: OCIRepository
-    name: ${releaseName}-crds-chart
+    name: ${releaseName}-${appVersion}-crds-chart
     namespace: ${releaseNamespace}
   install:
     createNamespace: true
@@ -48,10 +48,10 @@ metadata:
 spec:
   chartRef:
     kind: OCIRepository
-    name: ${releaseName}-chart
+    name: ${releaseName}-${appVersion}-chart
     namespace: ${releaseNamespace}
   dependsOn:
-  - name: ${releaseName}-crds
+  - name: ${releaseName}-${appVersion}-crds
     namespace: ${releaseNamespace}
   install:
     crds: CreateReplace
