@@ -26,3 +26,6 @@ dev-commands.md
 
 # Local docs (keep files, exclude from repo)
 docs/
+
+# temporary scripts for kind hack
+apptests/suites/tmp-kind-hack-scripts/
