@@ -69,6 +69,9 @@ jobs:
             apps=""
           fi
 
+          # remove duplicates
+          apps=$(echo "$apps" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
           pairs=""
           for app in $apps; do
             # Only include if the app is in the enabled list

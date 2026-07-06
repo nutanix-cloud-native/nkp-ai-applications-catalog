@@ -12,6 +12,7 @@ import (
 // here — they register their own Ginkgo blocks directly.
 var enabledApps = []string{
 	"kagent",
+	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
 }
