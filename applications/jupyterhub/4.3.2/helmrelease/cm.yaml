@@ -17,6 +17,12 @@ data:
         egress:
           - ports:
               - port: 6443
+    # The default block-cloud-metadata init container runs legacy iptables, which fails
+    # on nftables-only nodes (e.g. Rocky 9): "can't initialize iptables table filter".
+    # Disable it so single-user servers can spawn; metadata can be blocked via NetworkPolicy.
+    singleuser:
+      cloudMetadata:
+        blockWithIptables: false
     # Use ClusterIP when Ingress is enabled so Helm does not wait for LoadBalancer IP
     # (LoadBalancer can stay Pending on bare-metal; Ingress provides external access)
     proxy:
@@ -31,6 +37,6 @@ data:
       pathType: ImplementationSpecific
 kind: ConfigMap
 metadata:
-  name: ${releaseName}-config-defaults
+  name: ${releaseName}-${appVersion}-defaults
   namespace: ${releaseNamespace}
 ---
