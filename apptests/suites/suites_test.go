@@ -12,16 +12,18 @@ import (
 // here — they register their own Ginkgo blocks directly.
 var enabledApps = []string{
 	"kagent",
+	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
 	"jupyterhub",
+	"slurm-operator",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
 	catalog.InitSuite()
 	for _, app := range enabledApps {
-		catalog.RegisterDefaultTests(app)
+		registerDefaultTestsWithDependencies(app)
 	}
 }
 

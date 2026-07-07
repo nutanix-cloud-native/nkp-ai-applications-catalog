@@ -1,0 +1,46 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Slurm Operator
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+  - infrastructure
+certifications:
+  - qualified
+  - airgapped
+description: Kubernetes operator for deploying and managing Slurm clusters, nodesets, and loginsets on NKP.
+dependencies: []
+requiredDependencies:
+  - cert-manager
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Slurm Operator runs Slurm on Kubernetes and manages the lifecycle of Slurm control-plane and worker components through Kubernetes-native custom resources. It is suitable for HPC and AI batch workloads that need Slurm scheduling with Kubernetes operations.
+
+  **Key capabilities**
+
+  - Operator-managed Slurm cluster lifecycle on Kubernetes
+  - NodeSet and LoginSet abstractions for worker and login node management
+  - Supports StatefulSet and DaemonSet scaling modes for Slurm workers
+  - CRD-driven upgrades and reconciliation for Slurm components
+
+  **Dependencies**
+
+  - `cert-manager` (required) for certificate/webhook management used by the operator stack
+
+  **Prerequisites**
+
+  - Cluster resources sized for control-plane and Slurm workloads
+
+  **Resources**
+
+  [Documentation](https://slinky.ai/) · [Project](https://github.com/SlinkyProject/slurm-operator) · [Helm Chart](https://github.com/SlinkyProject/slurm-operator/tree/main/helm/slurm-operator)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://github.com/SlinkyProject/slurm-operator
+type: nkp-catalog
+---

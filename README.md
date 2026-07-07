@@ -189,6 +189,48 @@ just push-bundle
 
 > **Tip:** Steps 3-5 can be combined into a single command: `just release v0.1.0`
 
+### Airgapped Bundle Build and Push (Generic)
+
+Use this flow when preparing a disconnected/offline bundle that includes images
+and OCI artifacts.
+
+```bash
+# Optional: if Docker is not on default socket (Rancher Desktop / Colima)
+export DOCKER_HOST=unix://$HOME/.rd/docker.sock
+
+# 1) Validate manifests
+just validate
+
+# 2) Remove stale bundle artifacts before rebuilding
+rm -f nkp-ai-applications-catalog.tar nkp-ai-applications-catalog-airgapped.tar
+
+# 3) Build full airgapped catalog bundle
+AIRGAPPED=true just create-bundle <tag>
+
+# 4) Push airgapped bundle to target registry
+nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry <registry>
+```
+
+Example:
+
+```bash
+AIRGAPPED=true just create-bundle v0.1.0
+nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>
+```
+
+For scoped testing of a single app/version, use the `skip` parameter to exclude
+other `app=version` entries:
+
+```bash
+AIRGAPPED=true just create-bundle <tag> "<comma-separated skip list>"
+```
+
+Example (bundle only `kai-scheduler=0.15.2` by skipping other app versions):
+
+```bash
+AIRGAPPED=true just create-bundle e2e-kai-scheduler-0.15.2 "kagent=0.7.13,kueue=0.18.0,..."
+```
+
 ### Step 6: Commit and Push
 
 Once validation passes, commit your changes and open a pull request:
