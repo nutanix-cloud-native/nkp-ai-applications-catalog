@@ -7,26 +7,17 @@ on:
   workflow_dispatch:
     inputs:
       chart_repo:
-        description: 'Source Helm/OCI repository URL (e.g., https://weaviate.github.io/weaviate-helm/, oci://harbor.eng.nutanix.com/amd-operators)'
-        type: string
-        required: true
-      repo_name:
-        description: 'Helm repo alias for helm repo add / helm pull (e.g., weaviate, ollama-helm)'
+        description: 'Source Helm repository URL (e.g., https://weaviate.github.io/weaviate-helm/)'
         type: string
         required: true
       chart_name:
-        description: 'Helm chart name in the repo (e.g., weaviate, ollama)'
+        description: 'Helm chart name in the upstream repo (e.g., weaviate)'
         type: string
         required: true
       chart_version:
         description: 'Helm chart version'
         type: string
         required: true
-      target_oci_registry:
-        description: 'Target OCI registry (e.g., oci://ghcr.io/nutanix-cloud-native/charts)'
-        type: string
-        required: false
-        default: 'oci://ghcr.io/nutanix-cloud-native/charts'
 
 jobs:
   push-chart:
@@ -60,12 +51,9 @@ jobs:
       - name: Push chart using just/script
         run: |
           devbox run -- just push-helm-to-oci \
-            "${{ github.event.inputs.chart_name }}" \
-            "${{ github.event.inputs.repo_name }}" \
             "${{ github.event.inputs.chart_repo }}" \
             "${{ github.event.inputs.chart_name }}" \
-            "${{ github.event.inputs.chart_version }}" \
-            "${{ github.event.inputs.target_oci_registry }}"
+            "${{ github.event.inputs.chart_version }}"
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

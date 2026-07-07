@@ -295,10 +295,15 @@ run_check() {
     helmrepo_info=$(get_helmrepo_from_catalog_source "$app" 2>/dev/null) || true
     if [[ -n $helmrepo_info ]]; then
       local repo_name chart_name repo_url
-      # Format: repo_name/chart_name|repo_url
-      repo_name="${helmrepo_info%%/*}"
-      chart_name="${helmrepo_info#*/}"
-      chart_name="${chart_name%%|*}"
+      # Format: chart_name|repo_url (legacy: repo_name/chart_name|repo_url)
+      if [[ ${helmrepo_info%%|*} == */* ]]; then
+        repo_name="${helmrepo_info%%/*}"
+        chart_name="${helmrepo_info#*/}"
+        chart_name="${chart_name%%|*}"
+      else
+        chart_name="${helmrepo_info%%|*}"
+        repo_name="tmp-${app}"
+      fi
       repo_url="${helmrepo_info#*|}"
       latest=$(helm_repo_latest "$repo_name" "$chart_name" "$repo_url" 2>/dev/null) || true
       catalog_app_ver=$(get_helm_catalog_app_version "$repo_name" "$chart_name" "$repo_url" "$catalog_ver" 2>/dev/null) || true

@@ -84,11 +84,10 @@ direnv allow
 │   └── release.just           # Bundle create, push, deploy, release pipeline
 ├── scripts/                   # Helper scripts
 │   ├── login-oci-registry.sh  # Docker login to GHCR
-│   ├── push-helm-to-oci.sh   # Pull Helm chart → push to OCI + generate .catalog-source.yaml
+│   ├── push-helm-to-oci.sh   # Pull Helm chart → push to OCI
 │   └── check-app-versions.sh # Check if catalog apps have newer versions at source
 └── applications/              # Application catalog entries
     └── <app-name>/
-        ├── .catalog-source.yaml       # Helm repo source info (auto-generated)
         └── <version>/
             ├── metadata.yaml          # Application metadata
             ├── .bloodhound.yaml       # Per-app validation overrides (optional)
@@ -263,14 +262,14 @@ If the application Helm chart is hosted in a traditional Helm repository (not OC
 
 > **Note:** This may be required for licensing or distribution reasons (TBD).
 
-The `push-helm-to-oci` script automates the entire process -- pulling the chart, pushing it to OCI, and generating the `.catalog-source.yaml`:
+The `push-helm-to-oci` script automates pulling the chart and pushing it to OCI:
 
 ```bash
 # Using just (recommended)
-just push-helm-to-oci <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+just push-helm-to-oci <repo-url> <chart> <version> <oci-registry>
 
 # Or directly
-./scripts/push-helm-to-oci.sh <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
+./scripts/push-helm-to-oci.sh <repo-url> <chart> <version> <oci-registry>
 ```
 
 **Examples:**
@@ -283,13 +282,12 @@ just push-ollama 1.39.0
 just push-vllm 0.1.1
 
 # Any chart (generic)
-just push-helm-to-oci myapp myrepo https://charts.example.com myapp 1.0.0 oci://ghcr.io/my-org/myapp
+just push-helm-to-oci https://charts.example.com myapp 1.0.0 oci://ghcr.io/my-org/myapp
 ```
 
 This will:
 1. Add the Helm repo and pull the chart
 2. Push the `.tgz` to the OCI registry
-3. Generate `applications/<app>/.catalog-source.yaml` with the source metadata
 
 Then in the application's `helmrelease/helmrelease.yaml`, reference the OCI registry URL:
 
@@ -333,7 +331,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just pre-commit` | Run pre-commit hooks and gitlint |
 | `just validate` | Validate catalog manifests (auto-downloads `nkp` CLI) |
 | `just login` | Docker login to GHCR (reads `.env.local`) |
-| `just push-helm-to-oci <app> <repo> <url> <chart> <ver> <oci>` | Pull Helm chart and push to OCI, generate `.catalog-source.yaml` |
+| `just push-helm-to-oci <url> <chart> <ver> <oci>` | Pull Helm chart and push to OCI |
 | `just push-ollama [version]` | Shortcut for ollama (default: `1.39.0`) |
 | `just push-vllm [version]` | Shortcut for vllm (default: `0.1.1`) |
 | `just push-openwebui [version]` | Shortcut for open-webui (default: `12.0.1`) |
@@ -356,7 +354,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | Script | Description |
 |--------|-------------|
 | `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
-| `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI + generate `.catalog-source.yaml` |
+| `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI |
 | `scripts/check-app-versions.sh` | Check if catalog apps have newer versions at Helm repo or OCI source |
 | `scripts/demo-catalog.sh` | Build demo apps, create bundle, deploy (see `docs/demo-script.md`) |
 
