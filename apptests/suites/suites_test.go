@@ -14,6 +14,7 @@ var enabledApps = []string{
 	"kagent",
 	"kueue",
 	"kai-scheduler",
+	"jupyterhub",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
