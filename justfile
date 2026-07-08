@@ -66,3 +66,32 @@ mirror-chart-from-oci upstream-oci-url upstream-version oci-registry=OCI_REGISTR
     helm pull {{upstream-oci-url}} --version {{upstream-version}} -d "$workdir"
     echo "==> Pushing to {{oci-registry}}"
     helm push "$workdir"/*.tgz {{oci-registry}}
+
+# ---------- Render & bake (air-gappable manifests) ----------
+
+# Re-render and bake an app's self-contained manifest set into its helmrelease/
+# dir. Reads scripts/bake-apps.yaml (repo + per-version ref/overlays/airgapImages).
+# Omit the version to (re-)bake every configured version of the app.
+# Usage: just bake kubeflow-pipelines [2.15.0]
+bake app version="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -n "{{ version }}" ]; then
+      ./scripts/build-baked-manifests.sh --app "{{ app }}" --version "{{ version }}"
+    else
+      ./scripts/build-baked-manifests.sh --app "{{ app }}"
+    fi
+
+# Re-bake every configured app+version and fail if a committed manifest drifted
+# from a fresh render (or an airgapImages lockfile drifted from the upstream ref).
+# Pin kustomize (devbox) so it's reproducible.
+bake-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for app in $(yq -r '.apps | keys | .[]' scripts/bake-apps.yaml); do
+      ./scripts/build-baked-manifests.sh --app "$app"
+    done
+    if ! git diff --exit-code -- applications/; then
+      echo "::error::Baked manifests are stale. Run 'just bake <app> [version]' and commit the result." >&2
+      exit 1
+    fi

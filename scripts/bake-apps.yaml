@@ -1,0 +1,36 @@
+# Config for apps lacking standalone charts or using complex kustomize bases.
+# Pre-renders upstream overlays into a single self-contained manifest.
+# Consumed by: scripts/build-baked-manifests.sh --app <name>
+# Schema:
+# - repo: Upstream git repository.
+# - versions[].version: Target catalog version (applications/<app>/<version>/).
+# - versions[].ref: Pinned, static upstream git tag or commit.
+# - versions[].overlays: Kustomize overlay paths to render, in order.
+# - versions[].airgapImages: Lockfile of hidden images (env/args) for airgap scanner.
+# - versions[].pinNamespace: Namespace for the inert airgap image-pin Deployment
+#   (defaults to "default"). Set to the app's main namespace.
+#
+# Consumed by scripts/build-baked-manifests.sh:
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines            # all versions
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --version 2.15.0
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --render-only
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --version 2.15.0 \
+#     --registry ghcr.io/nutanix-cloud-native --mirror-images
+apps:
+  kubeflow-pipelines:
+    repo: https://github.com/kubeflow/manifests
+    versions:
+      - version: "2.15.0"
+        ref: v1.11.0
+        overlays:
+          # CRDs (argo Workflow*, kubeflow ScheduledWorkflow/Viewer) + the kubeflow
+          # Namespace; platform-agnostic's argo install is namespace-scoped and
+          # assumes these exist (KFP's documented two-step standalone install).
+          - applications/pipeline/upstream/cluster-scoped-resources
+          - applications/pipeline/upstream/env/platform-agnostic
+        pinNamespace: kubeflow
+        airgapImages:
+          - ghcr.io/containerd/busybox
+          - ghcr.io/kubeflow/kfp-driver:2.15.0
+          - ghcr.io/kubeflow/kfp-launcher:2.15.0
+          - quay.io/argoproj/argoexec:v3.7.3
