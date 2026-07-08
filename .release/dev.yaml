@@ -1,13 +1,7 @@
 schema: catalog.nkp.nutanix.com/v1/catalog-release-spec
 releases:
   - tagName: 2.19-dev
-    fileName: nkp-ai-applications-catalog-2.19.tar
-    collectionAnnotations:
-      org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
-    constraints:
-      nkpVersion: "2.19"
-  - tagName: 2.19-dev.0
-    fileName: nkp-nutanix-product-catalog-2.19-dev.0.tar
+    fileName: nkp-nutanix-product-catalog-2.19-dev.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     applications:
@@ -21,6 +15,8 @@ releases:
         version: "1.0.0"
       - name: amd-network-operator
         version: "1.2.0"
+      - name: kagent
+        version: "0.7.3"
       - name: kai-scheduler
         version: "0.15.2"
       - name: kueue
