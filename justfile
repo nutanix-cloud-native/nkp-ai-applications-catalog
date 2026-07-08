@@ -38,11 +38,6 @@ check: pre-commit
 # Full check: pre-commit + catalog validation (ready to push)
 check-all: pre-commit validate
 
-# Check if catalog apps have newer versions at source (Helm repo or OCI)
-# Requires: helm, crane (for OCI apps). Usage: just check-versions [--json] [--app NAME]
-check-versions *ARGS:
-    ./scripts/check-app-versions.sh {{ ARGS }}
-
 # ---------- OCI registry ----------
 
 # Login to GHCR (reads .env.local)
@@ -53,7 +48,7 @@ login:
 
 # Base OCI registry for Helm chart pushes. Override for testing:
 #   OCI_REGISTRY=oci://my-registry.com/charts just push-ollama
-OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts')
+OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/charts')
 
 # Pull a Helm chart and push it to an OCI registry
 # Usage: just push-helm-to-oci <repo-url> <chart> <version> [oci-registry]
