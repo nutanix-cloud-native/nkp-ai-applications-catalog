@@ -6,37 +6,37 @@ releases:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     applications:
       - name: amd-gpu-operator
-        version: "1.4.1"
+        version: 1.4.1
       - name: amd-gpu-operator
-        version: "1.5.0"
+        version: 1.5.0
       - name: amd-gpu-operator
-        version: "1.5.1-beta.0"
+        version: 1.5.1-beta.0
       - name: amd-kmm-operator
-        version: "1.0.0"
+        version: 1.0.0
       - name: amd-network-operator
-        version: "1.2.0"
+        version: 1.2.0
       - name: kagent
-        version: "0.7.3"
+        version: 0.7.13
       - name: kai-scheduler
-        version: "0.15.2"
+        version: 0.15.2
       - name: kueue
-        version: "0.18.0"
+        version: 0.18.0
       - name: milvus-operator
-        version: "1.3.6"
+        version: 1.3.6
       - name: slurm-operator
-        version: "1.1.1"
+        version: 1.1.1
   - tagName: "2.18-dev"
     fileName: nkp-ai-applications-catalog-2.18-dev.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     applications:
       - name: amd-gpu-operator
-        version: "1.4.1"
+        version: 1.4.1
       - name: amd-gpu-operator
-        version: "1.5.0"
+        version: 1.5.0
       - name: amd-gpu-operator
-        version: "1.5.1-beta.0"
+        version: 1.5.1-beta.0
       - name: amd-kmm-operator
-        version: "1.0.0"
+        version: 1.0.0
       - name: amd-network-operator
-        version: "1.2.0"
+        version: 1.2.0
