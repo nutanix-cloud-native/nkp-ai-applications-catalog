@@ -84,7 +84,7 @@ direnv allow
 │   └── release.just           # Bundle create, push, deploy, release pipeline
 ├── scripts/                   # Helper scripts
 │   ├── login-oci-registry.sh  # Docker login to GHCR
-│   ├── push-helm-to-oci.sh   # Pull Helm chart → push to OCI
+│   ├── push-helm-to-oci.sh   # Mirror Helm chart from repo → OCI
 │   └── check-app-versions.sh # Check if catalog apps have newer versions at source
 └── applications/              # Application catalog entries
     └── <app-name>/
@@ -262,27 +262,33 @@ If the application Helm chart is hosted in a traditional Helm repository (not OC
 
 > **Note:** This may be required for licensing or distribution reasons (TBD).
 
-The `push-helm-to-oci` script automates pulling the chart and pushing it to OCI:
+The `mirror-chart-from-repo` recipe automates pulling the chart and pushing it to OCI:
 
 ```bash
-# Using just (recommended)
-just push-helm-to-oci <repo-url> <chart> <version> <oci-registry>
+# From a Helm repository (recommended)
+just mirror-chart-from-repo <repo-url> <chart> <version> [oci-registry]
 
-# Or directly
+# From an upstream OCI registry
+just mirror-chart-from-oci <oci-url> <version> [oci-registry]
+
+# Or directly via script
 ./scripts/push-helm-to-oci.sh <repo-url> <chart> <version> <oci-registry>
 ```
 
 **Examples:**
 
 ```bash
-# Ollama
+# Ollama (from Helm repo)
 just push-ollama 1.39.0
 
-# vLLM
+# vLLM (from Helm repo)
 just push-vllm 0.1.1
 
-# Any chart (generic)
-just push-helm-to-oci https://charts.example.com myapp 1.0.0 oci://ghcr.io/my-org/myapp
+# Any chart from a Helm repo
+just mirror-chart-from-repo https://charts.example.com myapp 1.0.0 oci://ghcr.io/my-org/myapp
+
+# Any chart from an upstream OCI registry
+just mirror-chart-from-oci oci://ghcr.io/envoyproxy/gateway-helm v1.5.0
 ```
 
 This will:
@@ -331,7 +337,8 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just pre-commit` | Run pre-commit hooks and gitlint |
 | `just validate` | Validate catalog manifests (auto-downloads `nkp` CLI) |
 | `just login` | Docker login to GHCR (reads `.env.local`) |
-| `just push-helm-to-oci <url> <chart> <ver> <oci>` | Pull Helm chart and push to OCI |
+| `just mirror-chart-from-repo <url> <chart> <ver> [oci]` | Mirror a Helm repo chart to OCI |
+| `just mirror-chart-from-oci <oci-url> <ver> [oci]` | Mirror a chart from upstream OCI to our OCI |
 | `just push-ollama [version]` | Shortcut for ollama (default: `1.39.0`) |
 | `just push-vllm [version]` | Shortcut for vllm (default: `0.1.1`) |
 | `just push-openwebui [version]` | Shortcut for open-webui (default: `12.0.1`) |
@@ -354,7 +361,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | Script | Description |
 |--------|-------------|
 | `scripts/login-oci-registry.sh` | Login to GHCR; also sourceable to export `GHCR_USERNAME`/`GHCR_PASSWORD` |
-| `scripts/push-helm-to-oci.sh` | Pull a Helm chart and push to OCI |
+| `scripts/push-helm-to-oci.sh` | Mirror a Helm chart from repo to OCI (used by `mirror-chart-from-repo`) |
 | `scripts/check-app-versions.sh` | Check if catalog apps have newer versions at Helm repo or OCI source |
 | `scripts/demo-catalog.sh` | Build demo apps, create bundle, deploy (see `docs/demo-script.md`) |
 

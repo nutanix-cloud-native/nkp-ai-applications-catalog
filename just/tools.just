@@ -1,26 +1,48 @@
-GOOS := `go env GOOS 2>/dev/null || echo "linux"`
-GOARCH := `go env GOARCH 2>/dev/null || echo "amd64"`
-
 REPO_ROOT := justfile_directory()
 LOCAL_DIR := REPO_ROOT + "/.local"
 BIN_DIR := LOCAL_DIR + "/bin"
 
-NKP_CLI_VERSION := "0.0.0-dev.0"  # TODO: Update to latest stable
-NKP_CLI := BIN_DIR + "/nkp_v" + NKP_CLI_VERSION
+NKP_CLI_VERSION := "0.0.0-dev.0"
+NKP_CLI := BIN_DIR + "/nkp"
+NKP_CHECKSUMS_URL := "https://downloads.d2iq.com/dkp/v" + NKP_CLI_VERSION + "/checksums.txt"
+NKP_CHECKSUMS_LOCAL := BIN_DIR + "/checksums.txt"
 
-# Download nkp CLI if it's not already present
+# Ensure nkp CLI is available
 [script]
 nkp-cli:
-  if [ ! -f "{{NKP_CLI}}" ]; then
-    mkdir -p "{{BIN_DIR}}"
-    echo "Downloading nkp CLI to {{NKP_CLI}}"
+  set -eo pipefail
 
-    asset="nkp_v{{NKP_CLI_VERSION}}_{{GOOS}}_amd64"
-    url="https://downloads.d2iq.com/dkp/v{{NKP_CLI_VERSION}}/${asset}.tar.gz"
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  asset="nkp_v{{NKP_CLI_VERSION}}_${os}_amd64.tar.gz"
 
-    curl -L --progress-bar "$url" | tar -xz -C .
-    mv nkp "{{NKP_CLI}}"
+  if [ -f "{{NKP_CLI}}" ] && [ -f "{{NKP_CHECKSUMS_LOCAL}}" ]; then
+    tmpfile="$(mktemp)"
+    if curl -L -sS -f -o "$tmpfile" "{{NKP_CHECKSUMS_URL}}" 2>/dev/null; then
+      if diff -u "{{NKP_CHECKSUMS_LOCAL}}" "$tmpfile" >/dev/null 2>&1; then
+        rm -f "$tmpfile"
+        echo "Using nkp from {{NKP_CLI}}"
+        exit 0
+      fi
+      echo "Checksums changed, re-downloading..."
+      diff -u "{{NKP_CHECKSUMS_LOCAL}}" "$tmpfile" || true
+      rm -f "$tmpfile"
+    else
+      rm -f "$tmpfile"
+      echo "Using nkp from {{NKP_CLI}}"
+      exit 0
+    fi
   fi
+
+  mkdir -p "{{BIN_DIR}}"
+  url="https://downloads.d2iq.com/dkp/v{{NKP_CLI_VERSION}}/${asset}"
+  echo "Fetching $url"
+  tmpdir="$(mktemp -d)"
+  trap 'rm -rf "$tmpdir"' EXIT
+  curl -LSsf "$url" | tar -xz -C "$tmpdir"
+  mv "$tmpdir/nkp" "{{NKP_CLI}}"
+  chmod +x "{{NKP_CLI}}"
+  curl -L -sS -f "{{NKP_CHECKSUMS_URL}}" -o "{{NKP_CHECKSUMS_LOCAL}}" 2>/dev/null || true
+  echo "Installed {{NKP_CLI}}"
 
 clean:
   rm -rf "{{LOCAL_DIR}}"

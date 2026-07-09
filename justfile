@@ -50,7 +50,19 @@ login:
 #   OCI_REGISTRY=oci://my-registry.com/charts just push-ollama
 OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/charts')
 
-# Pull a Helm chart and push it to an OCI registry
-# Usage: just push-helm-to-oci <repo-url> <chart> <version> [oci-registry]
-push-helm-to-oci repo-url chart version oci-registry=OCI_REGISTRY:
+# Mirror a chart from a Helm repository to our OCI registry
+# Usage: just mirror-chart-from-repo <repo-url> <chart> <version> [oci-registry]
+mirror-chart-from-repo repo-url chart version oci-registry=OCI_REGISTRY:
     ./scripts/push-helm-to-oci.sh {{repo-url}} {{chart}} {{version}} {{oci-registry}}
+
+# Mirror a chart from an upstream OCI registry to our OCI registry
+# Usage: just mirror-chart-from-oci oci://upstream-registry/chart <version> [oci-registry]
+mirror-chart-from-oci upstream-oci-url upstream-version oci-registry=OCI_REGISTRY:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    workdir=$(mktemp -d)
+    trap 'rm -rf "$workdir"' EXIT
+    echo "==> Pulling {{upstream-oci-url}} version {{upstream-version}}"
+    helm pull {{upstream-oci-url}} --version {{upstream-version}} -d "$workdir"
+    echo "==> Pushing to {{oci-registry}}"
+    helm push "$workdir"/*.tgz {{oci-registry}}
