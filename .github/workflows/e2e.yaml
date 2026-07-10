@@ -119,29 +119,14 @@ jobs:
 
       - name: Build airgapped bundle
         if: success()
-        env:
-          AIRGAPPED: "true"
-        run: |
-          set -euo pipefail
-          current="${{ matrix.app }}=${{ matrix.version }}"
-          skip=$(
-            for dir in applications/*/*/; do
-              app="$(basename "$(dirname "$dir")")"
-              ver="$(basename "$dir")"
-              item="${app}=${ver}"
-              if [ "$item" != "$current" ]; then
-                printf '%s\n' "$item"
-              fi
-            done | paste -sd, -
-          )
-          devbox run -- just create-bundle "e2e-${{ matrix.app }}-${{ matrix.version }}" "$skip"
+        run: devbox run -- just create-application-airgapped-bundle "${{ matrix.app }}" "${{ matrix.version }}"
 
       - name: Upload airgapped bundle
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: airgapped-bundle-${{ matrix.app }}-${{ matrix.version }}
-          path: nkp-ai-applications-catalog*.tar
+          path: ${{ matrix.app }}-${{ matrix.version }}-airgapped.tar
 
       - name: Collect diagnostic bundle
         if: failure()
