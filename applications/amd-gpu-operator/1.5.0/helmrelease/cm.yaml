@@ -28,6 +28,8 @@ data:
     crds:
       defaultCR:
         install: true
+        # Reconcile the default DeviceConfig during chart upgrades.
+        upgrade: true
     # GPU operator controller manager
     controllerManager:
       manager:
@@ -52,6 +54,16 @@ data:
           blacklist: true
           version: "30.20.1"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          upgradePolicy:
+            enable: true
+            maxParallelUpgrades: 1
+            maxUnavailableNodes: 1
+            rebootRequired: true
+            nodeDrainPolicy:
+              force: false
+              timeoutSeconds: 600
+              gracePeriodSeconds: -1
+              ignoreDaemonSets: true
           imageBuild:
             baseImageRegistry: "docker.io"
             baseImageRegistryTLS:

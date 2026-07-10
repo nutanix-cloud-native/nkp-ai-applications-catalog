@@ -28,6 +28,8 @@ data:
     crds:
       defaultCR:
         install: true
+        # Reconcile the default DeviceConfig during chart upgrades.
+        upgrade: true
     # GPU operator controller manager
     controllerManager:
       manager:
@@ -52,6 +54,23 @@ data:
           blacklist: true
           version: "31.30"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          # Keep the KMM module loader schedulable on AMD DCM-tainted nodes.
+          tolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
+          # Serialize driver changes and safely drain/reboot each GPU node.
+          upgradePolicy:
+            enable: true
+            maxParallelUpgrades: 1
+            maxUnavailableNodes: 1
+            rebootRequired: true
+            nodeDrainPolicy:
+              force: false
+              timeoutSeconds: 600
+              gracePeriodSeconds: -1
+              ignoreDaemonSets: true
           imageBuild:
             baseImageRegistry: "docker.io"
             baseImageRegistryTLS:
@@ -77,10 +96,20 @@ data:
           enableNodeLabeller: true
           nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
           nodeLabellerImagePullPolicy: IfNotPresent
+          nodeLabellerTolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
         metricsExporter:
           enable: true
           image: rocm/device-metrics-exporter:v1.5.1-beta.0
           imagePullPolicy: IfNotPresent
+          tolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
         # DRA replaces Device Plugin for GPU resource allocation.
         # Mutually exclusive with devicePlugin — only one can be enabled per DeviceConfig.
         # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
@@ -88,3 +117,8 @@ data:
           enable: true
           image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
           imagePullPolicy: IfNotPresent
+          tolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
