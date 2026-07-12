@@ -54,12 +54,6 @@ data:
           blacklist: true
           version: "31.30"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
-          # Keep the KMM module loader schedulable on AMD DCM-tainted nodes.
-          tolerations:
-            - key: "amd-dcm"
-              operator: "Equal"
-              value: "up"
-              effect: "NoExecute"
           # Automatic driver upgrades are opt-in while NKP develops a safe
           # way to coordinate GPU services with required node reboots.
           upgradePolicy:
