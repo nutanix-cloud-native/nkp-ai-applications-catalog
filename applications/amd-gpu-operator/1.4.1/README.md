@@ -70,7 +70,7 @@ sequenceDiagram
     KMM->>Worker: Deploys worker pod on target node
     Worker->>Reg: Pulls driver image (via kmm-registry-dockerconfig)
     Worker->>Node: Runs modprobe to load amdgpu kernel module
-    Ctrl->>Node: Deploys device plugin + labeller + metrics exporter
+    Ctrl->>Node: Deploys device plugin + labeller + Metrics Exporter
 ```
 
 ## Dependencies
@@ -92,7 +92,7 @@ The following subcharts are **disabled** by default because they are provided by
 The chart auto-creates a `DeviceConfig` CR named `default` with:
 - `spec.selector: { feature.node.kubernetes.io/amd-gpu: "true" }` (physical GPUs)
 - `spec.driver.enable: true`
-- Built-in device plugin, node labeller, and metrics exporter
+- Built-in device plugin, Node Labeller, and Metrics Exporter
 
 ## NFD Toleration Requirement
 

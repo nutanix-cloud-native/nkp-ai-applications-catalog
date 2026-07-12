@@ -3,7 +3,7 @@
 NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.1-beta.0.
 
 > **Note:** v1.5.1-beta.0 is a beta/maintenance release built on the v1.5.0 feature set. It bumps the
-> operator controller, utils, and device metrics exporter images to `v1.5.1-beta.0`. The DRA driver
+> operator controller, utils, and Device Metrics Exporter images to `v1.5.1-beta.0`. The DRA driver
 > (`v1.0.0`), device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
 
 ## Architecture
@@ -78,7 +78,7 @@ sequenceDiagram
     KMM->>Worker: Deploys worker pod on target node
     Worker->>Reg: Pulls driver image (via kmm-registry-dockerconfig)
     Worker->>Node: Runs modprobe to load amdgpu kernel module
-    Ctrl->>Node: Deploys DRA driver + labeller + metrics exporter
+    Ctrl->>Node: Deploys DRA driver + labeller + Metrics Exporter
 ```
 
 ## Dependencies
@@ -102,7 +102,7 @@ The following subcharts are **disabled** by default because they are provided by
 The chart auto-creates a `DeviceConfig` CR named `default` with:
 - `spec.selector: { feature.node.kubernetes.io/amd-gpu: "true" }` (physical GPUs)
 - `spec.driver.enable: true`
-- DRA driver (default), node labeller, and metrics exporter
+- DRA driver (default), Node Labeller, and Metrics Exporter
 - Device Plugin disabled (mutually exclusive with DRA)
 
 ## Pinned Image Versions
@@ -201,7 +201,7 @@ deviceConfig:
 | `driver.imageBuild.gpgKeyURL` | Override GPG key URL for air-gapped environments. |
 | `driver.imageRegistryTLS.insecure` | Set `true` for plain HTTP registries. |
 | `driver.imageRegistryTLS.insecureSkipTLSVerify` | Set `true` for self-signed certificates. |
-| `commonConfig.imageRegistrySecrets` | Global pull secrets injected into all operator-managed workloads (DRA driver, metrics exporter, labeller, build pods, etc.). |
+| `commonConfig.imageRegistrySecrets` | Global pull secrets injected into all operator-managed workloads (DRA driver, Metrics Exporter, labeller, build pods, etc.). |
 | `draDriver.enable` | Enables the DRA driver (default: `true`). Mutually exclusive with `devicePlugin.enableDevicePlugin`. |
 | `draDriver.image` | DRA driver image. Override for private registry environments. |
 | `devicePlugin.enableDevicePlugin` | Enables the traditional Device Plugin (default: `false`). Set `true` and `draDriver.enable: false` to revert to the legacy approach. |

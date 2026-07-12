@@ -1,6 +1,6 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD GPU Operator
-description: The AMD GPU Operator manages AMD GPU drivers and optional GPU services such as the Device Plugin, metrics exporter, DRA driver, and auto-remediation.
+description: The AMD GPU Operator manages AMD GPU drivers and optional GPU services such as the Device Plugin, Metrics Exporter, DRA driver, and auto-remediation.
 category:
   - general
 type: nkp-catalog
@@ -51,11 +51,13 @@ overview: |-
   ### Optional GPU Resource Allocation and Node Labelling
   The Device Plugin and DRA driver are both disabled by default so GPU resources
   are not admitted during initial driver installation. Enable one allocation
-  mechanism after reboot and driver verification. The node labeller remains
-  available for automatic GPU topology discovery.
+  mechanism after reboot and driver verification. The Node Labeller is not
+  required for DRA: NFD discovers the GPU node and DRA publishes allocatable
+  resources through ResourceSlices. Leave the Node Labeller disabled unless its
+  additional topology labels are specifically required.
 
   ### Metrics Integration
-  Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
+  Includes a built-in Metrics Exporter that provides Prometheus-format GPU telemetry.
 
   ## Configuration
   The chart auto-creates a `DeviceConfig` CR named `default` targeting `amd-gpu` labeled nodes. Users configure the driver image registry, TLS, and build settings via Helm value overrides.
@@ -83,23 +85,26 @@ overview: |-
   Both GPU resource-allocation mechanisms are disabled during initial driver
   installation. After the required reboot and driver verification, enable
   either the traditional Device Plugin or DRA through a ConfigOverride. They
-  are mutually exclusive and must not be enabled together.
+  are mutually exclusive and must not be enabled together. The Node Labeller is
+  optional and is not needed when using DRA.
 
   ### Recommended First Installation
   1. Keep user GPU workloads blocked.
-  2. Install the operator with DRA, the Device Plugin, metrics exporter, and
-     node labeller disabled through a ConfigOverride.
+  2. Install the operator with DRA, the Device Plugin, Metrics Exporter, and
+     Node Labeller disabled through a ConfigOverride.
   3. Build and install the target KMM driver.
   4. Reboot the GPU node cleanly.
   5. Verify that the node has a new `bootID`, is Ready, and is running the
      target KMM-installed driver rather than a stale in-tree module.
   6. Enable the required dependent agents through a second ConfigOverride.
+     For DRA, enable the DRA driver and any required Metrics Exporter, while
+     leaving the Device Plugin and Node Labeller disabled.
   7. Wait for full container readiness and, when using DRA, ResourceSlice
      publication before admitting workloads.
 
-  The catalog defaults disable DRA and the Device Plugin, but the metrics
-  exporter and node labeller remain enabled unless they are disabled in the
-  first-install ConfigOverride.
+  The catalog defaults disable DRA, the Device Plugin, Metrics Exporter, and
+  Node Labeller. Enable only the required agents after the driver reboot and
+  verification; a DRA deployment does not require the Node Labeller.
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
@@ -146,6 +151,7 @@ overview: |-
         image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
       devicePlugin:
         enableDevicePlugin: false
+        enableNodeLabeller: false
   ```
   All prerequisites (DRA GA, CDI) are met on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+).
 

@@ -87,14 +87,14 @@ data:
           utilsContainer:
             image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
             imagePullPolicy: IfNotPresent
-        # Keep GPU resource-allocation agents disabled during initial driver
-        # installation. Enable either the Device Plugin or DRA after the
-        # required reboot and driver-provenance verification.
+        # Keep GPU-dependent agents disabled during initial driver
+        # installation. Enable required agents after the reboot and driver
+        # provenance verification.
         devicePlugin:
           enableDevicePlugin: false
           devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
           devicePluginImagePullPolicy: IfNotPresent
-          enableNodeLabeller: true
+          enableNodeLabeller: false
           nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
           nodeLabellerImagePullPolicy: IfNotPresent
           nodeLabellerTolerations:
@@ -103,7 +103,7 @@ data:
               value: "up"
               effect: "NoExecute"
         metricsExporter:
-          enable: true
+          enable: false
           image: rocm/device-metrics-exporter:v1.5.1-beta.0
           imagePullPolicy: IfNotPresent
           tolerations:

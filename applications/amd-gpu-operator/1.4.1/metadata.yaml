@@ -25,10 +25,10 @@ overview: |-
   Automatically builds and loads out-of-tree AMD GPU kernel modules using KMM and Kaniko for in-cluster driver compilation. The default `DeviceConfig` targets nodes labeled `feature.node.kubernetes.io/amd-gpu: "true"` (physical GPUs). For SR-IOV virtual function (VF) environments, create an additional `DeviceConfig` with selector `feature.node.kubernetes.io/amd-vgpu: "true"`.
 
   ### Device Plugin and Node Labelling
-  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a node labeller for automatic GPU topology discovery.
+  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a Node Labeller for automatic GPU topology discovery.
 
   ### Metrics Integration
-  Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
+  Includes a built-in Metrics Exporter that provides Prometheus-format GPU telemetry.
 
   ## Configuration
   The chart auto-creates a `DeviceConfig` CR named `default` targeting `amd-gpu` labeled nodes. Users configure the driver image registry, TLS, and build settings via Helm value overrides.
