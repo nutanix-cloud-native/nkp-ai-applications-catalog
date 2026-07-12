@@ -1,6 +1,6 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD GPU Operator
-description: The AMD GPU Operator manages AMD GPU resources in a Kubernetes cluster and automates tasks related to bootstrapping GPU nodes (drivers, device plugin, NFD, KMM, metrics, DRA, auto-remediation).
+description: The AMD GPU Operator manages AMD GPU drivers and optional GPU services such as the Device Plugin, metrics exporter, DRA driver, and auto-remediation.
 category:
   - general
 type: nkp-catalog
@@ -22,7 +22,7 @@ overview: |-
 
   ## What's New in v1.5.0
   ### Dynamic Resource Allocation (DRA) Driver
-  An alternative to the traditional Device Plugin using the Kubernetes DRA API (`resource.k8s.io/v1`). Deploys `rocm/k8s-gpu-dra-driver` to expose GPUs as structured resources. DRA and the Device Plugin are mutually exclusive — enable only one per `DeviceConfig`. DRA is GA on Kubernetes 1.35+ (NKP v2.18.0+) and CDI is enabled by default in containerd 2.1+, so all prerequisites are met out of the box.
+  An optional alternative to the traditional Device Plugin using the Kubernetes DRA API (`resource.k8s.io/v1`). It deploys `rocm/k8s-gpu-dra-driver` to expose GPUs as structured resources. DRA is disabled by default. DRA and the Device Plugin are mutually exclusive; enable only one per `DeviceConfig`. DRA is GA on Kubernetes 1.35+ (NKP v2.18.0+) and CDI is enabled by default in containerd 2.1+.
 
   ### Auto Node Remediation (ANR)
   Automatically remediates unhealthy GPU worker nodes using Argo Workflows. Configurable drain policies, recovery policies, parallel workflow limits, and reboot timeouts. Disabled by default — requires `remediation.enabled: true` in Helm values and Argo Workflows v4.0.3.
@@ -48,14 +48,58 @@ overview: |-
   ### Automated GPU Driver Builds
   Automatically builds and loads out-of-tree AMD GPU kernel modules using KMM and Kaniko for in-cluster driver compilation. The default `DeviceConfig` targets nodes labeled `feature.node.kubernetes.io/amd-gpu: "true"` (physical GPUs). For SR-IOV virtual function (VF) environments, create an additional `DeviceConfig` with selector `feature.node.kubernetes.io/amd-vgpu: "true"`.
 
-  ### Device Plugin and Node Labelling
-  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a node labeller for automatic GPU topology discovery.
+  ### Optional GPU Resource Allocation and Node Labelling
+  The Device Plugin and DRA driver are both disabled by default so GPU resources
+  are not admitted during initial driver installation. Enable one allocation
+  mechanism after reboot and driver verification. The node labeller remains
+  available for automatic GPU topology discovery.
 
   ### Metrics Integration
   Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
 
   ## Configuration
   The chart auto-creates a `DeviceConfig` CR named `default` targeting `amd-gpu` labeled nodes. Users configure the driver image registry, TLS, and build settings via Helm value overrides.
+
+  ### Important Lifecycle Defaults
+  NKP keeps automatic driver upgrades disabled by default. A driver-version
+  change therefore does not automatically invoke AMD's cordon, drain, module
+  transition, and reboot workflow. Enabling that behavior is an explicit,
+  disruptive opt-in:
+
+  ```
+  deviceConfig:
+    spec:
+      driver:
+        upgradePolicy:
+          enable: true
+  ```
+
+  During validation, GPU services were starting while an automatic driver
+  upgrade rebooted the same node. After the reboot, affected containers failed
+  with `exec format error`. Do not enable automatic upgrades until you have a
+  procedure that keeps GPU services from starting on the target node until the
+  driver upgrade and reboot have completed.
+
+  Both GPU resource-allocation mechanisms are disabled during initial driver
+  installation. After the required reboot and driver verification, enable
+  either the traditional Device Plugin or DRA through a ConfigOverride. They
+  are mutually exclusive and must not be enabled together.
+
+  ### Recommended First Installation
+  1. Keep user GPU workloads blocked.
+  2. Install the operator with DRA, the Device Plugin, metrics exporter, and
+     node labeller disabled through a ConfigOverride.
+  3. Build and install the target KMM driver.
+  4. Reboot the GPU node cleanly.
+  5. Verify that the node has a new `bootID`, is Ready, and is running the
+     target KMM-installed driver rather than a stale in-tree module.
+  6. Enable the required dependent agents through a second ConfigOverride.
+  7. Wait for full container readiness and, when using DRA, ResourceSlice
+     publication before admitting workloads.
+
+  The catalog defaults disable DRA and the Device Plugin, but the metrics
+  exporter and node labeller remain enabled unless they are disabled in the
+  first-install ConfigOverride.
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
@@ -92,7 +136,8 @@ overview: |-
   - `insecure`/`insecureSkipTLSVerify` — set to `true` for registries using self-signed or private CA certificates. **Note:** Kaniko build pods do not inherit the node's CA trust store, and the GPU operator currently does not propagate `imageRegistryTLS` to the KMM Module CR's `registryTLS` field. As a workaround, scale down the GPU operator controller, patch the Module CR's `registryTLS.insecureSkipTLSVerify` to `true`, and scale back up after the build completes.
 
   ### DRA Driver Configuration (Optional)
-  To use the DRA driver instead of the traditional Device Plugin:
+  After the driver reboot and verification, use the following ConfigOverride to
+  opt in to DRA instead of the traditional Device Plugin:
   ```
   deviceConfig:
     spec:
@@ -133,6 +178,16 @@ overview: |-
 
   ## Troubleshooting: In-Tree Module Conflict
   The `driver.blacklist: true` setting prevents the in-tree `amdgpu` kernel module from loading on reboot. However, if the module was already loaded before the operator was installed, the blacklist has no effect until the next reboot. A node reboot is required for the blacklist to take effect in this case.
+
+  ## Troubleshooting: `exec format error`
+  If a GPU-dependent container fails with `exec format error`, do not treat a
+  warm pod restart as proof that the issue is resolved. Inspect the affected
+  node's containerd overlay snapshot for empty or truncated executables. When
+  corruption is confirmed, stop the affected workloads and remove only the
+  affected image and snapshot state before pulling the image again. Repeated
+  failures should be investigated as node-local containerd, overlayfs,
+  filesystem, or storage durability failures around reboot; changing the image
+  registry alone is not a demonstrated fix.
 
   ## Dependencies
   - **AMD KMM Operator** — provides the shared KMM instance. Strongly recommended to enable first; without it, driver builds will not function. To use the chart's embedded KMM subchart instead of the shared catalog app, set `kmm.enabled: true` and `kmm.watch: false` in your config overrides and skip enabling `amd-kmm-operator`. You must also manually create the `kmm-registry-dockerconfig` secret (normally auto-created by the KMM Operator reconciler) with your registry credentials — see [Registry Secret Configuration](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/drivers/installation.html#registry-secret-configuration).

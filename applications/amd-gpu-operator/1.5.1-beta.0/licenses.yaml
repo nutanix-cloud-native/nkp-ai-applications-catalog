@@ -23,9 +23,7 @@ resources:
   sources:
   - ref: ${image_tag}
     url: https://github.com/kubernetes-sigs/node-feature-discovery.git
-# Device plugin (disabled by default; DRA is used instead) and node labeller.
-# Retained for license tracking — users can re-enable the device plugin
-# by setting enableDevicePlugin: true and draDriver.enable: false.
+# Device plugin (disabled by default) and node labeller.
 - container_image: docker.io/rocm/k8s-device-plugin:1.31.0.10
   sources:
   - ref: v${image_tag}
@@ -44,7 +42,7 @@ resources:
   sources:
   - ref: ${image_tag}
     url: https://github.com/ROCm/gpu-operator.git
-# DRA driver — enabled by default as the GPU resource allocation mechanism.
+# DRA driver — packaged for optional use, but disabled by default.
 - container_image: docker.io/rocm/k8s-gpu-dra-driver:v1.0.0
   sources:
   - ref: v1.0.0

@@ -60,9 +60,10 @@ data:
               operator: "Equal"
               value: "up"
               effect: "NoExecute"
-          # Serialize driver changes and safely drain/reboot each GPU node.
+          # Automatic driver upgrades are opt-in while NKP develops a safe
+          # way to coordinate GPU services with required node reboots.
           upgradePolicy:
-            enable: true
+            enable: false
             maxParallelUpgrades: 1
             maxUnavailableNodes: 1
             rebootRequired: true
@@ -86,9 +87,9 @@ data:
           utilsContainer:
             image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
             imagePullPolicy: IfNotPresent
-        # Device Plugin is disabled in favor of DRA (see draDriver below).
-        # To revert to the traditional Device Plugin, set enableDevicePlugin: true
-        # and draDriver.enable: false (they are mutually exclusive).
+        # Keep GPU resource-allocation agents disabled during initial driver
+        # installation. Enable either the Device Plugin or DRA after the
+        # required reboot and driver-provenance verification.
         devicePlugin:
           enableDevicePlugin: false
           devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
@@ -110,11 +111,10 @@ data:
               operator: "Equal"
               value: "up"
               effect: "NoExecute"
-        # DRA replaces Device Plugin for GPU resource allocation.
-        # Mutually exclusive with devicePlugin — only one can be enabled per DeviceConfig.
-        # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
+        # DRA is disabled out of the box. To opt in, set draDriver.enable=true
+        # and devicePlugin.enableDevicePlugin=false in the same ConfigOverride.
         draDriver:
-          enable: true
+          enable: false
           image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
           imagePullPolicy: IfNotPresent
           tolerations:
