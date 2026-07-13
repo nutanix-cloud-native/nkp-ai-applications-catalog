@@ -191,7 +191,9 @@ just push-bundle
 ### Airgapped Bundle Build and Push (Generic)
 
 Use this flow when preparing a disconnected/offline bundle that includes images
-and OCI artifacts.
+and OCI artifacts. The airgapped recipes render `.release/airgapped.yaml.tmpl`
+(`includeApplicationImages: true`), so the tarball bundles the container images
+and OCI artifacts needed on a disconnected cluster — not just the manifests.
 
 ```bash
 # Optional: if Docker is not on default socket (Rancher Desktop / Colima)
@@ -200,34 +202,27 @@ export DOCKER_HOST=unix://$HOME/.rd/docker.sock
 # 1) Validate manifests
 just validate
 
-# 2) Remove stale bundle artifacts before rebuilding
-rm -f nkp-ai-applications-catalog.tar nkp-ai-applications-catalog-airgapped.tar
+# 2) Build a single-app airgapped bundle → <app>-<version>-airgapped.tar
+just create-application-airgapped-bundle <app> <version>
 
-# 3) Build full airgapped catalog bundle
-AIRGAPPED=true just create-bundle <tag>
-
-# 4) Push airgapped bundle to target registry
-nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry <registry>
+# 3) Push the airgapped bundle to the target registry
+nkp push bundle --bundle ./<app>-<version>-airgapped.tar --to-registry <registry>
 ```
 
 Example:
 
 ```bash
-AIRGAPPED=true just create-bundle v0.1.0
-nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>
+just create-application-airgapped-bundle kai-scheduler 0.15.2
+nkp push bundle --bundle ./kai-scheduler-0.15.2-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>
 ```
 
-For scoped testing of a single app/version, use the `skip` parameter to exclude
-other `app=version` entries:
+To build a whole collection instead of a single app, use the collection recipe
+with a `tagName` from `.release/dev.yaml` (e.g. `2.19-dev`). It writes
+`nkp-ai-applications-catalog-<tag>-airgapped.tar`:
 
 ```bash
-AIRGAPPED=true just create-bundle <tag> "<comma-separated skip list>"
-```
-
-Example (bundle only `kai-scheduler=0.15.2` by skipping other app versions):
-
-```bash
-AIRGAPPED=true just create-bundle e2e-kai-scheduler-0.15.2 "kagent=0.7.13,kueue=0.18.0,..."
+just create-collection-airgapped-bundle 2.19-dev
+nkp push bundle --bundle ./nkp-ai-applications-catalog-2.19-dev-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>
 ```
 
 ### Step 6: Commit and Push
