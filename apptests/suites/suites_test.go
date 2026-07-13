@@ -15,6 +15,7 @@ var enabledApps = []string{
 	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
+	"jupyterhub",
 	"slurm-operator",
 }
 
