@@ -64,12 +64,12 @@ applications:
     images:
       - oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds:0.7.13
       - oci://ghcr.io/kagent-dev/kagent/helm/kagent:0.7.13
-      - cr.kagent.dev/kagent-dev/kagent/controller:0.7.13
-      - cr.kagent.dev/kagent-dev/kagent/ui:0.7.13
       - docker.io/mcp/grafana:latest
       - docker.io/mesosphere/kubectl:v1.34.1-alpine
       - ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
+      - ghcr.io/kagent-dev/kagent/controller:0.7.13
       - ghcr.io/kagent-dev/kagent/tools:0.0.13
+      - ghcr.io/kagent-dev/kagent/ui:0.7.13
       - ghcr.io/kagent-dev/kmcp/controller:0.2.2
   - name: kai-scheduler
     version: 0.15.2
