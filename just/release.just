@@ -31,7 +31,7 @@ create-application-airgapped-bundle application-name application-version output-
 
   OUTPUT_FILE="$output_file" APP_NAME="{{application-name}}" APP_VERSION="{{application-version}}" yq -i \
     '.releases[0].fileName = strenv(OUTPUT_FILE) |
-     .releases[0].applications = [{name: strenv(APP_NAME), version: strenv(APP_VERSION)}]' \
+     .releases[0].applications = [{"name": strenv(APP_NAME), "version": strenv(APP_VERSION)}]' \
     "$tmpfile"
 
   echo "Building application bundle for {{application-name}} {{application-version}}... (output file: $output_file)"
