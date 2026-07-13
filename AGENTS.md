@@ -203,31 +203,26 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 2. **Validate manifests first**
    - Run: `nkp validate catalog-repository --repo-dir=.`
 
-3. **Create the airgapped bundle**
-   - Remove stale artifacts first:
-     - `rm -f nkp-ai-applications-catalog.tar nkp-ai-applications-catalog-airgapped.tar`
-   - Full catalog:
-     - `AIRGAPPED=true just create-bundle <tag>`
-     - Example:
-       - `AIRGAPPED=true just create-bundle v0.1.0`
-   - Scoped app/version (recommended for CI or troubleshooting):
-     - Use `just create-bundle <tag> "<skip-list>"` where `skip-list` is comma-separated `app=version` entries to exclude.
-     - The resulting include set (all minus skip-list) is passed to `nkp create catalog-bundle --apps=...`.
-     - Example (bundle only `kai-scheduler=0.15.2` by skipping others):
-       - `AIRGAPPED=true just create-bundle e2e-kai-scheduler-0.15.2 "kagent=0.7.13,kueue=0.18.0,..." `
+3. **Create the airgapped bundle** (renders `.release/airgapped.yaml.tmpl` with `includeApplicationImages: true`)
+   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-airgapped.tar`:
+     - `just create-application-airgapped-bundle <app> <version>`
+     - Example: `just create-application-airgapped-bundle kai-scheduler 0.15.2`
+   - Full collection → writes `nkp-ai-applications-catalog-<tag>-airgapped.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
+     - `just create-collection-airgapped-bundle <collection-tag>`
+     - Example: `just create-collection-airgapped-bundle 2.19-dev`
 
 4. **Push the bundle to an OCI registry**
    - Authenticate to your registry first.
    - Push:
-     - `nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry <registry>`
+     - `nkp push bundle --bundle ./<bundle>-airgapped.tar --to-registry <registry>`
      - Example:
-       - `nkp push bundle --bundle ./nkp-ai-applications-catalog-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>`
+       - `nkp push bundle --bundle ./kai-scheduler-0.15.2-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>`
 
 5. **Deploy and validate on cluster**
    - Create/update collection:
      - `nkp create catalog-collection --url oci://<registry>/nkp-ai-applications-catalog/collection --tag <tag> --workspace <workspace-name>`
      - Example:
-       - `nkp create catalog-collection --url oci://ghcr.io/<org-or-user>/nkp-ai-applications-catalog/collection --tag e2e-kai-scheduler-0.15.2 --workspace kommander-workspace`
+       - `nkp create catalog-collection --url oci://ghcr.io/<org-or-user>/nkp-ai-applications-catalog/collection --tag 2.19-dev --workspace kommander-workspace`
    - Verify Flux/Kustomization and HelmRelease become Ready, and verify no image pull errors.
 
 ## App namespace convention
