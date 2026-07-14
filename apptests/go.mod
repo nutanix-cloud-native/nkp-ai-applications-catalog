@@ -4,7 +4,6 @@ go 1.26.3
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.3
-	github.com/fluxcd/pkg/apis/meta v1.22.0
 	github.com/mesosphere/kommander-applications/apptests v0.0.0-20260707061836-9b8e30976ef5
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
