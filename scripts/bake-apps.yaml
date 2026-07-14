@@ -1,0 +1,33 @@
+# Config for apps that lack a usable upstream chart. Bake renders their upstream
+# overlays into one self-contained manifest and, for chart-enabled apps, a
+# parameterized Helm chart under charts/<app>/.
+#
+# Schema:
+# - repo: Upstream git repository.
+# - versions[].version: Target catalog version (applications/<app>/<version>/).
+# - versions[].ref: Pinned upstream git tag or commit.
+# - versions[].overlays: Kustomize overlay paths to render, in order.
+# - versions[].airgapImages: Hidden images (referenced only from env vars, args, or
+#   ConfigMap values) that NKP's image:-field scanner can't see. Chart apps write
+#   them to helmrelease/extra-images.txt; flat apps pin them via an inert
+#   Deployment (see airgap.sh). Checked against a fresh scan on every bake.
+# - versions[].pinNamespace: Namespace for that inert pin Deployment (default:
+#   "default"). Only used by flat apps not yet converted to a chart.
+# - versions[].namespace: Bake-time kustomize namespace; rewrites metadata.namespace
+#   and RBAC subjects (like Flux targetNamespace) for split-namespace apps.
+# - versions[].patches: Repo-relative strategic-merge/JSON6902 patches applied at
+#   bake time, keeping app-specific tweaks with the pinned ref.
+# - versions[].chart: When set, bake emits a Helm chart to charts/<app>/ (see
+#   scripts/bake/parameterize.sh) instead of a flat manifest.
+#     chart.version/appVersion: Chart.yaml fields (default: catalog version / ref).
+#     chart.workloads[]: workloads to expose (.name, .kind=Deployment, .container)
+#       whose resources/replicas/scheduling become tunable values. Adding one is a
+#       one-line change plus a re-bake.
+#
+# Usage:
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines            # all versions
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --version 2.15.0
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --render-only
+#   scripts/build-baked-manifests.sh --app kubeflow-pipelines --version 2.15.0 \
+#     --registry ghcr.io/nutanix-cloud-native --mirror-images
+apps: {}

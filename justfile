@@ -55,6 +55,23 @@ OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-
 mirror-chart-from-repo repo-url chart version oci-registry=OCI_REGISTRY:
     ./scripts/push-helm-to-oci.sh {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
+# Package a bake-generated chart (charts/<app>, produced by `just bake <app>`)
+# and push it to our OCI registry. Login first with `just login`.
+# Usage: just push-baked-chart kubeflow-central-dashboard [oci-registry]
+push-baked-chart app oci-registry=OCI_REGISTRY:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    [ -f "charts/{{ app }}/Chart.yaml" ] || { echo "No chart at charts/{{ app }}; run 'just bake {{ app }}' first" >&2; exit 1; }
+    workdir=$(mktemp -d)
+    trap 'rm -rf "$workdir"' EXIT
+    echo "==> Packaging charts/{{ app }}"
+    helm package "charts/{{ app }}" -d "$workdir"
+    echo "==> Pushing to {{ oci-registry }}"
+    helm push "$workdir"/*.tgz {{ oci-registry }}
+
+# Push the generated kubeflow-central-dashboard chart to OCI.
+push-kubeflow-central-dashboard: (push-baked-chart "kubeflow-central-dashboard")
+
 # Mirror a chart from an upstream OCI registry to our OCI registry
 # Usage: just mirror-chart-from-oci oci://upstream-registry/chart <version> [oci-registry]
 mirror-chart-from-oci upstream-oci-url upstream-version oci-registry=OCI_REGISTRY:
@@ -66,3 +83,33 @@ mirror-chart-from-oci upstream-oci-url upstream-version oci-registry=OCI_REGISTR
     helm pull {{upstream-oci-url}} --version {{upstream-version}} -d "$workdir"
     echo "==> Pushing to {{oci-registry}}"
     helm push "$workdir"/*.tgz {{oci-registry}}
+
+# ---------- Render & bake (air-gappable manifests) ----------
+
+# Re-render and bake an app's self-contained manifest set into its helmrelease/
+# dir. Reads scripts/bake-apps.yaml (repo + per-version ref/overlays/airgapImages).
+# Omit the version to (re-)bake every configured version of the app.
+# Usage: just bake kubeflow-pipelines [2.15.0]
+bake app version="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -n "{{ version }}" ]; then
+      ./scripts/build-baked-manifests.sh --app "{{ app }}" --version "{{ version }}"
+    else
+      ./scripts/build-baked-manifests.sh --app "{{ app }}"
+    fi
+
+# Re-bake every configured app+version and fail if a committed artifact drifted
+# from a fresh render (a flat manifest under applications/, a generated chart under
+# charts/, or an airgapImages lockfile that drifted from the upstream ref).
+# Pin kustomize (devbox) so it's reproducible.
+bake-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for app in $(yq -r '.apps | keys | .[]' scripts/bake-apps.yaml); do
+      ./scripts/build-baked-manifests.sh --app "$app"
+    done
+    if ! git diff --exit-code -- applications/ charts/; then
+      echo "::error::Baked artifacts are stale. Run 'just bake <app> [version]' and commit the result." >&2
+      exit 1
+    fi
