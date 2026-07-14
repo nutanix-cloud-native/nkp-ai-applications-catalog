@@ -11,7 +11,8 @@ spec:
     kind: GitRepository
     name: ${releaseName}-manifests
     namespace: ${releaseNamespace}
-  targetNamespace: spark-operator
+  # Upstream kubeflow overlay hardcodes this namespace in controller args.
+  targetNamespace: kubeflow
   timeout: 5m
   wait: true
 ---

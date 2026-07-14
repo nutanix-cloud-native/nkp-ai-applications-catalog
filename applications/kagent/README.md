@@ -26,13 +26,11 @@ The catalog defaults include:
 
 - `fullnameOverride: "kagent"` to keep resource names stable (`kagent-*`) so
   Agent/RemoteMCPServer references resolve consistently.
-- `tag: "0.7.13"` to force OCI-compatible image tags. Flux OCI resolution can
-  append build metadata (`+<digest>`) to chart versions; that suffix is invalid
-  in container image tags and Kubernetes label values.
-
-The `helmrelease/helmrelease.yaml` uses an OCI `HelmRepository` source with an
-explicit chart version (`0.7.13`) to avoid digest-appended version strings in
-rendered labels during install/upgrade tests.
+- `registry: "ghcr.io"` because the chart defaults its images to
+  `cr.kagent.dev`, which no longer serves the `0.7.13` controller/ui/app images.
+  Those images are published to `ghcr.io/kagent-dev/kagent/*`, so we pin the
+  registry there. (NKP Flux disables chart digest tracking, so the image tag
+  resolves to a clean `0.7.13` with no `+<digest>` suffix and needs no override.)
 
 ## Dashboard (Launch button)
 

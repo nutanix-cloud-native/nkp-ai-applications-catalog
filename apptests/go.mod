@@ -4,11 +4,11 @@ go 1.26.3
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.3
-	github.com/fluxcd/pkg/apis/meta v1.22.0
 	github.com/mesosphere/kommander-applications/apptests v0.0.0-20260707061836-9b8e30976ef5
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
 	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/api v0.34.1
 	k8s.io/apimachinery v0.34.1
 	sigs.k8s.io/controller-runtime v0.22.2
 )
@@ -53,6 +53,7 @@ require (
 	github.com/fluxcd/kustomize-controller/api v1.7.2 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.9.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.13.0 // indirect
+	github.com/fluxcd/pkg/apis/meta v1.22.0 // indirect
 	github.com/fluxcd/pkg/kustomize v1.23.0 // indirect
 	github.com/fluxcd/pkg/runtime v0.88.0 // indirect
 	github.com/fluxcd/pkg/ssa v0.60.0 // indirect
@@ -160,7 +161,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	helm.sh/helm/v3 v3.19.0 // indirect
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a // indirect
-	k8s.io/api v0.34.1 // indirect
 	k8s.io/apiextensions-apiserver v0.34.1 // indirect
 	k8s.io/apiserver v0.34.1 // indirect
 	k8s.io/cli-runtime v0.34.1 // indirect
