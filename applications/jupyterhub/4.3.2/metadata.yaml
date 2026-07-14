@@ -47,6 +47,8 @@ overview: |
 
   Replace `<your-secure-password>` with a secure password. The default `DummyAuthenticator` uses one shared password for all users; for production, consider OAuth2 per the [JupyterHub authentication docs](https://z2jh.jupyter.org/en/stable/administrator/authentication.html).
 
+  To sign in with the **same NKP account** used for the console and Kubeflow, point JupyterHub at NKP's identity provider (Dex) instead of the shared password. See the app README section *Single sign-on with NKP (Dex)* for the exact configuration.
+
   **Resources**
 
   [Documentation](https://docs.jupyter.org/en/latest/) · [JupyterHub for Kubernetes](https://z2jh.jupyter.org/en/stable/) · [Project](https://jupyter.org/hub) · [Helm values](https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/main/jupyterhub/values.yaml)
