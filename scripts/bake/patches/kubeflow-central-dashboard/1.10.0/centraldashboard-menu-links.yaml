@@ -1,0 +1,12 @@
+# Trim the sidebar to what the catalog ships. Upstream links native
+# Notebooks/TensorBoards/Volumes/KServe that dead-end at "not a valid page"; we keep
+# only Pipelines. JupyterHub is not in menuLinks by design - it's an OIDC app on its
+# own ingress and can't be embedded (the dashboard chart adds it as an externalLink
+# that opens a new tab). Strategic-merge on data.links only.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: centraldashboard-config
+data:
+  links: |
+    {"menuLinks":[{"icon":"kubeflow:pipeline-centered","text":"Pipelines","type":"section","items":[{"link":"/pipeline/#/pipelines","text":"Pipelines","type":"item"},{"link":"/pipeline/#/experiments","text":"Experiments","type":"item"},{"link":"/pipeline/#/runs","text":"Runs","type":"item"},{"link":"/pipeline/#/recurringruns","text":"Recurring Runs","type":"item"},{"link":"/pipeline/#/artifacts","text":"Artifacts","type":"item"},{"link":"/pipeline/#/executions","text":"Executions","type":"item"}]}],"externalLinks":[],"documentationItems":[{"desc":"The Kubeflow website","link":"https://www.kubeflow.org/","text":"Kubeflow Website"},{"desc":"Documentation for Kubeflow Pipelines","link":"https://www.kubeflow.org/docs/components/pipelines/","text":"Kubeflow Pipelines Documentation"}],"quickLinks":[{"desc":"Kubeflow Pipelines","link":"/pipeline/#/pipelines","text":"Upload a Pipeline"},{"desc":"Pipelines","link":"/pipeline/#/runs","text":"View Pipeline Runs"}]}

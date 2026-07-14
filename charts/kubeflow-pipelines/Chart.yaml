@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kubeflow-pipelines
+description: Auto-generated from baked upstream manifests. Regenerate with 'just bake kubeflow-pipelines'; do not edit by hand.
+type: application
+version: 2.15.0
+appVersion: "2.15.0"
