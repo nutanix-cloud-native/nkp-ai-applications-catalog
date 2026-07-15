@@ -68,23 +68,12 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
   cat "$tmpfile"
   "{{ NKP_CLI }}" experimental catalog release --release-spec "$tmpfile" --repo-dir "{{ REPO_ROOT }}"
 
-# Build and push airgapped bundles to S3
+# Build airgapped bundles for all tags in a release spec
 [script]
-push-airgapped-bundles release-spec s3-dest dry-run="false": nkp-cli
-  tmpdir=$(mktemp -d)
-  trap "rm -rf $tmpdir" EXIT
-
-  dryrun_flag=""
-  if [ "{{ dry-run }}" = "true" ]; then
-    dryrun_flag="--dryrun"
-  fi
-
+build-airgapped-bundles release-spec output-dir: nkp-cli
+  mkdir -p "{{ output-dir }}"
   for tag in $(yq '.releases[] | .tagName' {{ release-spec }}); do
-    bundle="${tmpdir}/${tag}-airgapped.tar"
+    bundle="{{ output-dir }}/nkp-ai-applications-catalog-airgapped-${tag}.tar"
     echo "Building airgapped bundle for $tag..."
     just create-collection-airgapped-bundle "$tag" "$bundle" {{ release-spec }}
-
-    dest="{{ s3-dest }}/nkp-ai-applications-catalog-airgapped-${tag}.tar"
-    echo "Uploading $bundle -> $dest"
-    aws s3 cp $dryrun_flag "$bundle" "$dest"
   done
