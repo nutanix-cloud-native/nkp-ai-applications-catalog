@@ -3,8 +3,9 @@ data:
   values.yaml: |
     # Keep release names stable (kagent-*) so Agent/RemoteMCPServer references resolve.
     fullnameOverride: "kagent"
-    # Avoid OCI digest-style versions (e.g. 0.7.13+<digest>) in image tags.
-    tag: "0.7.13"
+    # The chart defaults images to cr.kagent.dev, which no longer serves the 0.7.13
+    # controller/ui/app images; pin the registry to ghcr.io where they are published.
+    registry: "ghcr.io"
     # Expose UI via LoadBalancer so postinstall job can set dashboardLink to its external IP.
     ui:
       service:

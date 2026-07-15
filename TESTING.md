@@ -31,8 +31,10 @@ just e2e-test kagent 0.7.13
 ```
 
 By default this creates an ephemeral [Kind](https://kind.sigs.k8s.io/) cluster,
-installs Flux, deploys the application, and validates the HelmRelease reaches a
-`Ready` state. The cluster is torn down after the test completes.
+installs Flux, deploys the application, and validates the app reconciler reaches
+`Ready` (`HelmRelease` for Helm apps, or Flux `GitRepository` +
+`Kustomization` for Flux-Kustomize apps). The cluster is torn down after the
+test completes.
 
 ### Using an existing cluster
 
@@ -96,11 +98,15 @@ The workflow is defined in `.github/workflows/e2e.yaml`.
 
 ### How matrix detection works
 
-The `detect-apps` job reads the `enabledApps` slice from `suites_test.go` to
-determine which applications have tests. It intersects this list with any
-`e2e-<app>` PR labels to build the matrix. Each `app/version` pair becomes a
-separate CI job. If no labels are present on a PR, the matrix is empty and the
-e2e job is skipped.
+The `detect-apps` job reads the `enabledApps` **and** `customTestApps` slices
+from `suites_test.go` to determine which applications have tests. It intersects
+this union with any `e2e-<app>` PR labels to build the matrix. Each `app/version`
+pair becomes a separate CI job. If no labels are present on a PR, the matrix is
+empty and the e2e job is skipped.
+
+> Apps with a dedicated `<app>_test.go` (see [Custom Test Files](#custom-test-files))
+> must be listed in `customTestApps` so their `e2e-<app>` label is recognized by
+> matrix detection.
 
 ### Diagnostic bundles
 
@@ -123,11 +129,30 @@ deploy on a disconnected cluster — not just the manifests and image references
 The generated `<app>-<version>-airgapped.tar` is uploaded as a GitHub Actions
 artifact named `airgapped-bundle-<app>-<version>`.
 
+> **Only self-contained (HelmRelease) apps are bundled.** The matrix builder tags
+> each entry with `airgapped: true` for `enabledApps` and `airgapped: false` for
+> `customTestApps`, and the bundle steps run only when `matrix.airgapped` is true.
+>
+> The Flux-Kustomize apps deploy from a remote `GitRepository`
+> (`github.com/kubeflow/manifests`) whose overlays reference parent paths such as
+> `../../base`. Flux's kustomize-controller builds these fine (that's why E2E
+> passes), but `nkp create catalog-bundle`'s Flux-Kustomization parser re-parses
+> each overlay with a stricter load-restrictor anchored at the overlay `path`, so
+> the parent reference trips `fs-security-constraint` and the bundle build fails.
+> Skipping the bundle step for these apps sidesteps that parser limitation.
+>
+> This is a manifest-parsing limitation, **not** a missing-images problem: the
+> container images for these apps are discoverable and mirrorable today via
+> `scripts/mirror-kubeflow-images.sh` (see `scripts/kubeflow-kustomize-apps.yaml`;
+> `kubeflow-pipelines` is excluded because it has remote Kustomize refs that fail
+> even in Flux). Full airgap-in-the-bundle needs the upstream manifests vendored
+> into the catalog (dropping the remote `GitRepository` and flattening overlays so
+> the bundle parser accepts them); once vendored, flip the app's `airgapped` flag
+> on and the bundle step covers it.
+
 ## Test Structure
 
-Tests use the shared `catalog` package from
-[kommander-applications/apptests/catalog](https://github.com/mesosphere/kommander-applications/tree/main/apptests/catalog).
-This package provides:
+Tests use the shared `catalog` package consumed by this repository. It provides:
 
 - `InitSuite` / `RunSuite` -- Ginkgo suite bootstrap and global variables
 - `SetupKindCluster` / `TeardownCluster` -- Kind cluster lifecycle with
@@ -148,28 +173,70 @@ waste time provisioning clusters.
 
 ## Enabling Tests for an Application
 
-Add the application name to the `enabledApps` slice in
-`apptests/suites/suites_test.go`:
+Apps fall into two categories by how they reconcile. Add the app name to the
+matching slice in `apptests/suites/suites_test.go` -- no other files are needed,
+and each app gets a generic install (+ upgrade, where applicable) test.
+
+- **HelmRelease apps** -> `enabledApps`. Success is the app's `HelmRelease`
+  reaching `Ready`.
+- **Flux-Kustomize apps** (deploy via `GitRepository` + `Kustomization`) ->
+  `customTestApps`. Success is the Flux source and `Kustomization` reaching
+  `Ready`.
 
 ```go
-var enabledApps = []string{
+var enabledApps = []string{        // HelmRelease apps
 	"kagent",
-	"your-new-app",
+	"your-helm-app",
+}
+
+var customTestApps = []string{     // Flux-Kustomize apps
+	"katib",
+	"your-kustomize-app",
 }
 ```
 
-This registers the default install + upgrade template test for the app. No
-other files are needed.
+An `init()` guard panics if an app is listed in both. CI matrix detection reads
+both slices, so listing the app is all that is required for its `e2e-<app>`
+label to work.
 
-## Custom Test Files
+## Platform dependencies
 
-If an application needs pre-install setup (secrets, ConfigMap patches, CRDs,
-etc.), create a dedicated `apptests/suites/<app>_test.go` file instead:
+Apps declare the platform apps they need (Istio, cert-manager, ...) in
+`requiredDependencies` in their `metadata.yaml`. Both the Helm and Kustomize
+suites read that list and provision a lightweight stand-in for each entry before
+install, so metadata is the single source of truth -- tests never hardcode a
+per-app dependency list.
+
+Supported dependencies live in the `dependencyProvisioners` registry in
+`apptests/suites/dependencies.go`. To support a heavier dependency, add one
+entry keyed by the name used in `metadata.yaml`:
+
+```go
+var dependencyProvisioners = map[string]func(context.Context) error{
+	"cert-manager": provisionCertManager,
+	"istio-helm":   provisionIstioCRDs,
+	"your-dep":     provisionYourDep, // installs only the CRDs/controllers needed on Kind
+}
+```
+
+An app naming a dependency with no provisioner fails fast with a message
+pointing here, so the metadata and the registry can't silently drift.
+
+## Apps needing bespoke setup
+
+Most apps need nothing beyond listing (dependencies come from metadata). If an
+app needs setup that neither template covers -- extra secrets, ConfigMap
+patches, a non-standard readiness signal -- add a dedicated
+`apptests/suites/<app>_test.go`:
 
 1. Write a Ginkgo `Describe` block with `Label("<app>")` matching the
    directory name.
-2. Use `catalog.SetupKindCluster()`, `catalog.Env`, `catalog.K8sClient`, and
-   `catalog.NewAppScenario("<app>", *catalog.AppVersion)` from the shared
-   package.
-3. Do **not** add the app to `enabledApps` -- the custom test file registers
-   its own Ginkgo blocks directly.
+2. Drive the cluster through `harness.Default` (`SetupCluster`, `InstallApp`,
+   `Client`, ...) and call `provisionDependencies(ctx, "<app>")` in `BeforeAll`
+   -- test files depend only on the `harness` package, never on the underlying
+   shared harness module.
+3. Do **not** add the app to `enabledApps` or `customTestApps`; the dedicated
+   file registers its own Ginkgo blocks. Still ensure CI matrix detection knows
+   about it (list it in the appropriate slice or extend detection).
+
+The same `just e2e-test <app> <version>` entrypoint works for all models.
