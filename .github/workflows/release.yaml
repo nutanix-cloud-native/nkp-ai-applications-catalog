@@ -54,5 +54,37 @@ jobs:
 
       # - name: Build Stable Release
       #   # Production artifacts can be published only on the release-2.x branch.
-      #   if: github.ref_name == 'release-2.x' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
+      #   if: github.ref_name == 'main' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
       #   run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
+
+  publish-airgapped-bundles:
+    name: Publish Airgapped Bundles
+    runs-on:
+      - self-hosted-nutanix-medium
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NIX
+        uses: cachix/install-nix-action@v31
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+          skip-nix-installation: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Role defined in nutanix-ncn/aws-roles/roles/nkp-ai-applications-catalog.tf
+          role-to-assume: arn:aws:iam::139475575661:role/nkp-ai-applications-catalog
+          aws-region: us-west-2
+
+      - name: Push Dev Bundles
+        if: github.event_name == 'push' || github.event.inputs.release_spec == 'dev'
+        # S3 destination defined in nutanix-ncn/artifacts-store/infra/terraform/terraform.tfvars
+        run: devbox run -- just push-airgapped-bundles ./.release/dev.yaml s3://ncn-artifacts.infra.nkp.sh/nkp-ai-applications-catalog/airgapped-bundles/dev
