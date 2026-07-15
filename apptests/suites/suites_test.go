@@ -17,6 +17,10 @@ var enabledApps = []string{
 	"kai-scheduler",
 	"jupyterhub",
 	"slurm-operator",
+	"amd-device-metrics-exporter",
+	"amd-kmm-operator",
+	"amd-network-operator",
+	"amd-gpu-operator",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
