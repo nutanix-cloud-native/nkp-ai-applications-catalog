@@ -28,9 +28,7 @@ data:
     crds:
       defaultCR:
         install: true
-        # Preserve the existing DeviceConfig during an application/operator upgrade.
-        # Set this to true only in a separate, intentional driver reconciliation.
-        upgrade: false
+        upgrade: true
     # GPU operator controller manager
     controllerManager:
       manager:

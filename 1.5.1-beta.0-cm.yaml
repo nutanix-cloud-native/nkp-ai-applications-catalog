@@ -28,13 +28,14 @@ data:
     crds:
       defaultCR:
         install: true
+        # Reconcile the default DeviceConfig during chart upgrades.
         upgrade: true
     # GPU operator controller manager
     controllerManager:
       manager:
         image:
           repository: docker.io/rocm/gpu-operator
-          tag: v1.5.0
+          tag: v1.5.1-beta.0
         imagePullPolicy: IfNotPresent
         imagePullSecrets: ""
         resources:
@@ -51,21 +52,19 @@ data:
         driver:
           enable: true
           blacklist: true
-          version: "30.20.1"
+          version: "31.30"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          # Automatic driver upgrades are opt-in while NKP develops a safe
+          # way to coordinate GPU services with required node reboots.
           upgradePolicy:
-            enable: true
+            enable: false
             maxParallelUpgrades: 1
             maxUnavailableNodes: 1
-            # Automatic node reboots are disabled until DRA and Metrics-Exporter DaemonSets
-            # do not get scheduled on the rebooting node during driver upgrades.
             rebootRequired: false
             nodeDrainPolicy:
-              force: true
+              force: false
               timeoutSeconds: 600
               gracePeriodSeconds: -1
-              # NOTE: This value is hardcoded to `true` in this version of the Operator, changing this here
-              # doesn't alter the Operator's behavior.
               ignoreDaemonSets: true
           imageBuild:
             baseImageRegistry: "docker.io"
@@ -80,11 +79,11 @@ data:
         commonConfig:
           initContainerImage: busybox:1.36
           utilsContainer:
-            image: docker.io/rocm/gpu-operator-utils:v1.5.0
+            image: docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
             imagePullPolicy: IfNotPresent
-        # Device Plugin is disabled in favor of DRA (see draDriver below).
-        # To revert to the traditional Device Plugin, set enableDevicePlugin: true
-        # and draDriver.enable: false (they are mutually exclusive).
+        # Keep GPU-dependent agents disabled during initial driver
+        # installation. Enable required agents after the reboot and driver
+        # provenance verification.
         devicePlugin:
           enableDevicePlugin: false
           devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
@@ -92,14 +91,28 @@ data:
           enableNodeLabeller: false
           nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
           nodeLabellerImagePullPolicy: IfNotPresent
+          nodeLabellerTolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
         metricsExporter:
-          enable: true
-          image: rocm/device-metrics-exporter:v1.5.0
+          enable: false
+          image: rocm/device-metrics-exporter:v1.5.1-beta.0
           imagePullPolicy: IfNotPresent
-        # DRA replaces Device Plugin for GPU resource allocation.
-        # Mutually exclusive with devicePlugin — only one can be enabled per DeviceConfig.
-        # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
+          tolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
+        # DRA is disabled out of the box. To opt in, set draDriver.enable=true
+        # and devicePlugin.enableDevicePlugin=false in the same ConfigOverride.
         draDriver:
-          enable: true
+          enable: false
           image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
           imagePullPolicy: IfNotPresent
+          tolerations:
+            - key: "amd-dcm"
+              operator: "Equal"
+              value: "up"
+              effect: "NoExecute"
