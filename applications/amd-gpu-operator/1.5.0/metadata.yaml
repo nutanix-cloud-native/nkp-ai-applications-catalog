@@ -3,7 +3,7 @@ displayName: AMD GPU Operator
 description: The AMD GPU Operator manages AMD GPU resources in a Kubernetes cluster and automates tasks related to bootstrapping GPU nodes (drivers, device plugin, NFD, KMM, metrics, DRA, auto-remediation).
 category:
   - general
-type: nkp-catalog
+type: nkp-core-platform
 allowMultipleInstances: false
 scope:
   - workspace
