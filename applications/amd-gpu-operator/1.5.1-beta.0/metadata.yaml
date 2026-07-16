@@ -62,6 +62,11 @@ overview: |-
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
+  ### Staged Operator and Driver Upgrades
+  Application upgrades preserve the existing `DeviceConfig/default` because `crds.defaultCR.upgrade` defaults to `false`. Upgrade the application/controller from v1.5.0 to v1.5.1-beta.0 first and verify that the DeviceConfig, node boot ID, and loaded driver remain at `30.20.1`. Then perform a separate reconciliation with `crds.defaultCR.upgrade: true` and `deviceConfig.spec.driver.version: "31.30"`.
+
+  Keep `spec.driver.upgradePolicy.enable: true` for the driver-only step so the operator performs its managed, serial no-reboot workflow. Setting it to `false` disables that orchestration; it does not prevent KMM from reconciling a changed Module. Do not set `crds.defaultCR.upgrade: true` during the application version transition, because that combines the controller and kernel-driver changes.
+
   ### Manual Reboot After Driver Upgrade
   Automatic driver-upgrade reboots are disabled by default with `spec.driver.upgradePolicy.rebootRequired: false`. After a driver upgrade has completed, wait until the DRA driver and Metrics Exporter are Ready, then manually drain and reboot each upgraded GPU node one at a time. Do not use application or `DeviceConfig` version status alone as the readiness signal. Verify that the node, DRA driver, and Metrics Exporter are healthy before proceeding to the next node.
 
@@ -73,7 +78,7 @@ overview: |-
       driver:
         enable: true
         blacklist: true
-        version: "30.20.1"
+        version: "31.30"
         image: "<registry-host>:<port>/<project>/amdgpu_kmod"
         imageBuild:
           baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -133,7 +138,7 @@ overview: |-
     spec:
       driver:
         imageBuild:
-          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/30.20.1"
+          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/31.30"
           gpgKeyURL: "https://my-mirror.internal/rocm.gpg.key"
   ```
 
