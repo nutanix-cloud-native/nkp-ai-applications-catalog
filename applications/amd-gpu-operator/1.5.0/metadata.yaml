@@ -59,6 +59,9 @@ overview: |-
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
+  ### Manual Reboot After Driver Upgrade
+  Automatic driver-upgrade reboots are disabled by default with `spec.driver.upgradePolicy.rebootRequired: false`. After a driver upgrade has completed, wait until the DRA driver and Metrics Exporter are Ready, then manually drain and reboot each upgraded GPU node one at a time. Do not use application or `DeviceConfig` version status alone as the readiness signal. Verify that the node, DRA driver, and Metrics Exporter are healthy before proceeding to the next node.
+
   ### Config Overrides (Private Registry)
   When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.0/helm-charts-k8s/values.yaml).
   ```
