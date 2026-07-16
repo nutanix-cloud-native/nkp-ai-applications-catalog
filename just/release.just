@@ -67,3 +67,13 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
   echo "Building collection airgapped bundle for $tag_name... (output file: $output_file)"
   cat "$tmpfile"
   "{{ NKP_CLI }}" experimental catalog release --release-spec "$tmpfile" --repo-dir "{{ REPO_ROOT }}"
+
+# Build airgapped bundles for all tags in a release spec
+[script]
+build-airgapped-bundles release-spec output-dir: nkp-cli
+  mkdir -p "{{ output-dir }}"
+  for tag in $(yq '.releases[] | .tagName' {{ release-spec }}); do
+    bundle="{{ output-dir }}/nkp-ai-applications-catalog-airgapped-${tag}.tar"
+    echo "Building airgapped bundle for $tag..."
+    just create-collection-airgapped-bundle "$tag" "$bundle" {{ release-spec }}
+  done
