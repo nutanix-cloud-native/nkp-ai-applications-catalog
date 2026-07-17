@@ -164,7 +164,7 @@ Flux performs post-build variable substitution. Always use these variables inste
 | `${projectName}` | The project name (project-scoped deployments only) |
 | `${clusterName}` | The target cluster's name (the KommanderCluster name) |
 | `${clusterUUID}` | The target cluster's ID (from the `kommander.mesosphere.io/cluster-id` label; when set) |
-| `${clusterType}` | The target cluster's type — CAPI `spec.infrastructureRef.kind` (e.g. `NutanixCluster`, `AWSCluster`), or the `kommander.mesosphere.io/cluster-type` label (`EKS`, `GKE`, `AKS`, `Unknown`) |
+| `${clusterType}` | The target cluster's type — CAPI `spec.infrastructureRef.kind` (e.g. `NutanixCluster`, `AWSCluster`, `DockerCluster`), or the `kommander.mesosphere.io/cluster-type` label (`EKS`, `GKE`, `AKS`, `Unknown`) |
 
 Never hardcode namespace or release name in places where these variables should be used.
 
