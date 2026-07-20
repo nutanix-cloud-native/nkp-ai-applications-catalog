@@ -14,7 +14,9 @@
     "golangci-lint@latest",
     "go@latest",
     "jq@latest",
-    "kind@latest"
+    "kind@latest",
+    "awscli2@latest",
+    "kustomize@5.8.1"
   ],
   "shell": {
     "init_hook": [
