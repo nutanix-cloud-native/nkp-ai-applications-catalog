@@ -299,6 +299,23 @@ spec:
   url: oci://<registry>/<your-org>/<chart-name>
 ```
 
+## Baking Kustomize-only Apps into Charts
+
+Some apps (e.g. Kubeflow components) have **no usable upstream Helm chart** and
+ship as Kustomize trees with remote/`../` bases that Flux can't resolve in
+air-gapped installs. The `bake` tool (`tools/bake`) renders each app's pinned
+upstream overlays into one self-contained, air-gappable manifest **and** a small
+parameterized Helm chart, giving the baked app a `configOverrides` surface.
+
+```bash
+just bake <app> [version]   # render + bake from scripts/bake-apps.yaml
+just bake-check             # re-bake all; fail if committed artifacts drifted (CI gate)
+```
+
+See [`tools/bake/README.md`](tools/bake/README.md) for how baking works, when to
+use it, the config schema, and full usage. If an app already publishes a clean
+Helm chart, add it the normal way instead (see [Adding a New Application](#adding-a-new-application)).
+
 ## Sample Apps (Demo)
 
 | Application | Version | Description |
@@ -344,6 +361,8 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just push-jupyterhub [version]` | Shortcut for jupyterhub (default: `4.3.2`) |
 | `just push-milvus-operator [version]` | Shortcut for milvus-operator (default: `1.3.6`) |
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
+| `just bake <app> [version]` | Render a Kustomize-only app into an air-gappable manifest + chart (see [tools/bake](tools/bake/README.md)) |
+| `just bake-check` | Re-bake all apps; fail if committed artifacts drifted |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |

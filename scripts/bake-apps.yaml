@@ -1,0 +1,5 @@
+# Apps that lack a usable upstream chart: the bake tool renders each app's pinned
+# Kustomize overlays into one air-gappable manifest and a configurable Helm chart.
+# How baking works, when to use it, config schema, and usage: tools/bake/README.md
+# Schema types: tools/bake/config.go. Run: `just bake <app> [version]`.
+apps: {}
