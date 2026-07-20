@@ -41,7 +41,7 @@ overview: |
   [Documentation](https://slinky.ai/) · [Project](https://github.com/SlinkyProject/slurm-operator) · [Helm Chart](https://github.com/SlinkyProject/slurm-operator/tree/main/helm/slurm-operator)
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://github.com/SlinkyProject/slurm-operator
 type: nkp-catalog
 ---

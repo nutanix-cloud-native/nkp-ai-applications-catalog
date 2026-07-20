@@ -39,7 +39,7 @@ scope:
 certifications:
   - qualified
   - airgapped
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://github.com/kai-scheduler/KAI-Scheduler
 type: nkp-catalog
 ---

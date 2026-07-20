@@ -55,7 +55,7 @@ overview: |
 requiredDependencies: []
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://jupyter.org/hub
 type: nkp-catalog
 ---

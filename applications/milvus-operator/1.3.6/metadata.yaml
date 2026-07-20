@@ -54,7 +54,7 @@ overview: |-
   - [List of Helm values](https://github.com/zilliztech/milvus-operator/blob/main/charts/milvus-operator/values.yaml)
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://milvus.io/docs
 type: nkp-catalog
 ---
