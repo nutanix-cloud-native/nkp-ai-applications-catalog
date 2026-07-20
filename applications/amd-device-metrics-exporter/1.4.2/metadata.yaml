@@ -1,8 +1,10 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD Device Metrics Exporter
+appScreens:
+  - ai
 description: Exports Prometheus-format metrics from AMD GPUs (and optionally NICs) for monitoring in HPC and AI environments.
 category:
-  - general
+  - Accelerated Infrastructure
 type: nkp-core-platform
 allowMultipleInstances: false
 scope:
