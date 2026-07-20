@@ -41,7 +41,7 @@ overview: |
   [Documentation](https://kagent.dev) · [Project](https://github.com/kagent-dev/kagent)
 scope:
   - workspace
-nkpVersionSupport: ">=2.17.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://kagent.dev
 type: custom
 ---
