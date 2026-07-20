@@ -48,8 +48,8 @@ overview: |-
   ### Automated GPU Driver Builds
   Automatically builds and loads out-of-tree AMD GPU kernel modules using KMM and Kaniko for in-cluster driver compilation. The default `DeviceConfig` targets nodes labeled `feature.node.kubernetes.io/amd-gpu: "true"` (physical GPUs). For SR-IOV virtual function (VF) environments, create an additional `DeviceConfig` with selector `feature.node.kubernetes.io/amd-vgpu: "true"`.
 
-  ### Device Plugin and Node Labelling
-  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a node labeller for automatic GPU topology discovery.
+  ### DRA, Device Plugin, and Node Labelling
+  NKP enables DRA by default and disables the legacy Device Plugin and Node Labeller. DRA and the Device Plugin are mutually exclusive. Enable the Device Plugin only when intentionally replacing DRA; the Node Labeller remains optional.
 
   ### Metrics Integration
   Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
@@ -60,12 +60,12 @@ overview: |-
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
   ### Staged Operator and Driver Upgrades
-  Application upgrades preserve the existing `DeviceConfig/default` because `crds.defaultCR.upgrade` defaults to `false`. Upgrade the application/controller to v1.5.1-beta.0 first and verify that the DeviceConfig, node boot ID, and loaded driver remain at `30.20.1`. Then perform a separate reconciliation with `crds.defaultCR.upgrade: true` and `deviceConfig.spec.driver.version: "31.30"`.
+  The catalog sets `crds.defaultCR.upgrade: true`. To stage the validated v1.5.0 to v1.5.1-beta.0 upgrade, first apply the target application while explicitly pinning `deviceConfig.spec.driver.version: "30.20.1"`. Disable DRA and Metrics Exporter before this controller transition so GPU-dependent agents are quiesced, then verify that the target controller is Ready while the KMM Module, loaded driver, and GPU-node boot IDs remain unchanged.
 
-  Keep `spec.driver.upgradePolicy.enable: true` for the driver-only step so the operator performs its managed, serial no-reboot workflow. Setting it to `false` disables that orchestration; it does not prevent KMM from reconciling a changed Module. Do not set `crds.defaultCR.upgrade: true` during the application version transition, because that combines the controller and kernel-driver changes.
+  Next reconcile driver `31.30` with `spec.driver.upgradePolicy.enable: true`, `rebootRequired: false`, and `nodeDrainPolicy.force: false`, while DRA and Metrics Exporter remain disabled. Verify the GPU Operator upgrade taint, `Upgrade-Complete`, the target KMM Module, and unchanged boot IDs. Finally restore the v1.5.1-beta.0 catalog posture: DRA and Metrics Exporter enabled, Device Plugin and Node Labeller disabled, and `nodeDrainPolicy.force: true`.
 
-  ### Manual Reboot After Driver Upgrade
-  Automatic driver-upgrade reboots are disabled by default with `spec.driver.upgradePolicy.rebootRequired: false`. After a driver upgrade has completed, wait until the DRA driver and Metrics Exporter are Ready, then manually drain and reboot each upgraded GPU node one at a time. Do not use application or `DeviceConfig` version status alone as the readiness signal. Verify that the node, DRA driver, and Metrics Exporter are healthy before proceeding to the next node.
+  ### Validated No-Reboot Driver Upgrade
+  The qualified sequence uses `spec.driver.upgradePolicy.rebootRequired: false` and proves that every selected GPU node retains its boot ID through both controller staging and driver reconciliation. A manual reboot is not part of this sequence. Restore DRA and Metrics Exporter only after the driver reaches `Upgrade-Complete`, then verify their pods, ResourceSlices, and a DRA workload.
 
   ### Config Overrides (Private Registry)
   When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.0/helm-charts-k8s/values.yaml).
@@ -99,8 +99,8 @@ overview: |-
   - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
   - `insecure`/`insecureSkipTLSVerify` — set to `true` for registries using self-signed or private CA certificates. **Note:** Kaniko build pods do not inherit the node's CA trust store, and the GPU operator currently does not propagate `imageRegistryTLS` to the KMM Module CR's `registryTLS` field. As a workaround, scale down the GPU operator controller, patch the Module CR's `registryTLS.insecureSkipTLSVerify` to `true`, and scale back up after the build completes.
 
-  ### DRA Driver Configuration (Optional)
-  To use the DRA driver instead of the traditional Device Plugin:
+  ### Catalog Runtime Defaults
+  The NKP catalog uses the DRA driver instead of the traditional Device Plugin:
   ```
   deviceConfig:
     spec:
@@ -109,6 +109,9 @@ overview: |-
         image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
       devicePlugin:
         enableDevicePlugin: false
+        enableNodeLabeller: false
+      metricsExporter:
+        enable: true
   ```
   All prerequisites (DRA GA, CDI) are met on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+).
 
