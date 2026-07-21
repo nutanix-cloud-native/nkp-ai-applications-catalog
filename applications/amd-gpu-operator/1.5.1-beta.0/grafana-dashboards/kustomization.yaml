@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ${releaseNamespace}
+configMapGenerator:
+  - name: grafana-dashboards-amd-gpu-operator
+    namespace: ${releaseNamespace}
+    files:
+      - dashboard_overview.json
+      - dashboard_gpu.json
+      - dashboard_job.json
+      - dashboard_node.json
+generatorOptions:
+  labels:
+    grafana_dashboard: "1"

@@ -101,6 +101,11 @@ The chart auto-creates a `DeviceConfig` CR named `default` with:
 - DRA driver (default), node labeller, and metrics exporter
 - Device Plugin disabled (mutually exclusive with DRA)
 
+## Grafana Dashboards
+
+The bundled overview, GPU, job, and node dashboards are sourced from the
+[ROCm device-metrics-exporter Grafana dashboards](https://github.com/ROCm/device-metrics-exporter/tree/main/grafana).
+
 ### Staged Operator and Driver Upgrades
 
 Application upgrades preserve the existing `DeviceConfig/default` because
