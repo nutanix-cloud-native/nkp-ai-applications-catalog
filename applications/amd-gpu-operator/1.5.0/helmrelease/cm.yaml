@@ -96,6 +96,8 @@ data:
           enable: true
           image: rocm/device-metrics-exporter:v1.5.0
           imagePullPolicy: IfNotPresent
+          config:
+            name: ${releaseName}-${appVersion}-metrics-exporter-config
           prometheus:
             serviceMonitor:
               enable: true

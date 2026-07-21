@@ -130,10 +130,7 @@
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "GPU package power usage",
       "fieldConfig": {
         "defaults": {
@@ -183,10 +180,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -201,10 +195,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -237,10 +228,7 @@
       "type": "gauge"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current maximum PCIe speed",
       "fieldConfig": {
         "defaults": {
@@ -289,10 +277,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -323,10 +308,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -376,10 +358,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -393,10 +372,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -411,10 +387,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -429,10 +402,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -447,10 +417,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -469,10 +436,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Most recent health status of GPU",
       "fieldConfig": {
         "defaults": {
@@ -535,10 +499,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_health{gpu_uuid=\"$g_gpu_uuid\", hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\"}",
@@ -555,10 +516,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current PCIe bandwidth over time",
       "fieldConfig": {
         "defaults": {
@@ -641,10 +599,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}pcie_bandwidth{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -661,10 +616,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "% used VRAM of the GPU",
       "fieldConfig": {
         "defaults": {
@@ -717,10 +669,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -734,10 +683,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "sum($${g_metrics_prefix}gpu_total_vram{gpu_uuid=\"$g_gpu_uuid\"})",
@@ -765,10 +711,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -818,10 +761,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -839,10 +779,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current PCIe bandwidth",
       "fieldConfig": {
         "defaults": {
@@ -891,10 +828,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -932,10 +866,7 @@
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Accumulated energy consumed",
       "fieldConfig": {
         "defaults": {
@@ -988,10 +919,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -1020,10 +948,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1073,10 +998,7 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
@@ -1094,10 +1016,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current GFX activity",
       "fieldConfig": {
         "defaults": {
@@ -1179,10 +1098,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_gfx_activity{gpu_uuid=\"$g_gpu_uuid\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\", gpu_id=\"$g_gpu_id\"}",
@@ -1195,10 +1111,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{gpu_uuid=\"$g_gpu_uuid\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\", gpu_id=\"$g_gpu_id\"})",
@@ -1212,10 +1125,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_gfx_busy_instantaneous{gpu_uuid=\"$g_gpu_uuid\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\", gpu_id=\"$g_gpu_id\"}",
@@ -1233,10 +1143,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Used VRAM on the GPU over time",
       "fieldConfig": {
         "defaults": {
@@ -1319,10 +1226,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_used_vram{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -1336,10 +1240,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "clamp_min($${g_metrics_prefix}gpu_total_vram{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}, 1)",
@@ -1369,10 +1270,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "GPU package power, in Watts",
       "fieldConfig": {
         "defaults": {
@@ -1455,10 +1353,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_package_power{gpu_uuid=\"$g_gpu_uuid\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\", gpu_id=\"$g_gpu_id\"}",
@@ -1471,10 +1366,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_average_package_power{gpu_uuid=\"$g_gpu_uuid\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\", gpu_id=\"$g_gpu_id\"}",
@@ -1492,10 +1384,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current GPU temperature, in Celsius",
       "fieldConfig": {
         "defaults": {
@@ -1578,10 +1467,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_edge_temperature{gpu_uuid=\"$g_gpu_uuid\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\", gpu_id=\"$g_gpu_id\"}",
@@ -1594,10 +1480,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_junction_temperature{gpu_uuid=\"$g_gpu_uuid\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\", gpu_id=\"$g_gpu_id\"}",
@@ -1615,10 +1498,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current memory temperature, in Celsius",
       "fieldConfig": {
         "defaults": {
@@ -1701,10 +1581,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_memory_temperature{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -1721,10 +1598,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Current temperatures, in Celsius:\n- 4 HBM temperatures\n- Edge temperature\n- Junction/hotspot temperature",
       "fieldConfig": {
         "defaults": {
@@ -1806,10 +1680,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_hbm_temperature{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -1822,10 +1693,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_edge_temperature{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -1839,10 +1707,7 @@
           "useBackend": false
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_junction_temperature{gpu_uuid=\"$g_gpu_uuid\", gpu_id=\"$g_gpu_id\"}",
@@ -1860,10 +1725,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "description": "Error Name column values are the names of the metric queries themselves",
       "fieldConfig": {
         "defaults": {
@@ -1942,10 +1804,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
@@ -1970,7 +1829,7 @@
               "card_model": true,
               "card_series": true,
               "card_vendor": true,
-              "cluster_name": true,
+              "cluster": true,
               "container": true,
               "driver_version": true,
               "endpoint": true,
@@ -1997,7 +1856,7 @@
               "card_model": 20,
               "card_series": 5,
               "card_vendor": 19,
-              "cluster_name": 11,
+              "cluster": 11,
               "container": 17,
               "driver_version": 4,
               "endpoint": 12,
@@ -2019,7 +1878,7 @@
               "Value": "Count",
               "__name__": "Error Name",
               "card_series": "Card Series",
-              "cluster_name": "",
+              "cluster": "",
               "driver_version": "Driver",
               "gpu_compute_partition_type": "Compute Partition",
               "gpu_id": "GPU ID",
@@ -2034,10 +1893,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2119,10 +1975,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "editorMode": "builder",
           "expr": "$${g_metrics_prefix}gpu_gfx_busy_instantaneous{gpu_uuid=\"$g_gpu_uuid\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\", gpu_id=\"$g_gpu_id\"}",
           "instant": false,
@@ -2142,6 +1995,24 @@
   ],
   "templating": {
     "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "ThanosQuery",
+          "value": "ThanosQuery"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
       {
         "current": {
           "text": "",
@@ -2164,11 +2035,8 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values({cluster_name=\"$g_cluster_name\", hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\", gpu_partition_id=\"$g_gpu_partition_id\"},gpu_uuid)",
+        "datasource": "$datasource",
+        "definition": "label_values({cluster=\"$g_cluster\", hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\", gpu_partition_id=\"$g_gpu_partition_id\"},gpu_uuid)",
         "hide": 2,
         "includeAll": false,
         "label": "GPU UUID",
@@ -2177,7 +2045,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values({cluster_name=\"$g_cluster_name\", hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\", gpu_partition_id=\"$g_gpu_partition_id\"},gpu_uuid)",
+          "query": "label_values({cluster=\"$g_cluster\", hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\", gpu_partition_id=\"$g_gpu_partition_id\"},gpu_uuid)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -2188,20 +2056,17 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(cluster_name)",
+        "datasource": "$datasource",
+        "definition": "label_values(cluster)",
         "hide": 0,
         "includeAll": false,
         "label": "Cluster",
         "multi": false,
-        "name": "g_cluster_name",
+        "name": "g_cluster",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(cluster_name)",
+          "query": "label_values(cluster)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -2212,11 +2077,8 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values({cluster_name=\"$g_cluster_name\"},hostname)",
+        "datasource": "$datasource",
+        "definition": "label_values({cluster=\"$g_cluster\"},hostname)",
         "hide": 0,
         "includeAll": false,
         "label": "Hostname",
@@ -2225,7 +2087,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values({cluster_name=\"$g_cluster_name\"},hostname)",
+          "query": "label_values({cluster=\"$g_cluster\"},hostname)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -2236,10 +2098,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({hostname=\"$g_hostname\"},gpu_id)",
         "hide": 0,
         "includeAll": false,
@@ -2260,10 +2119,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({hostname=\"$g_hostname\", gpu_id=\"$g_gpu_id\"},gpu_partition_id)",
         "hide": 0,
         "includeAll": true,
@@ -2284,10 +2140,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},vbios_version)",
         "hide": 2,
         "includeAll": false,
@@ -2307,10 +2160,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},driver_version)",
         "hide": 2,
         "includeAll": false,
@@ -2330,10 +2180,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},card_vendor)",
         "hide": 2,
         "includeAll": false,
@@ -2353,10 +2200,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},card_series)",
         "hide": 2,
         "includeAll": false,
@@ -2376,10 +2220,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},card_model)",
         "hide": 2,
         "includeAll": false,
@@ -2399,10 +2240,7 @@
       },
       {
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "$datasource",
         "definition": "label_values({gpu_uuid=\"$g_gpu_uuid\"},serial_number)",
         "hide": 2,
         "includeAll": false,
