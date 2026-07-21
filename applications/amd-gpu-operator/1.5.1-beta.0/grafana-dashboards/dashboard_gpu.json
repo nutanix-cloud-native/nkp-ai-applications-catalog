@@ -2138,7 +2138,8 @@
   "refresh": "",
   "schemaVersion": 39,
   "tags": [
-    "version: main"
+    "AMD",
+    "GPU"
   ],
   "templating": {
     "list": [
