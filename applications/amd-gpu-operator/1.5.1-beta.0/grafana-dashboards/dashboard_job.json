@@ -3669,7 +3669,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Job",
+  "title": "Kubernetes / Compute Resources / AMD GPU Job",
   "uid": "ce1x81pyv3dvkb",
   "version": 1,
   "weekStart": ""

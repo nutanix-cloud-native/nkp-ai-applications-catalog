@@ -2505,7 +2505,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Compute Node",
+  "title": "Kubernetes / Compute Resources / AMD Compute Node",
   "uid": "de1q9vq97fe2oc",
   "version": 1,
   "weekStart": ""
