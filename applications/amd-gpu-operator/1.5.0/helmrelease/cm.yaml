@@ -96,6 +96,11 @@ data:
           enable: true
           image: rocm/device-metrics-exporter:v1.5.0
           imagePullPolicy: IfNotPresent
+          prometheus:
+            serviceMonitor:
+              enable: true
+              labels:
+                prometheus.kommander.d2iq.io/select: "true"
         # DRA replaces Device Plugin for GPU resource allocation.
         # Mutually exclusive with devicePlugin — only one can be enabled per DeviceConfig.
         # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
