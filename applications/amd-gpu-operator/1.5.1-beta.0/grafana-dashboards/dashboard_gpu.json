@@ -2404,7 +2404,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "AMD GPU",
+  "title": "Kubernetes / Compute Resources / AMD GPU",
   "uid": "ae0aj8euc43r4b",
   "version": 1,
   "weekStart": ""
