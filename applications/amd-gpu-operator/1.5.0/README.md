@@ -105,9 +105,8 @@ The chart auto-creates a `DeviceConfig` CR named `default` with:
 
 The bundled overview, GPU, job, and node dashboards are sourced from the
 [ROCm device-metrics-exporter Grafana dashboards](https://github.com/ROCm/device-metrics-exporter/tree/main/grafana).
-They use NKP's `ThanosQuery` datasource and its `cluster` external label for
-multi-cluster attribution; this requires the default `kube-prometheus-stack`
-Thanos sidecar.
+They use NKP's local `prometheus` datasource and filter metrics by GPU and
+node labels.
 
 ## Metrics Exporter Configuration
 

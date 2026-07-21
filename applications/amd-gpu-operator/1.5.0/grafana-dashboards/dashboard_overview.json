@@ -78,7 +78,10 @@
   "links": [],
   "panels": [
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Number of GPUs in the node",
       "fieldConfig": {
         "defaults": {
@@ -148,11 +151,14 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}gpu_nodes_total{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}gpu_nodes_total{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -162,11 +168,14 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count($${g_metrics_prefix}gpu_health{cluster=\"$g_cluster\"} < 1)",
+          "expr": "count($${g_metrics_prefix}gpu_health{} < 1)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -181,7 +190,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Number of jobs",
       "fieldConfig": {
         "defaults": {
@@ -236,11 +248,14 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_activity{job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -250,11 +265,14 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -265,10 +283,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_activity{pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "hide": false,
           "instant": false,
           "legendFormat": "Pods",
@@ -276,10 +297,13 @@
           "refId": "B"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "hide": false,
           "instant": false,
           "legendFormat": "Pods",
@@ -291,7 +315,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Total power usage, in Watts",
       "fieldConfig": {
         "defaults": {
@@ -340,10 +367,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum($${g_metrics_prefix}gpu_average_package_power{cluster=\"$g_cluster\"}) or vector(0)",
+          "expr": "sum($${g_metrics_prefix}gpu_average_package_power{}) or vector(0)",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -354,10 +384,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum($${g_metrics_prefix}gpu_package_power{cluster=\"$g_cluster\"}) or vector(0)",
+          "expr": "sum($${g_metrics_prefix}gpu_package_power{}) or vector(0)",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -382,7 +415,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Current maximum PCIe speed",
       "fieldConfig": {
         "defaults": {
@@ -430,10 +466,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "count_values(\"count\", $${g_metrics_prefix}pcie_max_speed{cluster=\"$g_cluster\"})",
+          "expr": "count_values(\"count\", $${g_metrics_prefix}pcie_max_speed{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -461,7 +500,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -512,10 +554,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}pcie_recovery_count{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}pcie_recovery_count{}[$__interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -525,10 +570,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}pcie_replay_count{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}pcie_replay_count{}[$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -539,10 +587,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}pcie_replay_rollover_count{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}pcie_replay_rollover_count{}[$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -553,10 +604,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}pcie_nack_received_count{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}pcie_nack_received_count{}[$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -567,10 +621,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}pcie_nack_sent_count{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}pcie_nack_sent_count{}[$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -585,7 +642,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Top 5 current GPU GFX Activity, labeled with hostname, GPU ID, and job ID.",
       "fieldConfig": {
         "defaults": {
@@ -645,11 +705,14 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "topk by() (5, $${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+          "expr": "topk by() (5, $${g_metrics_prefix}gpu_gfx_activity{card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -661,11 +724,14 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "topk by() (5, $${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+          "expr": "topk by() (5, $${g_metrics_prefix}gpu_gfx_busy_instantaneous{card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -681,7 +747,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Top 5 GPUs with highest VRAM used, labeled with hostname and GPU ID.",
       "fieldConfig": {
         "defaults": {
@@ -733,11 +802,14 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "topk(5, $${g_metrics_prefix}gpu_used_vram{cluster=\"$g_cluster\"})",
+          "expr": "topk(5, $${g_metrics_prefix}gpu_used_vram{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -751,7 +823,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -800,10 +875,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}pcie_bandwidth{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}pcie_bandwidth{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -817,7 +895,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -869,10 +950,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}gpu_used_vram{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}gpu_used_vram{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -882,10 +966,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}gpu_total_vram{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}gpu_total_vram{})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -910,7 +997,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "\\# of GPUs allocated by jobs",
       "fieldConfig": {
         "defaults": {
@@ -968,19 +1058,25 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "instant": false,
           "legendFormat": "Allocated by Jobs",
           "range": true,
           "refId": "A"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "hide": false,
           "instant": false,
           "legendFormat": "Allocated by Jobs",
@@ -988,10 +1084,13 @@
           "refId": "A1"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "hide": false,
           "instant": false,
           "legendFormat": "Allocated by Pods",
@@ -999,9 +1098,12 @@
           "refId": "B"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
           "hide": false,
           "instant": false,
           "legendFormat": "Allocated by Pods",
@@ -1009,10 +1111,13 @@
           "refId": "B1"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_activity{card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
           "hide": false,
           "instant": false,
           "legendFormat": "Busy GPUs",
@@ -1020,9 +1125,12 @@
           "refId": "C"
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "code",
-          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
+          "expr": "sum(group by(gpu_uuid) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
           "hide": false,
           "instant": false,
           "legendFormat": "Busy GPUs",
@@ -1034,7 +1142,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Total PCIe Bandwidth over time",
       "fieldConfig": {
         "defaults": {
@@ -1116,10 +1227,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}pcie_bandwidth{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}pcie_bandwidth{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1133,7 +1247,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Total accumulated energy consumed",
       "fieldConfig": {
         "defaults": {
@@ -1186,10 +1303,13 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}gpu_energy_consumed{cluster=\"$g_cluster\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}gpu_energy_consumed{}[$__interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1213,7 +1333,10 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Average of current GPU GFX activity",
       "fieldConfig": {
         "defaults": {
@@ -1295,10 +1418,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -1309,10 +1435,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -1327,7 +1456,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Used VRAM over time",
       "fieldConfig": {
         "defaults": {
@@ -1410,10 +1542,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}gpu_used_vram{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}gpu_used_vram{})",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -1424,10 +1559,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}gpu_total_vram{cluster=\"$g_cluster\"})",
+          "expr": "sum($${g_metrics_prefix}gpu_total_vram{})",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -1452,7 +1590,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Average GPU package power, in Watts",
       "fieldConfig": {
         "defaults": {
@@ -1534,10 +1675,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_package_power{cluster=\"$g_cluster\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_package_power{card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1547,9 +1691,12 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_average_package_power{cluster=\"$g_cluster\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_average_package_power{card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
           "hide": false,
           "instant": false,
           "legendFormat": "GPU Power",
@@ -1561,7 +1708,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Average of current allocated GPU GFX activity",
       "fieldConfig": {
         "defaults": {
@@ -1643,10 +1793,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_activity{cluster=\"$g_cluster\", pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{cluster=\"$g_cluster\", pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or vector(0)",
+          "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{job_id!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_activity{pod!=\"\", card_model=~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{job_id!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{pod!=\"\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}) or vector(0)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1660,7 +1813,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Used VRAM of allocated GPUs over time",
       "fieldConfig": {
         "defaults": {
@@ -1743,10 +1899,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum($${g_metrics_prefix}gpu_used_vram{cluster=\"$g_cluster\", job_id!=\"\"}) or sum($${g_metrics_prefix}gpu_used_vram{cluster=\"$g_cluster\", pod!=\"\"}) or vector(0)",
+          "expr": "sum($${g_metrics_prefix}gpu_used_vram{job_id!=\"\"}) or sum($${g_metrics_prefix}gpu_used_vram{pod!=\"\"}) or vector(0)",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -1757,10 +1916,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum($${g_metrics_prefix}gpu_total_vram{cluster=\"$g_cluster\", job_id!=\"\"}) or sum($${g_metrics_prefix}gpu_total_vram{cluster=\"$g_cluster\", pod!=\"\"}) or vector(0)",
+          "expr": "sum($${g_metrics_prefix}gpu_total_vram{job_id!=\"\"}) or sum($${g_metrics_prefix}gpu_total_vram{pod!=\"\"}) or vector(0)",
           "fullMetaSearch": false,
           "hide": true,
           "includeNullMetadata": true,
@@ -1785,7 +1947,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Average current temperatures, in Celsius, from:\n- HBM (4 sensors)\n- Edge\n- Junction/hotspot",
       "fieldConfig": {
         "defaults": {
@@ -1867,10 +2032,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_hbm_temperature{cluster=\"$g_cluster\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_hbm_temperature{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1880,10 +2048,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_edge_temperature{cluster=\"$g_cluster\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_edge_temperature{})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -1894,10 +2065,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{cluster=\"$g_cluster\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -1912,7 +2086,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Current temperature, in Celsius",
       "fieldConfig": {
         "defaults": {
@@ -1996,10 +2173,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_edge_temperature{cluster=\"$g_cluster\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_edge_temperature{card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -2010,10 +2190,13 @@
           "useBackend": false
         },
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{cluster=\"$g_cluster\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -2034,7 +2217,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "Current memory temperature, in Celsius",
       "fieldConfig": {
         "defaults": {
@@ -2117,10 +2303,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{cluster=\"$g_cluster\"})",
+          "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -2134,7 +2323,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "$datasource",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "description": "List of all GPUs.",
       "fieldConfig": {
         "defaults": {
@@ -2274,10 +2466,13 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "$${g_metrics_prefix}gpu_health{cluster=\"$g_cluster\"}",
+          "expr": "$${g_metrics_prefix}gpu_health{}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -2382,24 +2577,6 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "ThanosQuery",
-          "value": "ThanosQuery"
-        },
-        "hide": 2,
-        "includeAll": false,
-        "label": null,
-        "multi": false,
-        "name": "datasource",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "type": "datasource"
-      },
-      {
-        "current": {
           "text": "",
           "value": ""
         },
@@ -2420,7 +2597,10 @@
       },
       {
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(GPU_UUID)",
         "hide": 2,
         "includeAll": false,
@@ -2440,7 +2620,10 @@
       },
       {
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(job_id)",
         "hide": 2,
         "includeAll": false,
@@ -2456,27 +2639,6 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": "$datasource",
-        "definition": "label_values(cluster)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Cluster",
-        "multi": false,
-        "name": "g_cluster",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(cluster)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 7,
         "type": "query"
       }
     ]
