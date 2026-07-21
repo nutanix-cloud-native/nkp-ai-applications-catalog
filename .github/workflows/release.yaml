@@ -52,10 +52,10 @@ jobs:
         if: github.event_name == 'push' || github.event.inputs.release_spec == 'dev'
         run: devbox run -- just publish-artifacts ./.release/dev.yaml ghcr.io/nutanix-cloud-native
 
-      # - name: Build Stable Release
-      #   # Production artifacts can be published only on the release-2.x branch.
-      #   if: github.ref_name == 'main' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
-      #   run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
+      - name: Build Stable Release
+        # Production artifacts can be published only on the main branch.
+        if: github.ref_name == 'main' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
+        run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
 
   publish-airgapped-bundles:
     name: Publish Airgapped Bundles
