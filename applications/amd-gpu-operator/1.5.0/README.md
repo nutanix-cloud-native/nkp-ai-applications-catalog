@@ -101,6 +101,25 @@ The chart auto-creates a `DeviceConfig` CR named `default` with:
 - DRA driver (default), node labeller, and metrics exporter
 - Device Plugin disabled (mutually exclusive with DRA)
 
+### Staged Operator and Driver Upgrades
+
+Application upgrades preserve the existing `DeviceConfig/default` because
+`crds.defaultCR.upgrade` is `false`. This separates the controller rollout from
+the kernel-driver transition:
+
+1. Upgrade the application to v1.5.1-beta.0 with
+   `crds.defaultCR.upgrade: false`. Wait for the target controller to become
+   Ready and verify that the DeviceConfig and loaded driver remain at `30.20.1`.
+2. In a separate reconciliation, set `crds.defaultCR.upgrade: true` and
+   `deviceConfig.spec.driver.version: "31.30"`. Keep
+   `upgradePolicy.enable: true` so the operator performs the managed, serial
+   no-reboot driver transition.
+
+Setting `crds.defaultCR.upgrade: true` during the application version change
+combines the operator and driver updates and is not the supported staged path.
+Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
+managed upgrade orchestration rather than preventing KMM Module reconciliation.
+
 ## New in v1.5.0
 
 | Feature | Status | Notes |
@@ -147,7 +166,7 @@ deviceConfig:
     driver:
       enable: true
       blacklist: true
-      version: "30.30.3"
+      version: "30.20.1"
       image: "<registry-host>:<port>/<project>/amdgpu_kmod"
       imageBuild:
         baseImageRegistry: "<registry-host>:<port>/<project>"
