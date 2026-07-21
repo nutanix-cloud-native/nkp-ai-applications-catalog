@@ -1,8 +1,11 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD GPU Operator
+appScreens:
+  - general
+  - ai
 description: The AMD GPU Operator manages AMD GPU resources in a Kubernetes cluster and automates tasks related to bootstrapping GPU nodes (drivers, device plugin, NFD, KMM, metrics, DRA, auto-remediation).
 category:
-  - general
+  - Accelerated Infrastructure
 type: nkp-catalog
 allowMultipleInstances: false
 scope:
