@@ -1,9 +1,10 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: Slurm Operator
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
-  - artificial-intelligence
-  - infrastructure
+  - Scheduling & Orchestration
 certifications:
   - qualified
   - airgapped

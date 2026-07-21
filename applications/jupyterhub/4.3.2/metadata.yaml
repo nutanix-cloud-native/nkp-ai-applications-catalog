@@ -1,8 +1,10 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: JupyterHub
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
-  - artificial-intelligence
+  - Model Development & Training
 certifications:
   - qualified
 description: JupyterHub brings the power of notebooks to groups of users.
