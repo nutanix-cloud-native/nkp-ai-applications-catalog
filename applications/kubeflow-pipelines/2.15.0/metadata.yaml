@@ -1,7 +1,9 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 allowMultipleInstances: false
+appScreens:
+  - ai
 category:
-  - artificial-intelligence
+  - Model Development & Training
 dependencies: []
 # Standalone (platform-agnostic) Pipelines is self-contained: the cache webhook
 # cert is self-signed by the cache-deployer (no cert-manager), and MySQL +
@@ -35,6 +37,6 @@ scope:
   - workspace
   - project
 supportLink: https://www.kubeflow.org/docs/components/pipelines/
-nkpVersionSupport: ">=2.16.0"
+nkpVersionSupport: ">=2.18.0"
 type: nkp-catalog
 ---
