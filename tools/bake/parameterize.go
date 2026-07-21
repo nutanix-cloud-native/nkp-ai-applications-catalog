@@ -218,8 +218,8 @@ func injectPlaceholders(r *yaml.Node, w Workload) {
 	}
 }
 
-// Emits Chart.yaml. version/appVersion come from config, falling back to the
-// catalog version and the upstream ref respectively.
+// Generates Chart.yaml. sources points at the catalog repo so GHCR links the
+// pushed package to it (and inherits its public visibility); home stays upstream.
 func (c *versionCtx) writeChartYaml(chartDir string) error {
 	chartVersion := c.ver.Chart.Version
 	if chartVersion == "" {
@@ -234,10 +234,13 @@ func (c *versionCtx) writeChartYaml(chartDir string) error {
 	content := fmt.Sprintf(`apiVersion: v2
 name: %s
 description: %s
+home: %s
 type: application
 version: %s
 appVersion: "%s"
-`, c.app, description, chartVersion, appVersion)
+sources:
+  - %s
+`, c.app, description, c.repo, chartVersion, appVersion, catalogRepo)
 	return os.WriteFile(filepath.Join(chartDir, "Chart.yaml"), []byte(content), fileMode)
 }
 
