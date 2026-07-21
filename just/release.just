@@ -59,9 +59,13 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
   cp "{{ REPO_ROOT }}/.release/airgapped.yaml.tmpl" "$tmpfile"
 
   OUTPUT_FILE="$output_file" TAG_NAME="$tag_name" yq -i \
-    '.releases[0].tagName = strenv(TAG_NAME) |
+    '(load("{{release-spec}}") | .releases[] | select(.tagName == strenv(TAG_NAME))) as $src |
+     .releases[0].tagName = strenv(TAG_NAME) |
      .releases[0].fileName = strenv(OUTPUT_FILE) |
-     .releases[0].applications = (load("{{release-spec}}") | .releases[] | select(.tagName == strenv(TAG_NAME)) | .applications)' \
+     .releases[0].applications = ($src.applications // []) |
+     .releases[0].constraints = $src.constraints |
+     del(.releases[0].applications | select(length == 0)) |
+     del(.releases[0].constraints | select(. == null))' \
     "$tmpfile"
 
   echo "Building collection airgapped bundle for $tag_name... (output file: $output_file)"
