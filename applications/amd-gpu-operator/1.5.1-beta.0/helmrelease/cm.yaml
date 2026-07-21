@@ -28,6 +28,7 @@ data:
     crds:
       defaultCR:
         install: true
+        upgrade: true
     # GPU operator controller manager
     controllerManager:
       manager:
@@ -52,6 +53,20 @@ data:
           blacklist: true
           version: "31.30"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
+          upgradePolicy:
+            enable: true
+            maxParallelUpgrades: 1
+            maxUnavailableNodes: 1
+            # Automatic node reboots are disabled until DRA and Metrics-Exporter DaemonSets
+            # do not get scheduled on the rebooting node during driver upgrades.
+            rebootRequired: false
+            nodeDrainPolicy:
+              force: true
+              timeoutSeconds: 600
+              gracePeriodSeconds: -1
+              # NOTE: This value is hardcoded to `true` in this version of the Operator, changing this here
+              # doesn't alter the Operator's behavior.
+              ignoreDaemonSets: true
           imageBuild:
             baseImageRegistry: "docker.io"
             baseImageRegistryTLS:
@@ -74,7 +89,7 @@ data:
           enableDevicePlugin: false
           devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
           devicePluginImagePullPolicy: IfNotPresent
-          enableNodeLabeller: true
+          enableNodeLabeller: false
           nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
           nodeLabellerImagePullPolicy: IfNotPresent
         metricsExporter:
