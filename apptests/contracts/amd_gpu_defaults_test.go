@@ -80,7 +80,7 @@ func TestAMDGPUCatalogDefaults(t *testing.T) {
 		},
 		{
 			version:         "1.5.1-beta.0",
-			driverVersion:   "31.30",
+			driverVersion:   "31.40",
 			controllerImage: "v1.5.1-beta.0",
 			utilsImage:      "docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0",
 			metricsImage:    "rocm/device-metrics-exporter:v1.5.1-beta.0",

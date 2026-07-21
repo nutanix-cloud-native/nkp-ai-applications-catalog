@@ -115,7 +115,7 @@ the kernel-driver transition:
    `crds.defaultCR.upgrade: false`. Wait for the target controller to become
    Ready and verify that the DeviceConfig and loaded driver remain at `30.20.1`.
 2. In a separate reconciliation, set `crds.defaultCR.upgrade: true` and
-   `deviceConfig.spec.driver.version: "31.30"`. Keep
+   `deviceConfig.spec.driver.version: "31.40"`. Keep
    `upgradePolicy.enable: true` so the operator performs the managed, serial
    no-reboot driver transition.
 
@@ -183,7 +183,7 @@ deviceConfig:
     driver:
       enable: true
       blacklist: true
-      version: "31.30"
+      version: "31.40"
       image: "<registry-host>:<port>/<project>/amdgpu_kmod"
       imageBuild:
         baseImageRegistry: "<registry-host>:<port>/<project>"
