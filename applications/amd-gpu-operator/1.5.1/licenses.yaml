@@ -45,9 +45,9 @@ resources:
   - ref: ${image_tag}
     url: https://github.com/ROCm/gpu-operator.git
 # DRA driver — enabled by default as the GPU resource allocation mechanism.
-- container_image: docker.io/rocm/k8s-gpu-dra-driver:v1.0.0
+- container_image: docker.io/rocm/k8s-gpu-dra-driver:v1.0.1
   sources:
-  - ref: v1.0.0
+  - ref: v1.0.1
     url: https://github.com/ROCm/k8s-gpu-dra-driver.git
 # Argo Workflow controller — used by Auto Node Remediation (ANR).
 # Disabled by default in NKP catalog (remediation.enabled: false).

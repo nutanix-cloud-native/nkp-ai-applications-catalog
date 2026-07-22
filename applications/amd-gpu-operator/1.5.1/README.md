@@ -3,8 +3,9 @@
 NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.1.
 
 > **Note:** v1.5.1 is a maintenance release built on the v1.5.0 feature set. It bumps the
-> operator controller, utils, and device metrics exporter images to `v1.5.1`. The DRA driver
-> (`v1.0.0`), device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
+> operator controller, utils, and device metrics exporter images to `v1.5.1`, and the DRA driver
+> to `v1.0.1`. DRA driver `v1.0.1` is required with amdgpu driver `6.19.14` / release `31.40`
+> and later. The device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
 
 ## Architecture
 
@@ -147,7 +148,7 @@ managed upgrade orchestration rather than preventing KMM Module reconciliation.
 | GPU Operator Controller | `docker.io/rocm/gpu-operator` | `v1.5.1` |
 | GPU Operator Utils | `docker.io/rocm/gpu-operator-utils` | `v1.5.1` |
 | Device Metrics Exporter | `docker.io/rocm/device-metrics-exporter` | `v1.5.1` |
-| DRA Driver | `docker.io/rocm/k8s-gpu-dra-driver` | `v1.0.0` |
+| DRA Driver | `docker.io/rocm/k8s-gpu-dra-driver` | `v1.0.1` |
 | Device Plugin | `docker.io/rocm/k8s-device-plugin` | `1.31.0.10` |
 | Node Labeller | `docker.io/rocm/k8s-device-plugin` | `labeller-1.31.0.10` |
 | KMM (shared) | `docker.io/rocm/kernel-module-management-operator` | `v1.0.0` |
@@ -218,7 +219,7 @@ deviceConfig:
         - name: "kmm-registry-dockerconfig"   # injected into all operator-managed workloads
     draDriver:
       enable: true
-      image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+      image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.1"
     devicePlugin:
       enableDevicePlugin: false
 ```

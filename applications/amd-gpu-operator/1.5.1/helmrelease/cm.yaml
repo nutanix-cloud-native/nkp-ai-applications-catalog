@@ -108,5 +108,5 @@ data:
         # Supported on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+, DRA GA).
         draDriver:
           enable: true
-          image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+          image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.1"
           imagePullPolicy: IfNotPresent
