@@ -1,0 +1,47 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: SGLang
+allowMultipleInstances: true
+category:
+  - artificial-intelligence
+description: High-throughput LLM inference server with OpenAI-compatible APIs for model serving on NKP.
+dependencies: []
+requiredDependencies: []
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  SGLang is a high-performance inference server for LLM and multimodal workloads. This catalog
+  entry deploys SGLang on Kubernetes through Flux and Helm, exposing an OpenAI-compatible endpoint
+  that can be consumed by clients and automation in the workspace.
+
+  **Key capabilities**
+
+  - OpenAI-compatible HTTP API for chat/completions style workloads
+  - Optimized scheduling and batching for inference serving
+  - Configurable model source and runtime flags through Helm values
+  - Namespace-isolated deployment into `sglang`
+
+  **Model wiring**
+
+  The server loads the model directly at startup. Set `model.id` in App Config Overrides (for example,
+  `Qwen/Qwen2.5-0.5B-Instruct`). If your model requires authentication, provide a Hugging Face token
+  (for example via a Kubernetes secret referenced in Helm values).
+
+  **Prerequisites**
+
+  - Sufficient worker capacity for your chosen runtime profile and model size
+  - Container image pull access for the configured SGLang image
+  - Optional model registry credentials (for gated/private model downloads)
+
+  **Resources**
+
+  [Documentation](https://docs.sglang.ai/) · [Project](https://github.com/sgl-project/sglang)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://docs.sglang.ai/
+type: nkp-catalog
+---

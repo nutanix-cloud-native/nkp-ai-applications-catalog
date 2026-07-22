@@ -1,0 +1,6 @@
+k8s_versions:
+  - 1.33.0
+strict: false
+skip_types:
+  - traefik.io/v1alpha1/Middleware
+---
