@@ -51,7 +51,7 @@ data:
         driver:
           enable: true
           blacklist: true
-          version: "31.30"
+          version: "31.40"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           upgradePolicy:
             enable: true

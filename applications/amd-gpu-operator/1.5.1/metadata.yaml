@@ -68,7 +68,7 @@ overview: |-
   ### Staged Operator and Driver Upgrades
   The catalog sets `crds.defaultCR.upgrade: true`. To stage the validated v1.5.0 to v1.5.1 upgrade, first apply the target application while explicitly pinning `deviceConfig.spec.driver.version: "30.20.1"`. Disable DRA and Metrics Exporter before this controller transition so GPU-dependent agents are quiesced, then verify that the target controller is Ready while the KMM Module, loaded driver, and GPU-node boot IDs remain unchanged.
 
-  Next reconcile driver `31.30` with `spec.driver.upgradePolicy.enable: true`, `rebootRequired: false`, and `nodeDrainPolicy.force: false`, while DRA and Metrics Exporter remain disabled. Verify the GPU Operator upgrade taint, `Upgrade-Complete`, the target KMM Module, and unchanged boot IDs. Finally restore the v1.5.1 catalog posture: DRA and Metrics Exporter enabled, Device Plugin and Node Labeller disabled, and `nodeDrainPolicy.force: true`.
+  Next reconcile the stable driver `31.40` with `spec.driver.upgradePolicy.enable: true`, `rebootRequired: false`, and `nodeDrainPolicy.force: false`, while DRA and Metrics Exporter remain disabled. Verify the GPU Operator upgrade taint, `Upgrade-Complete`, the target KMM Module, and unchanged boot IDs. Finally restore the v1.5.1 catalog posture: DRA and Metrics Exporter enabled, Device Plugin and Node Labeller disabled, and `nodeDrainPolicy.force: true`.
 
   ### Validated No-Reboot Driver Upgrade
   The qualified sequence uses `spec.driver.upgradePolicy.rebootRequired: false` and proves that every selected GPU node retains its boot ID through both controller staging and driver reconciliation. A manual reboot is not part of this sequence. Restore DRA and Metrics Exporter only after the driver reaches `Upgrade-Complete`, then verify their pods, ResourceSlices, and a DRA workload.
@@ -81,7 +81,7 @@ overview: |-
       driver:
         enable: true
         blacklist: true
-        version: "31.30"
+        version: "31.40"
         image: "<registry-host>:<port>/<project>/amdgpu_kmod"
         imageBuild:
           baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -144,7 +144,7 @@ overview: |-
     spec:
       driver:
         imageBuild:
-          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/31.30"
+          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/31.40"
           gpgKeyURL: "https://my-mirror.internal/rocm.gpg.key"
   ```
 
