@@ -48,6 +48,8 @@ overview: |
 scope:
   - workspace
 nkpVersionSupport: ">=2.19.0"
+certifications:
+  - qualified
 supportLink: https://docs.sglang.ai/
 type: nkp-catalog
 ---
