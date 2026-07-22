@@ -105,6 +105,22 @@ The chart auto-creates a `DeviceConfig` CR named `default` with:
 - DRA driver (default), node labeller, and metrics exporter
 - Device Plugin disabled (mutually exclusive with DRA)
 
+## Grafana Dashboards
+
+The bundled overview, GPU, job, and node dashboards are sourced from the
+[ROCm device-metrics-exporter Grafana dashboards](https://github.com/ROCm/device-metrics-exporter/tree/main/grafana).
+They use NKP's local `prometheus` datasource and filter metrics by GPU and
+node labels.
+
+## Metrics Exporter Configuration
+
+The metrics exporter configuration is vendored from the upstream
+[GPU configuration example](https://github.com/ROCm/device-metrics-exporter/blob/main/example/config-gpu.json)
+at `helmrelease/metrics-exporter-config/config.json`. It enables GPU labels,
+including `GPU_UUID`, uses unprefixed metric names, and omits the upstream
+static `CLUSTER_NAME` label so NKP Thanos provides cluster attribution.
+Review the upstream example when updating the exporter.
+
 ### Staged Operator and Driver Upgrades
 
 Application upgrades preserve the existing `DeviceConfig/default` because
