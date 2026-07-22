@@ -6,8 +6,8 @@ metadata:
 spec:
   interval: 6h0m0s
   ref:
-    tag: 0.5.15-2
-  url: oci://ghcr.io/deepanshu8196/charts/sglang
+    tag: 0.5.15
+  url: oci://ghcr.io/nutanix-cloud-native/charts/sglang
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease

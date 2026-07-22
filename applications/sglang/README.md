@@ -8,8 +8,8 @@ This catalog entry expects an OCI Helm chart:
 
 | Field | Value |
 |---|---|
-| Chart OCI URL | `oci://ghcr.io/deepanshu8196/charts/sglang` |
-| Chart version | `0.5.15-2` |
+| Chart OCI URL | `oci://ghcr.io/nutanix-cloud-native/charts/sglang` |
+| Chart version | `0.5.15` |
 
 If the chart is not present in that OCI path yet, mirror/push it before validating and deploying this app.
 
@@ -89,7 +89,7 @@ livenessProbe:
 
 ## Probe Configuration Note
 
-In chart version `0.5.15-2`, startup/readiness/liveness probes are configurable through Helm values.
+In chart version `0.5.15`, startup/readiness/liveness probes are configurable through Helm values.
 
 ## How Model Loading Works
 

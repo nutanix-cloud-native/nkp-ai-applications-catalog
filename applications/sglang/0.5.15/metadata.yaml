@@ -26,15 +26,18 @@ overview: |
 
   **Model wiring**
 
-  The server loads the model directly at startup. Set `model.id` in App Config Overrides (for example,
-  `Qwen/Qwen2.5-0.5B-Instruct`). If your model requires authentication, provide a Hugging Face token
-  (for example via a Kubernetes secret referenced in Helm values).
+  The server loads the model directly at startup. No default model is set in catalog defaults;
+  set `model.id` in App Config Overrides (for example, `Qwen/Qwen2.5-0.5B-Instruct`).
+  If your model requires authentication, provide a Hugging Face token (for example via a
+  Kubernetes secret referenced in Helm values).
 
   **Prerequisites**
 
   - Sufficient worker capacity for your chosen runtime profile and model size
   - Container image pull access for the configured SGLang image
-  - Optional model registry credentials (for gated/private model downloads)
+  - For CPU-only clusters, set CPU-specific runtime, probe, and resource overrides in App Config
+    Overrides. Without these overrides, startup can be slow and health checks may fail before the
+    model is ready.
 
   **Resources**
 
