@@ -1,8 +1,10 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: Kueue
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
-  - artificial-intelligence
+  - Scheduling & Orchestration
 certifications:
   - qualified
 description: Kubernetes-native job queueing with quota management and all-or-nothing (gang) admission for batch and AI/ML workloads.
@@ -40,7 +42,7 @@ overview: |
 requiredDependencies: []
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://kueue.sigs.k8s.io/docs/
 type: nkp-catalog
 ---

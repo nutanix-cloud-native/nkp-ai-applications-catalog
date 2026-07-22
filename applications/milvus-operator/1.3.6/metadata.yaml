@@ -1,8 +1,9 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
-  - artificial-intelligence
-  - database
+  - Data & Agents
 description: The Milvus Operator provides an easy and solid solution to deploy and manage a full Milvus service stack including both the milvus components and its relevant dependencies.
 dependencies: []
 requiredDependencies: []
@@ -53,7 +54,7 @@ overview: |-
   - [List of Helm values](https://github.com/zilliztech/milvus-operator/blob/main/charts/milvus-operator/values.yaml)
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://milvus.io/docs
 type: nkp-catalog
 ---

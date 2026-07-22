@@ -1,8 +1,10 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: KAI Scheduler
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
-  - artificial-intelligence
+  - Scheduling & Orchestration
 description: Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-share scheduling.
 dependencies: []
 requiredDependencies: []
@@ -37,7 +39,7 @@ scope:
 certifications:
   - qualified
   - airgapped
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
 supportLink: https://github.com/kai-scheduler/KAI-Scheduler
 type: nkp-catalog
 ---
