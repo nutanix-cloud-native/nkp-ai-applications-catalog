@@ -3,6 +3,10 @@ displayName: SGLang
 allowMultipleInstances: true
 category:
   - artificial-intelligence
+  - inferencing-and-serving
+appScreens:
+  - ai
+  - artificial-intelligence
 description: High-throughput LLM inference server with OpenAI-compatible APIs for model serving on NKP.
 dependencies: []
 requiredDependencies: []
