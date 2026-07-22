@@ -57,9 +57,9 @@ data:
             enable: true
             maxParallelUpgrades: 1
             maxUnavailableNodes: 1
-            # Automatic node reboots are disabled until DRA and Metrics-Exporter DaemonSets
-            # do not get scheduled on the rebooting node during driver upgrades.
-            rebootRequired: false
+            # Driver upgrades deliberately reboot one node at a time. The operator drains
+            # the node and its workloads return after the upgraded kernel module loads.
+            rebootRequired: true
             nodeDrainPolicy:
               force: true
               timeoutSeconds: 600
