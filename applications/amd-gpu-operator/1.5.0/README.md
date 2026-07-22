@@ -123,7 +123,7 @@ Application upgrades preserve the existing `DeviceConfig/default` because
 `crds.defaultCR.upgrade` is `false`. This separates the controller rollout from
 the kernel-driver transition:
 
-1. Upgrade the application to v1.5.1-beta.0 with
+1. Upgrade the application to v1.5.1 with
    `crds.defaultCR.upgrade: false`. Wait for the target controller to become
    Ready and verify that the DeviceConfig and loaded driver remain at `30.20.1`.
 2. In a separate reconciliation, set `crds.defaultCR.upgrade: true` and
