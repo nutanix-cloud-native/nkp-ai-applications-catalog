@@ -131,20 +131,21 @@ controller rollout from the kernel-driver transition:
 
 1. Upgrade the application from v1.5.0 to v1.5.1 with
    `crds.defaultCR.upgrade: true` and
-   `deviceConfig.spec.driver.version: "31.30"`. Disable DRA and Metrics Exporter,
-   then wait for the target controller to become Ready and verify that the
-   DeviceConfig, loaded driver, and GPU-node boot IDs remain unchanged.
+   `deviceConfig.spec.driver.version: "31.30"`. Keep DRA and Metrics Exporter
+   enabled, then wait for the target controller to become Ready and verify that
+   the DeviceConfig, loaded driver, runtime agents, and GPU-node boot IDs remain
+   unchanged.
 2. In a separate reconciliation, restore
    `deviceConfig.spec.driver.version: "31.40"` (the stable driver release)
-   while keeping DRA and Metrics Exporter disabled. Keep
+   while keeping DRA and Metrics Exporter enabled. Keep
    `upgradePolicy.enable: true` and `rebootRequired: true` so the operator
    performs the managed, serial driver upgrade and deliberately reboots each
    selected GPU node.
 
 The target driver phase is complete only after every selected GPU node has a
 new boot ID, is Ready, and reports `Upgrade-Complete`. Verify the target module,
-then restore DRA and Metrics Exporter and verify their pods, ResourceSlices,
-and a DRA workload after recovery.
+then verify DRA and Metrics Exporter pods, ResourceSlices, and a DRA workload
+after recovery.
 Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
 managed upgrade orchestration rather than preventing KMM Module reconciliation.
 
