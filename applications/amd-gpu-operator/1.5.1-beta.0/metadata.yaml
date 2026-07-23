@@ -66,11 +66,13 @@ overview: |-
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
   ### Staged Operator and Driver Upgrades
-  Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`. Keep DRA and Metrics Exporter enabled throughout the controller transition, then verify that the target controller is Ready while the KMM Module, loaded driver, ResourceSlices, and GPU-node boot IDs remain unchanged.
+  Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`; the ConfigOverride must explicitly set that current driver value so `crds.defaultCR.upgrade: true` does not apply a new driver during the controller transition. Keep DRA and Metrics Exporter enabled throughout the controller transition, then verify that the target controller is Ready while the KMM Module, loaded driver, ResourceSlices, and GPU-node boot IDs remain unchanged.
 
   In a separate reconciliation, update `deviceConfig.spec.driver.version` with `spec.driver.upgradePolicy.enable: true` and the catalog's reboot and drain policy. Verify the GPU Operator upgrade taint, the expected reboot and Ready status, `Upgrade-Complete`, the target KMM Module, and recovery of DRA/Metrics runtime.
 
   Do not combine the operator and driver updates. A combined rollout can temporarily expose an incompatible operator component and driver pairing while resources reconcile, preventing DRA from publishing ResourceSlices. The staged workflow is the recommended upgrade path.
+
+  Before the controller upgrade, wait for any active driver upgrade to complete. The upstream pre-upgrade check blocks an operator upgrade while driver work is active; if it fails, inspect the `pre-upgrade-check` Job logs, resolve the active driver upgrade, and retry. Do not bypass this hook.
 
   ### Validated Driver Upgrade
   Controller staging preserves each selected GPU node's boot ID; the subsequent driver reconciliation follows the configured reboot policy. DRA and Metrics Exporter remain enabled for both phases. After every node reaches `Upgrade-Complete` and returns Ready, verify their pods, ResourceSlices, and a DRA workload.
@@ -100,7 +102,7 @@ overview: |-
           # See the workaround in the Troubleshooting section below.
           insecureSkipTLSVerify: false
   ```
-  - `blacklist` — when `true`, unloads the in-tree `amdgpu` kernel module before loading the DKMS version. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). Without this, the in-tree driver claims the GPU first and the DKMS driver fails to load.
+  - `blacklist` — when `true`, configures the in-tree `amdgpu` kernel module to remain blacklisted after reboot. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). It does not unload an already-loaded module; reboot the node to apply the blacklist before the DKMS driver loads.
   - `version` — the amdgpu DKMS driver version to build. Must match a ROCm release that supports your GPU generation. See the [User and AMD GPU Driver (amdgpu) support matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html) for the full compatibility table.
   - `image` — the registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
   - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
