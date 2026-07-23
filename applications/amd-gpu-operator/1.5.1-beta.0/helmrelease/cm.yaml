@@ -51,9 +51,17 @@ data:
         driver:
           enable: true
           blacklist: true
+          # For driver versions consult the AMD ROCm compatibility matrix: https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html
+          # See documentation around staged upgrades of gpu-operator and driver
+          # upgrade gpu-operator first while maintaining the driver version and then update the driver below.
           version: "31.30"
           image: "registry.example.com:5000/drivers/amdgpu_kmod"
           upgradePolicy:
+            # NOTE: By setting `upgradePolicy.enable: false` removes the managed upgrade safeguards 
+           # without removing the requested driver change: KMM can still reconcile the
+            # desired module/image, but without the normal node taint, drain, serial execution,
+            # reboot, and completion checks. This can leave GPU workloads running during a driver
+            # change or leave the requested and loaded driver versions out of sync.
             enable: true
             maxParallelUpgrades: 1
             maxUnavailableNodes: 1

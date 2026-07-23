@@ -154,8 +154,14 @@ The upstream pre-upgrade check blocks an operator upgrade while driver work is
 active. If it fails, inspect the `pre-upgrade-check` Job logs, resolve the
 active driver upgrade, and retry; do not bypass the hook.
 
-Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
-managed upgrade orchestration rather than preventing KMM Module reconciliation.
+> Engineering note: do not use `upgradePolicy.enable: false` as a pause switch.
+> It removes the managed upgrade safeguards without removing the requested
+> driver change: KMM can still reconcile the desired module/image, but without
+> the normal node taint, drain, serial execution, reboot, and completion checks.
+> This can leave GPU workloads running during a driver change or leave the
+> requested and loaded driver versions out of sync. Leave the policy enabled;
+> for an operator-only upgrade, keep the driver version unchanged in the
+> ConfigOverride.
 
 ## Pinned Image Versions
 

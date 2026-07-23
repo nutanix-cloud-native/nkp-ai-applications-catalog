@@ -151,6 +151,10 @@ active driver upgrade, and retry; do not bypass the hook.
 Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
 managed upgrade orchestration rather than preventing KMM Module reconciliation.
 
+> Engineering note: leave `upgradePolicy.enable: true`. To upgrade only the
+> operator, keep the driver version unchanged in the ConfigOverride. When the
+> driver version changes later, the enabled policy performs the safe upgrade.
+
 ## Pinned Image Versions
 
 | Component | Image | Tag |
