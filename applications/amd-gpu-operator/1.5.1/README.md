@@ -124,28 +124,29 @@ Review the upstream example when updating the exporter.
 
 ### Staged Operator and Driver Upgrades
 
-Application upgrades preserve the existing `DeviceConfig/default` because
-the staged override retains the baseline driver value. The catalog default is
-`crds.defaultCR.upgrade: true`; use the following sequence to separate the
-controller rollout from the kernel-driver transition:
+Use a staged upgrade to separate the controller rollout from the kernel-driver
+transition:
 
-1. Upgrade the application from v1.5.0 to v1.5.1 with
-   `crds.defaultCR.upgrade: true` and
-   `deviceConfig.spec.driver.version: "31.30"`. Keep DRA and Metrics Exporter
-   enabled, then wait for the target controller to become Ready and verify that
-   the DeviceConfig, loaded driver, runtime agents, and GPU-node boot IDs remain
+1. Upgrade the application while retaining the existing
+   `deviceConfig.spec.driver.version`. Keep DRA and Metrics Exporter enabled,
+   then wait for the target controller to become Ready and verify that the
+   DeviceConfig, loaded driver, runtime agents, and GPU-node boot IDs remain
    unchanged.
-2. In a separate reconciliation, restore
-   `deviceConfig.spec.driver.version: "31.40"` (the stable driver release)
-   while keeping DRA and Metrics Exporter enabled. Keep
-   `upgradePolicy.enable: true` and `rebootRequired: true` so the operator
-   performs the managed, serial driver upgrade and deliberately reboots each
-   selected GPU node.
+2. In a separate reconciliation, update
+   `deviceConfig.spec.driver.version`. Keep `upgradePolicy.enable: true` so the
+   operator performs the managed driver upgrade according to the configured
+   reboot and drain policy.
 
 The target driver phase is complete only after every selected GPU node has a
-new boot ID, is Ready, and reports `Upgrade-Complete`. Verify the target module,
-then verify DRA and Metrics Exporter pods, ResourceSlices, and a DRA workload
-after recovery.
+completed the configured reboot behavior, is Ready, and reports
+`Upgrade-Complete`. Verify the target module, then verify DRA and Metrics
+Exporter pods, ResourceSlices, and a DRA workload after recovery.
+
+Do not combine the application update and the driver change. During a combined
+reconciliation, an operator component can temporarily run with an incompatible
+driver and fail to publish ResourceSlices. The staged workflow above is the
+recommended upgrade path.
+
 Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
 managed upgrade orchestration rather than preventing KMM Module reconciliation.
 

@@ -119,20 +119,23 @@ Review the upstream example when updating the exporter.
 
 ### Staged Operator and Driver Upgrades
 
-Application upgrades preserve the existing `DeviceConfig/default` because
-`crds.defaultCR.upgrade` is `false`. This separates the controller rollout from
-the kernel-driver transition:
+Use a staged upgrade:
 
-1. Upgrade the application to v1.5.1 with
-   `crds.defaultCR.upgrade: false`. Wait for the target controller to become
-   Ready and verify that the DeviceConfig and loaded driver remain at `30.20.1`.
-2. In a separate reconciliation, set `crds.defaultCR.upgrade: true` and
-   `deviceConfig.spec.driver.version: "31.40"`. Keep
-   `upgradePolicy.enable: true` so the operator performs the managed, serial
-   no-reboot driver transition.
+1. Upgrade the application while retaining the existing
+   `deviceConfig.spec.driver.version`. Keep DRA and Metrics Exporter enabled
+   and verify the controller, loaded driver, ResourceSlices, and boot IDs remain
+   unchanged.
+2. In a separate reconciliation, update
+   `deviceConfig.spec.driver.version`. Keep `upgradePolicy.enable: true` so the
+   operator performs the managed driver upgrade according to the configured
+   reboot and drain policy.
 
-Setting `crds.defaultCR.upgrade: true` during the application version change
-combines the operator and driver updates and is not the supported staged path.
+Do not combine the application update and driver change. During a combined
+reconciliation, an operator component can temporarily run with an incompatible
+driver and fail to publish ResourceSlices. Verify each node completes the
+configured reboot behavior, returns Ready, and reaches `Upgrade-Complete`
+before validating DRA/Metrics and GPU workloads.
+
 Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
 managed upgrade orchestration rather than preventing KMM Module reconciliation.
 
