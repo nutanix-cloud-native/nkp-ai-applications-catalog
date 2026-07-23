@@ -62,6 +62,9 @@ overview: |-
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
 
+  ### AMDGPU Driver Compatibility
+  Before selecting `deviceConfig.spec.driver.version`, consult the [AMD ROCm compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html). Confirm that the target amdgpu driver version supports the GPU family, operating system and kernel, and required firmware on every selected node. The compatibility matrix changes with ROCm releases; it is the source of truth for supported combinations.
+
   ### Staged Operator and Driver Upgrades
   Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`; the ConfigOverride must explicitly set that current driver value so `crds.defaultCR.upgrade: true` does not apply a new driver during the controller transition. Verify that the target controller, KMM Module, loaded driver, DRA/Metrics runtime, ResourceSlices, and GPU-node boot IDs remain unchanged.
 
