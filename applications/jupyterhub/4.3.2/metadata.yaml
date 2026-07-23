@@ -4,7 +4,7 @@ appScreens:
   - ai
 allowMultipleInstances: false
 category:
-  - Model Development & Training
+  - model-development-and-training
 certifications:
   - qualified
 description: JupyterHub brings the power of notebooks to groups of users.
