@@ -9,7 +9,6 @@ This catalog entry expects an OCI Helm chart:
 | Field | Value |
 |---|---|
 | Chart OCI URL | `oci://ghcr.io/nutanix-cloud-native/charts/sglang` |
-| Chart version | `0.5.15` |
 
 If the chart is not present in that OCI path yet, mirror/push it before validating and deploying this app.
 
