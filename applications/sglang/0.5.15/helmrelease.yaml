@@ -6,12 +6,6 @@ metadata:
 spec:
   interval: 6h0m0s
   path: ./helmrelease
-  postBuild:
-    substitute:
-      releaseName: ${releaseName}
-      releaseNamespace: ${releaseNamespace}
-      workspaceNamespace: ${workspaceNamespace}
-      appVersion: "0.5.15"
   prune: true
   retryInterval: 1m0s
   sourceRef:

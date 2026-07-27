@@ -2,7 +2,6 @@ schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: SGLang
 allowMultipleInstances: true
 category:
-  - artificial-intelligence
   - inferencing-and-serving
 appScreens:
   - ai
