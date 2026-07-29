@@ -4,7 +4,7 @@ appScreens:
   - ai
 allowMultipleInstances: false
 category:
-  - Data & Agents
+  - data-and-agents
 description: Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle.
 dependencies:
   - ollama

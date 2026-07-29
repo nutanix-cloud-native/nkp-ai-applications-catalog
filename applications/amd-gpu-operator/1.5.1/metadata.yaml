@@ -23,7 +23,10 @@ overview: |-
   # Overview
   The AMD GPU Operator uses the operator framework within Kubernetes to automate the management of AMD software components needed to provision GPUs. For a detailed overview of the operator's architecture and components, see the [GPU Operator Overview](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/overview.html).
 
-  ## What's New in v1.5.0
+  ## What's New in v1.5.1
+  v1.5.1 is a maintenance release that builds on the v1.5.0 feature set (DRA, ANR, NPD integration, enhanced KMM configuration, global image pull secrets, custom package repositories, and metrics exporter enhancements — all described below). It bumps the operator controller, utils, and device metrics exporter images to `v1.5.1`, and the DRA driver to `v1.0.1`. DRA driver `v1.0.1` is required with amdgpu driver `6.19.14` / release `31.40` and later. The device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
+
+  ## v1.5.0 Feature Set
   ### Dynamic Resource Allocation (DRA) Driver
   An alternative to the traditional Device Plugin using the Kubernetes DRA API (`resource.k8s.io/v1`). Deploys `rocm/k8s-gpu-dra-driver` to expose GPUs as structured resources. DRA and the Device Plugin are mutually exclusive — enable only one per `DeviceConfig`. DRA is GA on Kubernetes 1.35+ (NKP v2.18.0+) and CDI is enabled by default in containerd 2.1+, so all prerequisites are met out of the box.
 
@@ -66,23 +69,26 @@ overview: |-
   Before selecting `deviceConfig.spec.driver.version`, consult the [AMD ROCm compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html). Confirm that the target amdgpu driver version supports the GPU family, operating system and kernel, and required firmware on every selected node. The compatibility matrix changes with ROCm releases; it is the source of truth for supported combinations.
 
   ### Staged Operator and Driver Upgrades
-  Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`; the ConfigOverride must explicitly set that current driver value so `crds.defaultCR.upgrade: true` does not apply a new driver during the controller transition. Verify that the target controller, KMM Module, loaded driver, DRA/Metrics runtime, ResourceSlices, and GPU-node boot IDs remain unchanged.
+  Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`; the ConfigOverride must explicitly set that current driver value so `crds.defaultCR.upgrade: true` does not apply a new driver during the controller transition. Keep DRA and Metrics Exporter enabled throughout the controller transition, then verify that the target controller is Ready while the KMM Module, loaded driver, ResourceSlices, and GPU-node boot IDs remain unchanged.
 
-  In a separate reconciliation, update `deviceConfig.spec.driver.version` with `spec.driver.upgradePolicy.enable: true` and the catalog's reboot and drain policy. Verify the GPU Operator upgrade taint, the expected reboot and Ready status, `Upgrade-Complete`, the target KMM Module, and recovery of DRA/Metrics runtime.
+  In a separate reconciliation, update `deviceConfig.spec.driver.version`. Keep `spec.driver.upgradePolicy.enable: true` and use the catalog's reboot and drain policy. Verify the GPU Operator upgrade taint, the expected reboot and Ready status for every selected GPU node, `Upgrade-Complete`, the target KMM Module, and recovery of the runtime agents.
 
-  Do not combine the operator and driver updates. A combined rollout can temporarily expose an incompatible operator component and driver pairing while resources reconcile, preventing DRA from publishing ResourceSlices. The staged workflow is the recommended upgrade path.
+  ### Validated Rebooted Driver Upgrade
+  Controller staging preserves each selected GPU node's boot ID; the subsequent driver reconciliation follows the configured reboot policy. DRA and Metrics Exporter remain enabled for both phases. After every node reaches `Upgrade-Complete` and returns Ready, verify their pods, ResourceSlices, and a DRA workload.
+
+  Do not combine the operator and driver updates. A combined rollout can temporarily expose an incompatible operator component and driver pairing while resources reconcile, preventing DRA from publishing ResourceSlices. The staged sequence is the recommended workflow.
 
   Before the controller upgrade, wait for any active driver upgrade to complete. The upstream pre-upgrade check blocks an operator upgrade while driver work is active; if it fails, inspect the `pre-upgrade-check` Job logs, resolve the active driver upgrade, and retry. Do not bypass this hook.
 
   ### Config Overrides (Private Registry)
-  When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.0/helm-charts-k8s/values.yaml).
+  When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.1/helm-charts-k8s/values.yaml).
   ```
   deviceConfig:
     spec:
       driver:
         enable: true
         blacklist: true
-        version: "30.20.1"
+        version: "31.40"
         image: "<registry-host>:<port>/<project>/amdgpu_kmod"
         imageBuild:
           baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -113,7 +119,7 @@ overview: |-
     spec:
       draDriver:
         enable: true
-        image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+        image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.1"
       devicePlugin:
         enableDevicePlugin: false
         enableNodeLabeller: false
@@ -145,7 +151,7 @@ overview: |-
     spec:
       driver:
         imageBuild:
-          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/30.20.1"
+          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/31.40"
           gpgKeyURL: "https://my-mirror.internal/rocm.gpg.key"
   ```
 

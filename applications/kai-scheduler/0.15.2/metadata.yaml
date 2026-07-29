@@ -4,7 +4,7 @@ appScreens:
   - ai
 allowMultipleInstances: false
 category:
-  - Scheduling & Orchestration
+  - scheduling-and-orchestration
 description: Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-share scheduling.
 dependencies: []
 requiredDependencies: []

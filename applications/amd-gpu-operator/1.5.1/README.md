@@ -1,6 +1,11 @@
 # AMD GPU Operator
 
-NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.0.
+NKP catalog component for the [AMD GPU Operator](https://github.com/ROCm/gpu-operator) v1.5.1.
+
+> **Note:** v1.5.1 is a maintenance release built on the v1.5.0 feature set. It bumps the
+> operator controller, utils, and device metrics exporter images to `v1.5.1`, and the DRA driver
+> to `v1.0.1`. DRA driver `v1.0.1` is required with amdgpu driver `6.19.14` / release `31.40`
+> and later. The device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.
 
 ## Architecture
 
@@ -119,38 +124,59 @@ Review the upstream example when updating the exporter.
 
 ### Staged Operator and Driver Upgrades
 
-Use a staged upgrade:
+Use a staged upgrade to separate the controller rollout from the kernel-driver
+transition:
 
 1. Upgrade the application while retaining the existing
    `deviceConfig.spec.driver.version`. The ConfigOverride must explicitly set
    that current value so `crds.defaultCR.upgrade: true` does not apply a new
    driver during the controller transition. Keep DRA and Metrics Exporter
-   enabled and verify the controller, loaded driver, ResourceSlices, and boot
-   IDs remain unchanged.
+   enabled, then wait for the target controller to become Ready and verify that
+   the DeviceConfig, loaded driver, runtime agents, and GPU-node boot IDs remain
+   unchanged.
 2. In a separate reconciliation, update
    `deviceConfig.spec.driver.version`. Keep `upgradePolicy.enable: true` so the
    operator performs the managed driver upgrade according to the configured
    reboot and drain policy.
 
-Do not combine the application update and driver change. During a combined
+The target driver phase is complete only after every selected GPU node has a
+completed the configured reboot behavior, is Ready, and reports
+`Upgrade-Complete`. Verify the target module, then verify DRA and Metrics
+Exporter pods, ResourceSlices, and a DRA workload after recovery.
+
+Do not combine the application update and the driver change. During a combined
 reconciliation, an operator component can temporarily run with an incompatible
-driver and fail to publish ResourceSlices. Verify each node completes the
-configured reboot behavior, returns Ready, and reaches `Upgrade-Complete`
-before validating DRA/Metrics and GPU workloads.
+driver and fail to publish ResourceSlices. The staged workflow above is the
+recommended upgrade path.
 
 Before the controller upgrade, wait for any active driver upgrade to complete.
 The upstream pre-upgrade check blocks an operator upgrade while driver work is
 active. If it fails, inspect the `pre-upgrade-check` Job logs, resolve the
 active driver upgrade, and retry; do not bypass the hook.
 
-Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
-managed upgrade orchestration rather than preventing KMM Module reconciliation.
+> Engineering note: do not use `upgradePolicy.enable: false` as a pause switch.
+> It removes the managed upgrade safeguards without removing the requested
+> driver change: KMM can still reconcile the desired module/image, but without
+> the normal node taint, drain, serial execution, reboot, and completion checks.
+> This can leave GPU workloads running during a driver change or leave the
+> requested and loaded driver versions out of sync. Leave the policy enabled;
+> for an operator-only upgrade, keep the driver version unchanged in the
+> ConfigOverride.
 
-> Engineering note: leave `upgradePolicy.enable: true`. To upgrade only the
-> operator, keep the driver version unchanged in the ConfigOverride. When the
-> driver version changes later, the enabled policy performs the safe upgrade.
+## Pinned Image Versions
 
-## New in v1.5.0
+| Component | Image | Tag |
+|---|---|---|
+| GPU Operator Controller | `docker.io/rocm/gpu-operator` | `v1.5.1` |
+| GPU Operator Utils | `docker.io/rocm/gpu-operator-utils` | `v1.5.1` |
+| Device Metrics Exporter | `docker.io/rocm/device-metrics-exporter` | `v1.5.1` |
+| DRA Driver | `docker.io/rocm/k8s-gpu-dra-driver` | `v1.0.1` |
+| Device Plugin | `docker.io/rocm/k8s-device-plugin` | `1.31.0.10` |
+| Node Labeller | `docker.io/rocm/k8s-device-plugin` | `labeller-1.31.0.10` |
+| KMM (shared) | `docker.io/rocm/kernel-module-management-operator` | `v1.0.0` |
+| NFD (platform) | `registry.k8s.io/nfd/node-feature-discovery` | `v0.18.3` |
+
+## v1.5.0 Feature Set (carried forward)
 
 | Feature | Status | Notes |
 |---|---|---|
@@ -161,7 +187,7 @@ managed upgrade orchestration rather than preventing KMM Module reconciliation.
 | Global image pull secrets | Available | `global.imagePullSecrets` or `commonConfig.imageRegistrySecrets` |
 | Custom package repos | Available | `imageBuild.packageRepoURL` / `gpgKeyURL` |
 | New metrics | Active | `GPU_PROCESS_CU_OCCUPANCY`, `GPU_ECC_DEFERRED_*` |
-| NFD subchart | v0.18.3 | Upgraded from v0.16.1 (disabled in NKP) |
+| NFD subchart | v0.18.3 | Disabled in NKP (provided by Kommander) |
 
 ## NFD Toleration Requirement
 
@@ -196,7 +222,7 @@ deviceConfig:
     driver:
       enable: true
       blacklist: true
-      version: "30.20.1"
+      version: "31.40"
       image: "<registry-host>:<port>/<project>/amdgpu_kmod"
       imageBuild:
         baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -215,7 +241,7 @@ deviceConfig:
         - name: "kmm-registry-dockerconfig"   # injected into all operator-managed workloads
     draDriver:
       enable: true
-      image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
+      image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.1"
     devicePlugin:
       enableDevicePlugin: false
 ```

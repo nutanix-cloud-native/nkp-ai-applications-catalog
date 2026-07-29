@@ -5,6 +5,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-device-metrics-exporter:1.4.2
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.4.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1-beta.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
@@ -31,6 +32,11 @@ applications:
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.5.0
       - docker.io/rocm/gpu-operator:v1.5.0
+  - name: amd-gpu-operator
+    version: 1.5.1
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.5.1
+      - docker.io/rocm/gpu-operator:v1.5.1
   - name: amd-gpu-operator
     version: 1.5.1-beta.0
     images:
