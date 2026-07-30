@@ -1,5 +1,14 @@
 schema: catalog.nkp.nutanix.com/v1/catalog-release-spec
 releases:
+  - tagName: 2.18.0
+    fileName: stable-nkp-ai-applications-catalog-2.18.0.tar
+    collectionAnnotations:
+      org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
+    applications:
+      - name: amd-kmm-operator
+        version: 1.0.0
+      - name: amd-gpu-operator
+        version: 1.5.1
   - tagName: 2.18
     fileName: stable-nkp-ai-applications-catalog-2.18.tar
     collectionAnnotations:
