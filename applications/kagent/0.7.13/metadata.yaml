@@ -43,5 +43,5 @@ scope:
   - workspace
 nkpVersionSupport: ">=2.18.0"
 supportLink: https://kagent.dev
-type: custom
+type: nkp-catalog
 ---

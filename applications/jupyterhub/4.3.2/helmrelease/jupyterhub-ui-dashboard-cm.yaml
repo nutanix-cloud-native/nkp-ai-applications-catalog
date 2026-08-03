@@ -1,15 +1,14 @@
-# ConfigMap for NKP Launch button. Postinstall Job patches dashboardLink.
+# ConfigMap for NKP Launch button.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ${releaseName}-ui
-  namespace: ${workspaceNamespace}
+  namespace: ${releaseNamespace}
   labels:
     kommander.d2iq.io/application: ${releaseName}
-  annotations:
-    kustomize.toolkit.fluxcd.io/ssa: Merge
 data:
   name: ${releaseName}
+  dashboardLink: "/nkp/jupyter/"
   docsLink: "https://z2jh.jupyter.org/en/stable/"
   version: "4.3.2"
 ---
