@@ -1,0 +1,19 @@
+# Kubernetes versions
+# (e.g. 1.33.0 - has to match versions in https://github.com/yannh/kubernetes-json-schema)
+k8s_versions:
+  - 1.34.1
+  - 1.35.2
+  - 1.36.1
+
+# use strict validation (reject unknown fields in resources)
+strict: true
+
+# types to be skipped (e.g. certmanager.k8s.io/v1, or certmanager.k8s.io/v1/Certificate)
+# The oauth2-proxy overlay ships Istio resources (VirtualService, AuthorizationPolicy)
+# whose CRDs are owned by the istio-helm dependency, not this app, so strict schema
+# validation cannot resolve them. The CRDs exist on any cluster where the required
+# istio-helm dependency is present.
+skip_types:
+  - networking.istio.io/v1alpha3
+  - networking.istio.io/v1beta1
+  - security.istio.io/v1beta1

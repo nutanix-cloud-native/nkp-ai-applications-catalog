@@ -2,4 +2,82 @@
 # Kustomize overlays into one air-gappable manifest and a configurable Helm chart.
 # How baking works, when to use it, config schema, and usage: tools/bake/README.md
 # Schema types: tools/bake/config.go. Run: `just bake <app> [version]`.
-apps: {}
+apps:
+  kubeflow-pipelines:
+    repo: https://github.com/kubeflow/manifests
+    versions:
+      - version: "2.15.0"
+        ref: v1.11.0
+        overlays:
+          # CRDs (argo Workflow*, kubeflow ScheduledWorkflow/Viewer) + the kubeflow
+          # Namespace; platform-agnostic's argo install is namespace-scoped and
+          # assumes these exist (KFP's documented two-step standalone install).
+          - applications/pipeline/upstream/cluster-scoped-resources
+          - applications/pipeline/upstream/env/platform-agnostic
+        airgapImages:
+          - ghcr.io/containerd/busybox
+          - ghcr.io/kubeflow/kfp-driver:2.15.0
+          - ghcr.io/kubeflow/kfp-launcher:2.15.0
+          - quay.io/argoproj/argoexec:v3.7.3
+        chart:
+          version: "2.15.0"
+          appVersion: "2.15.0"
+          # Core components worth tuning. The full app has 14 Deployments; expose
+          # these for now and add more on demand (one line each).
+          workloads:
+            - name: ml-pipeline # API server; container name differs from workload
+              kind: Deployment
+              container: ml-pipeline-api-server
+            - name: ml-pipeline-ui
+              kind: Deployment
+            - name: ml-pipeline-persistenceagent
+              kind: Deployment
+            - name: ml-pipeline-scheduledworkflow
+              kind: Deployment
+            - name: workflow-controller
+              kind: Deployment
+            - name: mysql
+              kind: Deployment
+
+  kubeflow-central-dashboard:
+    repo: https://github.com/kubeflow/manifests
+    versions:
+      - version: "1.10.0"
+        ref: v1.11.0
+        overlays:
+          - applications/centraldashboard/overlays/oauth2-proxy
+        # Deploy into its own namespace at bake time. The kustomize transformer also
+        # repoints RBAC subjects, replacing the old runtime targetNamespace + patches.
+        namespace: kubeflow-central-dashboard
+        patches:
+          - scripts/bake/patches/kubeflow-central-dashboard/1.10.0/centraldashboard-menu-links.yaml
+        chart:
+          version: "1.10.0"
+          appVersion: v1.10.0
+          workloads:
+            - name: centraldashboard
+              kind: Deployment
+          # Layer the JupyterHub externalLink onto the baked dashboard: a helper that
+          # renders the link when JupyterHub is installed, the menu-config slot it
+          # fills, and a Reloader annotation so the link appears without a manual
+          # restart. Kept as overlay (not hand-edits) so re-bake reproduces it.
+          overlay:
+            templates:
+              - scripts/bake/overlays/kubeflow-central-dashboard/_helpers.tpl
+            injections:
+              - find: '"externalLinks":[]'
+                replace: '"externalLinks":[{{ include "kubeflow-central-dashboard.jupyterhubExternalLink" . }}]'
+              - find: |-
+                  kind: Deployment
+                  metadata:
+                    labels:
+                      app: centraldashboard
+                replace: |-
+                  kind: Deployment
+                  metadata:
+                    annotations:
+                      # Links are read only at startup; Reloader rolls the pod when the ConfigMap gains
+                      # the JupyterHub externalLink, so it shows without a manual restart.
+                      configmap.reloader.stakater.com/reload: centraldashboard-config
+                    labels:
+                      app: centraldashboard

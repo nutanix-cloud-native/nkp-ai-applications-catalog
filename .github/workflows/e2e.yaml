@@ -49,8 +49,17 @@ jobs:
 
           latest() { find "applications/$1" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -V | tail -1; }
 
-          # Source of truth: enabledApps slice in suites_test.go
-          enabled=$(sed -n '/enabledApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
+          # Source of truth: the app-list slices in suites_test.go. enabledApps are
+          # HelmRelease apps; customTestApps are Flux-Kustomize apps. Both run e2e.
+          generic=$(sed -n '/enabledApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
+          custom=$(sed -n '/customTestApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
+          enabled=$(printf '%s\n%s\n' "$generic" "$custom" | sed '/^$/d')
+
+          # Airgap-bundlable apps: HelmRelease apps (self-contained) plus custom apps
+          # that bake pre-rendered manifests into the repo (kubeflow-pipelines). Other
+          # custom apps deploy from an upstream GitRepository whose overlays use
+          # parent-path refs the bundle parser rejects, so they are airgapped=false.
+          airgapped_apps=$(printf '%s\nkubeflow-pipelines\n' "$generic" | sed '/^$/d')
 
           if [[ -n "${INPUT_APP}" ]]; then
             apps="${INPUT_APP}"
@@ -80,7 +89,11 @@ jobs:
             [[ -n "$ver" ]] && pairs=$(printf '%s\n%s/%s' "$pairs" "$app" "$ver")
           done
 
-          entries=$(echo "$pairs" | awk -F/ 'NF==2 {printf "{\"app\":\"%s\",\"version\":\"%s\"}\n",$1,$2}' | jq -sc '.')
+          entries=$(echo "$pairs" | awk -F/ 'NF==2 {print $1"/"$2}' | while IFS=/ read -r app ver; do
+            airgapped=false
+            if echo "$airgapped_apps" | grep -qw "$app"; then airgapped=true; fi
+            printf '{"app":"%s","version":"%s","airgapped":%s}\n' "$app" "$ver" "$airgapped"
+          done | jq -sc '.')
           echo "matrix={\"include\":${entries}}" >> "$GITHUB_OUTPUT"
           echo "has_entries=$([[ "$entries" != "[]" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
@@ -117,12 +130,14 @@ jobs:
           SKIP_CLUSTER_TEARDOWN: "true"
         run: devbox run -- just e2e-test "${{ matrix.app }}" "${{ matrix.version }}"
 
+      # Only airgap-bundlable apps (matrix.airgapped=true) build a bundle; custom
+      # apps sourced from an upstream GitRepository can't be parsed into one.
       - name: Build airgapped bundle
-        if: success()
+        if: success() && matrix.airgapped
         run: devbox run -- just create-application-airgapped-bundle "${{ matrix.app }}" "${{ matrix.version }}"
 
       - name: Upload airgapped bundle
-        if: success()
+        if: success() && matrix.airgapped
         uses: actions/upload-artifact@v4
         with:
           name: airgapped-bundle-${{ matrix.app }}-${{ matrix.version }}

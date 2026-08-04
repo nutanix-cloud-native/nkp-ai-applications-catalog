@@ -1,0 +1,36 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-${appVersion}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 1.11.0
+  url: oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-platform
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubeflow-platform
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-${appVersion}-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  # createNamespace makes the shared kubeflow namespace without the chart owning it,
+  # so disabling the app won't prune it.
+  targetNamespace: kubeflow
+  upgrade:
+    remediation:
+      retries: 30
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+---

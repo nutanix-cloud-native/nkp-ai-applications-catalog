@@ -1,0 +1,21 @@
+k8s_versions:
+  - 1.34.0
+
+strict: true
+
+# These CRDs are owned by dependencies (istio-helm) or NKP core (Dex), not by
+# this app's baked manifests, so strict schema validation cannot resolve them.
+# Skip the types; the CRDs exist on any cluster where the requiredDependencies
+# (istio-helm) and NKP Dex are present.
+skip_types:
+  - dex.mesosphere.io/v1alpha1
+  - networking.istio.io/v1alpha3
+  - networking.istio.io/v1beta1
+  - security.istio.io/v1beta1
+
+additional_crds: []
+
+substitution_vars:
+  releaseNamespace: kommander
+  workspaceNamespace: workspace
+---
