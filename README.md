@@ -316,6 +316,22 @@ See [`tools/bake/README.md`](tools/bake/README.md) for how baking works, when to
 use it, the config schema, and full usage. If an app already publishes a clean
 Helm chart, add it the normal way instead (see [Adding a New Application](#adding-a-new-application)).
 
+### Manual CI publish for baked charts
+
+Use the GitHub Actions workflow `Publish Baked Charts to GHCR` when you want CI
+credentials to bake and publish baked charts (for example `kubeflow-pipelines`)
+to `oci://ghcr.io/nutanix-cloud-native/charts`.
+
+- Trigger it manually from GitHub Actions (`workflow_dispatch` only).
+- Leave `baked_chart_apps` empty to publish only baked charts changed under `charts/<app>/`
+  between `compare_base_ref` and `compare_head_ref`.
+- Set `baked_chart_apps` (for example `kubeflow-pipelines`) to force a publish even when
+  diff-based detection is not what you want.
+- The workflow runs `just bake <app>` before `just push-baked-chart <app>` and
+  fails on bake drift checks.
+- The workflow only pushes packages; if visibility is not public, update package
+  visibility in GHCR package settings manually.
+
 ## Sample Apps (Demo)
 
 | Application | Version | Description |
@@ -363,6 +379,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just bake <app> [version]` | Render a Kustomize-only app into an air-gappable manifest + chart (see [tools/bake](tools/bake/README.md)) |
 | `just bake-check` | Re-bake all apps; fail if committed artifacts drifted |
+| `Publish Baked Charts to GHCR` (GitHub Actions) | Manual CI workflow to bake and push changed baked charts to GHCR using CI credentials |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |
