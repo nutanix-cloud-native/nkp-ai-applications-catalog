@@ -20,33 +20,27 @@ overview: |
   **Key capabilities**
 
   - **Multi-user notebooks** — a central hub spawns and manages a per-user Jupyter notebook server on demand.
-  - **Pluggable authentication** — ships with a shared-password `DummyAuthenticator` by default; supports OAuth2 (GitHub, Google, CILogon) and other providers.
+  - **NKP SSO integration** — authenticates users via Traefik Forward Auth and the NKP identity provider (Dex). Users log in with their NKP credentials.
   - **Kubernetes-native spawning** — each user server runs as its own pod with its own resources and persistent storage.
 
   **Access**
 
-  - Open JupyterHub from the cluster **Application Dashboards** tab, or via your NKP Dashboard URL at the path `/jupyter/`.
-  - In-cluster: `http://jupyterhub-proxy-public.jupyterhub.svc.cluster.local:80/jupyter` (same namespace: `http://jupyterhub-proxy-public:80/jupyter`).
+  - Open JupyterHub from the cluster **Application Dashboards** tab, or via your NKP Dashboard URL at the path `/nkp/jupyter/`.
+  - In-cluster: `http://jupyterhub-proxy-public.jupyterhub.svc.cluster.local:80/nkp/jupyter` (same namespace: `http://jupyterhub-proxy-public:80/nkp/jupyter`).
 
-  **Credentials**
+  **Authentication**
 
-  Configure credentials when enabling the application via **Workspace Configuration**:
+  JupyterHub uses NKP SSO by default. Users are authenticated via Traefik Forward Auth before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.
+
+  To grant admin privileges, add usernames to the `admin_users` list via **Workspace Configuration**:
 
   ```yaml
   hub:
     config:
       Authenticator:
         admin_users:
-          - admin
-        allowed_users:
-          - user
-      DummyAuthenticator:
-        password: <your-secure-password>
-      JupyterHub:
-        authenticator_class: dummy
+          - admin@example.com
   ```
-
-  Replace `<your-secure-password>` with a secure password. The default `DummyAuthenticator` uses one shared password for all users; for production, consider OAuth2 per the [JupyterHub authentication docs](https://z2jh.jupyter.org/en/stable/administrator/authentication.html).
 
   **Resources**
 
