@@ -67,11 +67,20 @@ jobs:
           else
             base_ref="${COMPARE_BASE_REF:-origin/main}"
             head_ref="${COMPARE_HEAD_REF:-HEAD}"
-            apps_list="$(git diff --name-only "${base_ref}...${head_ref}" | rg '^charts/[^/]+/' | cut -d/ -f2 | awk '!seen[$0]++' || true)"
+            apps_list="$(
+              git diff --name-only "${base_ref}...${head_ref}" \
+                | grep '^charts/' \
+                | cut -d/ -f2 \
+                | sort -u || true
+            )"
             selection_source="changed_charts"
           fi
 
-          apps_count="$(printf '%s\n' "$apps_list" | rg -c '.' || true)"
+          if [[ -z "$apps_list" ]]; then
+            apps_count=0
+          else
+            apps_count="$(echo "$apps_list" | wc -l | xargs)"
+          fi
           {
             echo "apps_list<<EOF"
             printf '%s\n' "$apps_list"
@@ -105,13 +114,12 @@ jobs:
               exit 1
             fi
 
-            if ! rg -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
-              echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage"
-              exit 1
-            fi
-
             echo "==> Baking ${app}"
             devbox run -- just bake "${app}"
+            if ! grep -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
+              echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage after bake"
+              exit 1
+            fi
 
             echo "==> Checking bake drift for ${app}"
             if [[ -d "applications/${app}" ]]; then
@@ -123,7 +131,7 @@ jobs:
             echo "==> Publishing baked chart ${app}"
             devbox run -- just push-baked-chart "${app}"
 
-            version="$(rg '^version:' "$chart_path" | cut -d':' -f2 | xargs)"
+            version="$(awk -F': *' '/^version:/{print $2; exit}' "$chart_path")"
             published+=("${app}:${version}")
           done <<< "$APPS_LIST"
 

@@ -55,11 +55,9 @@ jobs:
           custom=$(sed -n '/customTestApps.*\[\]string{/,/}/{s/.*"\([^"]*\)".*/\1/p}' apptests/suites/suites_test.go)
           enabled=$(printf '%s\n%s\n' "$generic" "$custom" | sed '/^$/d')
 
-          # Airgap-bundlable apps: HelmRelease apps (self-contained) plus custom apps
-          # that bake pre-rendered manifests into the repo (kubeflow-pipelines). Other
-          # custom apps deploy from an upstream GitRepository whose overlays use
-          # parent-path refs the bundle parser rejects, so they are airgapped=false.
-          airgapped_apps=$(printf '%s\nkubeflow-pipelines\n' "$generic" | sed '/^$/d')
+          # HelmRelease apps are airgap-bundlable by default. Custom apps are
+          # evaluated per-version below to decide if they can be bundled.
+          airgapped_apps=$(printf '%s\n' "$generic" | sed '/^$/d')
 
           if [[ -n "${INPUT_APP}" ]]; then
             apps="${INPUT_APP}"
@@ -91,8 +89,23 @@ jobs:
 
           entries=$(echo "$pairs" | awk -F/ 'NF==2 {print $1"/"$2}' | while IFS=/ read -r app ver; do
             airgapped=false
-            if echo "$airgapped_apps" | grep -qw "$app"; then airgapped=true; fi
-            printf '{"app":"%s","version":"%s","airgapped":%s}\n' "$app" "$ver" "$airgapped"
+            bundle_source="ghcr"
+            chart_yaml_path="charts/${app}/Chart.yaml"
+            gitrepo_yaml_path="applications/${app}/${ver}/helmrelease/gitrepository.yaml"
+
+            # Check if an app is airgapped and where to get its bundle based on whether it's generic or baked locally
+            is_generic_helm_app=$(echo "$airgapped_apps" | grep -qw "$app" && echo "true" || echo "false")
+            has_local_baked_chart=$([[ -f "$chart_yaml_path" ]] && echo "true" || echo "false")
+            relies_on_upstream_gitrepo=$([[ -f "$gitrepo_yaml_path" ]] && echo "true" || echo "false")
+
+            if [[ "$is_generic_helm_app" == "true" ]]; then
+              airgapped=true
+              # bundle_source remains "ghcr"
+            elif [[ "$has_local_baked_chart" == "true" && "$relies_on_upstream_gitrepo" == "false" ]]; then
+              airgapped=true
+              bundle_source="repo"
+            fi
+            printf '{"app":"%s","version":"%s","airgapped":%s,"bundle_source":"%s"}\n' "$app" "$ver" "$airgapped" "$bundle_source"
           done | jq -sc '.')
           echo "matrix={\"include\":${entries}}" >> "$GITHUB_OUTPUT"
           echo "has_entries=$([[ "$entries" != "[]" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -130,11 +143,21 @@ jobs:
           SKIP_CLUSTER_TEARDOWN: "true"
         run: devbox run -- just e2e-test "${{ matrix.app }}" "${{ matrix.version }}"
 
-      # Only airgap-bundlable apps (matrix.airgapped=true) build a bundle; custom
-      # apps sourced from an upstream GitRepository can't be parsed into one.
+      # Only airgap-bundlable apps (matrix.airgapped=true) build a bundle.
       - name: Build airgapped bundle
         if: success() && matrix.airgapped
-        run: devbox run -- just create-application-airgapped-bundle "${{ matrix.app }}" "${{ matrix.version }}"
+        run: |
+          if [[ "${{ matrix.bundle_source }}" == "repo" ]]; then
+            # Repo-state bundling keeps PR validation deterministic for baked apps.
+            devbox run -- ./.local/bin/nkp create catalog-bundle \
+              --repo-dir . \
+              --collection-tag "e2e-${{ matrix.app }}-${{ matrix.version }}" \
+              --apps "${{ matrix.app }}=${{ matrix.version }}" \
+              --airgapped \
+              --output-file "${{ matrix.app }}-${{ matrix.version }}-airgapped.tar"
+          else
+            devbox run -- just create-application-airgapped-bundle "${{ matrix.app }}" "${{ matrix.version }}"
+          fi
 
       - name: Upload airgapped bundle
         if: success() && matrix.airgapped
