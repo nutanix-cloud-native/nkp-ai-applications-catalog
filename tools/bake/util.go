@@ -14,6 +14,9 @@ const (
 	fileMode os.FileMode = 0o600
 )
 
+// Use our catalog repo for 'sources' (not upstream) so GHCR publishes the package as public.
+const catalogRepo = "https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog"
+
 // Returns the sorted-unique members of a that are not in b.
 func difference(a, b []string) []string {
 	inB := make(map[string]bool, len(b))

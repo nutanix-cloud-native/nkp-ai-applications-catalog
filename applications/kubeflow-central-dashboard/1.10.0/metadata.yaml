@@ -1,7 +1,9 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 allowMultipleInstances: false
+appScreens:
+  - ai
 category:
-  - artificial-intelligence
+  - Model Development & Training
 dependencies: []
 requiredDependencies:
   - istio-helm
@@ -12,16 +14,16 @@ licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other Kubeflow components. This overlay uses oauth2-proxy for auth; deploys via Flux from kubeflow/manifests. The main entry point for the Kubeflow UI.
+  **What it is** — Kubeflow Central Dashboard is the single UI for Pipelines, Notebooks, Katib, and other Kubeflow components. Uses oauth2-proxy for auth. The main entry point for the Kubeflow UI.
 
   **Highlights**
   - Single UI for discovering and using Kubeflow components
   - OAuth2-proxy overlay for authentication
-  - GitOps deployment via Flux
+  - Tunable resources/replicas/scheduling via `configOverrides` (Helm-chart backed)
 
   **Prerequisites**
   - **Istio** (required) — Uses VirtualService CRD for routing. Declare `istio-helm` as requiredDependencies; NKP installs it first.
-  - **Namespace** — Created automatically via `namespace.yaml`. This app deploys via Flux Kustomization (Kustomize from Git), not Helm.
+  - **Namespace** — `kubeflow-central-dashboard` is created automatically on install. Deploys via a Helm chart generated from the pinned upstream `kubeflow/manifests` (baked for air-gap; see the bake pipeline).
 
   **Access** — The Central Dashboard is the main entry point for Kubeflow. Access via Istio VirtualService/Ingress (after Istio setup), or port-forward: `kubectl port-forward svc/centraldashboard -n kubeflow-central-dashboard 8080:80` then open `http://localhost:8080`. From here you can navigate to Pipelines, Notebooks, Katib, Model Registry, and other components.
 
@@ -30,6 +32,6 @@ scope:
   - workspace
   - project
 supportLink: https://www.kubeflow.org/docs/components/central-dash/
-nkpVersionSupport: ">=2.16.0"
-type: custom
+nkpVersionSupport: ">=2.18.0"
+type: nkp-catalog
 ---

@@ -1,0 +1,52 @@
+workloads:
+  mlpipeline:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 500Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  mlpipelineui:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 70Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  mlpipelinepersistenceagent:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 120m
+        memory: 500Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  mlpipelinescheduledworkflow:
+    replicas: 1
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  workflowcontroller:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 500Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  mysql:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 800Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}

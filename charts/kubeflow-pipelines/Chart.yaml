@@ -1,0 +1,9 @@
+apiVersion: v2
+name: kubeflow-pipelines
+description: Auto-generated from baked upstream manifests. Regenerate with 'just bake kubeflow-pipelines'; do not edit by hand.
+home: https://github.com/kubeflow/manifests
+type: application
+version: 2.15.0
+appVersion: "2.15.0"
+sources:
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog

@@ -25,7 +25,10 @@ var enabledApps = []string{
 // metadata.yaml. Add a Flux-Kustomize app here only once it is graduated from
 // parking-lot/drafts-repo into applications/, so its E2E test and CI matrix
 // detection can resolve applications/<app>.
-var customTestApps []string
+var customTestApps = []string{
+	"kubeflow-central-dashboard",
+	"kubeflow-pipelines",
+}
 
 //nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
