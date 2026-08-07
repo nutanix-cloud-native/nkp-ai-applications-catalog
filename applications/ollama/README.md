@@ -38,6 +38,13 @@ After pushing, update the OCI URL in `helmrelease/helmrelease.yaml` and
 The default Helm values (`helmrelease/cm.yaml`) auto-pull the `llama3.2`
 model on startup and enable a 30Gi persistent volume for model storage.
 
+### In-cluster endpoint
+
+The chart creates the service `ollama-ollama` in namespace `ollama`.
+Use this endpoint from other in-cluster apps:
+
+`http://ollama-ollama.ollama.svc.cluster.local:11434`
+
 ## Icon
 
 The `icon` field in `metadata.yaml` is a base64-encoded SVG. It was generated
