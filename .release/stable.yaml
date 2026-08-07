@@ -35,6 +35,10 @@ releases:
     applications:
       - name: jupyterhub
         version: 4.3.2
+      - name: kubeflow-pipelines
+        version: 2.15.0
+      - name: kubeflow-central-dashboard
+        version: 1.10.0
       - name: kagent
         version: 0.7.13
       - name: kai-scheduler
