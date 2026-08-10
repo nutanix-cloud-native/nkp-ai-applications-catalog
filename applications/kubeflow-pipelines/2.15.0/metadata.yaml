@@ -3,7 +3,7 @@ allowMultipleInstances: false
 appScreens:
   - ai
 category:
-  - Model Development & Training
+  - model-development-and-training
 dependencies: []
 # Standalone (platform-agnostic) Pipelines is self-contained: the cache webhook
 # cert is self-signed by the cache-deployer (no cert-manager), and MySQL +

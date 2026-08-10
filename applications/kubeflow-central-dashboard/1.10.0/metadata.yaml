@@ -3,7 +3,7 @@ allowMultipleInstances: false
 appScreens:
   - ai
 category:
-  - Model Development & Training
+  - model-development-and-training
 dependencies: []
 requiredDependencies:
   - istio-helm
