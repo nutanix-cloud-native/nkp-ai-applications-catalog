@@ -1,0 +1,25 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    image:
+      repository: lmsysorg/sglang
+      tag: v0.5.15
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 30000
+    ingress:
+      enabled: true
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+      ingressClassName: kommander-traefik
+      pathType: Prefix
+      hosts:
+        - host: ""
+          paths:
+            - path: /sglang
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---
