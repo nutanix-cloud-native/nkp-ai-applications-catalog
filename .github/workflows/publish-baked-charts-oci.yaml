@@ -1,0 +1,156 @@
+name: Publish Baked Charts to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      baked_chart_apps:
+        description: "Optional comma-separated baked chart app names to publish (for example: kubeflow-pipelines,kubeflow-central-dashboard). If empty, detect changed charts from compare refs."
+        type: string
+        required: false
+      compare_base_ref:
+        description: "Base ref used for changed-chart detection when baked_chart_apps is empty."
+        type: string
+        default: "origin/main"
+        required: true
+      compare_head_ref:
+        description: "Head ref used for changed-chart detection when baked_chart_apps is empty."
+        type: string
+        default: "HEAD"
+        required: true
+
+jobs:
+  publish-baked-charts:
+    name: Bake and publish selected baked charts
+    runs-on:
+      - self-hosted-nutanix-medium
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix on self-hosted ARC runners
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          skip-nix-installation: true
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve baked chart apps to publish
+        id: resolve-apps
+        shell: bash
+        env:
+          BAKED_CHART_APPS: ${{ inputs.baked_chart_apps }}
+          COMPARE_BASE_REF: ${{ inputs.compare_base_ref }}
+          COMPARE_HEAD_REF: ${{ inputs.compare_head_ref }}
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin main
+
+          if [[ -n "${BAKED_CHART_APPS// /}" ]]; then
+            apps_list="$(printf '%s' "$BAKED_CHART_APPS" | tr ',' '\n' | xargs -n1 | awk '!seen[$0]++' || true)"
+            selection_source="manual_input"
+          else
+            base_ref="${COMPARE_BASE_REF:-origin/main}"
+            head_ref="${COMPARE_HEAD_REF:-HEAD}"
+            apps_list="$(
+              git diff --name-only "${base_ref}...${head_ref}" \
+                | grep '^charts/' \
+                | cut -d/ -f2 \
+                | sort -u || true
+            )"
+            selection_source="changed_charts"
+          fi
+
+          if [[ -z "$apps_list" ]]; then
+            apps_count=0
+          else
+            apps_count="$(echo "$apps_list" | wc -l | xargs)"
+          fi
+          {
+            echo "apps_list<<EOF"
+            printf '%s\n' "$apps_list"
+            echo "EOF"
+            echo "apps_count=${apps_count}"
+            echo "selection_source=${selection_source}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Show selected apps
+        run: |
+          echo "Selection source: ${{ steps.resolve-apps.outputs.selection_source }}"
+          echo "Apps:"
+          echo "${{ steps.resolve-apps.outputs.apps_list }}"
+          echo "Count: ${{ steps.resolve-apps.outputs.apps_count }}"
+
+      - name: Bake and publish charts
+        if: ${{ steps.resolve-apps.outputs.apps_count != '0' }}
+        shell: bash
+        env:
+          APPS_LIST: ${{ steps.resolve-apps.outputs.apps_list }}
+        run: |
+          set -euo pipefail
+
+          published=()
+          while IFS= read -r app; do
+            [[ -n "$app" ]] || continue
+            chart_path="charts/${app}/Chart.yaml"
+
+            if [[ ! -f "$chart_path" ]]; then
+              echo "::error::No baked chart found for ${app} at ${chart_path}"
+              exit 1
+            fi
+
+            echo "==> Baking ${app}"
+            devbox run -- just bake "${app}"
+            if ! grep -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
+              echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage after bake"
+              exit 1
+            fi
+
+            echo "==> Checking bake drift for ${app}"
+            if [[ -d "applications/${app}" ]]; then
+              git diff --exit-code -- "charts/${app}" "applications/${app}"
+            else
+              git diff --exit-code -- "charts/${app}"
+            fi
+
+            echo "==> Publishing baked chart ${app}"
+            devbox run -- just push-baked-chart "${app}"
+
+            version="$(awk -F': *' '/^version:/{print $2; exit}' "$chart_path")"
+            published+=("${app}:${version}")
+          done <<< "$APPS_LIST"
+
+          {
+            echo "## Published baked charts"
+            echo ""
+            echo "| Chart | Version |"
+            echo "|---|---|"
+            for item in "${published[@]}"; do
+              chart="${item%%:*}"
+              version="${item##*:}"
+              echo "| ${chart} | ${version} |"
+            done
+            echo ""
+            echo "> Visibility: this workflow only publishes packages. If a package is not public, update visibility in GHCR package settings."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: No baked chart changes found
+        if: ${{ steps.resolve-apps.outputs.apps_count == '0' }}
+        run: |
+          echo "No baked chart changes detected between '${{ inputs.compare_base_ref }}' and '${{ inputs.compare_head_ref }}'."
+          echo "Use baked_chart_apps to force publishing specific charts."

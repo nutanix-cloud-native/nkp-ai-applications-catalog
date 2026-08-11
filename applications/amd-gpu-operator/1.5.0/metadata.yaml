@@ -1,8 +1,11 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD GPU Operator
+appScreens:
+  - general
+  - ai
 description: The AMD GPU Operator manages AMD GPU resources in a Kubernetes cluster and automates tasks related to bootstrapping GPU nodes (drivers, device plugin, NFD, KMM, metrics, DRA, auto-remediation).
 category:
-  - general
+  - accelerated-infrastructure
 type: nkp-catalog
 allowMultipleInstances: false
 scope:
@@ -48,8 +51,8 @@ overview: |-
   ### Automated GPU Driver Builds
   Automatically builds and loads out-of-tree AMD GPU kernel modules using KMM and Kaniko for in-cluster driver compilation. The default `DeviceConfig` targets nodes labeled `feature.node.kubernetes.io/amd-gpu: "true"` (physical GPUs). For SR-IOV virtual function (VF) environments, create an additional `DeviceConfig` with selector `feature.node.kubernetes.io/amd-vgpu: "true"`.
 
-  ### Device Plugin and Node Labelling
-  Deploys the AMD device plugin to expose GPU resources to the Kubernetes scheduler and a node labeller for automatic GPU topology discovery.
+  ### DRA, Device Plugin, and Node Labelling
+  NKP enables DRA by default and disables the legacy Device Plugin and Node Labeller. DRA and the Device Plugin are mutually exclusive. Enable the Device Plugin only when intentionally replacing DRA; the Node Labeller remains optional.
 
   ### Metrics Integration
   Includes a built-in metrics exporter that provides Prometheus-format GPU telemetry.
@@ -58,6 +61,18 @@ overview: |-
   The chart auto-creates a `DeviceConfig` CR named `default` targeting `amd-gpu` labeled nodes. Users configure the driver image registry, TLS, and build settings via Helm value overrides.
 
   For vGPU (SR-IOV VF) nodes, create a second `DeviceConfig` with `spec.selector: { feature.node.kubernetes.io/amd-vgpu: "true" }`.
+
+  ### AMDGPU Driver Compatibility
+  Before selecting `deviceConfig.spec.driver.version`, consult the [AMD ROCm compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html). Confirm that the target amdgpu driver version supports the GPU family, operating system and kernel, and required firmware on every selected node. The compatibility matrix changes with ROCm releases; it is the source of truth for supported combinations.
+
+  ### Staged Operator and Driver Upgrades
+  Upgrade the GPU Operator before updating the amdgpu driver. Apply the target application while retaining the existing `deviceConfig.spec.driver.version`; the ConfigOverride must explicitly set that current driver value so `crds.defaultCR.upgrade: true` does not apply a new driver during the controller transition. Verify that the target controller, KMM Module, loaded driver, DRA/Metrics runtime, ResourceSlices, and GPU-node boot IDs remain unchanged.
+
+  In a separate reconciliation, update `deviceConfig.spec.driver.version` with `spec.driver.upgradePolicy.enable: true` and the catalog's reboot and drain policy. Verify the GPU Operator upgrade taint, the expected reboot and Ready status, `Upgrade-Complete`, the target KMM Module, and recovery of DRA/Metrics runtime.
+
+  Do not combine the operator and driver updates. A combined rollout can temporarily expose an incompatible operator component and driver pairing while resources reconcile, preventing DRA from publishing ResourceSlices. The staged workflow is the recommended upgrade path.
+
+  Before the controller upgrade, wait for any active driver upgrade to complete. The upstream pre-upgrade check blocks an operator upgrade while driver work is active; if it fails, inspect the `pre-upgrade-check` Job logs, resolve the active driver upgrade, and retry. Do not bypass this hook.
 
   ### Config Overrides (Private Registry)
   When enabling this operator with a private registry, supply config overrides that align with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, and project with your values. For the full list of overrides, see [values.yaml](https://github.com/ROCm/gpu-operator/blob/v1.5.0/helm-charts-k8s/values.yaml).
@@ -84,15 +99,15 @@ overview: |-
           # See the workaround in the Troubleshooting section below.
           insecureSkipTLSVerify: false
   ```
-  - `blacklist` — when `true`, unloads the in-tree `amdgpu` kernel module before loading the DKMS version. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). Without this, the in-tree driver claims the GPU first and the DKMS driver fails to load.
+  - `blacklist` — when `true`, configures the in-tree `amdgpu` kernel module to remain blacklisted after reboot. Required on nodes that ship a built-in `amdgpu` driver (most Ubuntu kernels). It does not unload an already-loaded module; reboot the node to apply the blacklist before the DKMS driver loads.
   - `version` — the amdgpu DKMS driver version to build. Must match a ROCm release that supports your GPU generation. See the [User and AMD GPU Driver (amdgpu) support matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html) for the full compatibility table.
   - `image` — the registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
   - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
   - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
   - `insecure`/`insecureSkipTLSVerify` — set to `true` for registries using self-signed or private CA certificates. **Note:** Kaniko build pods do not inherit the node's CA trust store, and the GPU operator currently does not propagate `imageRegistryTLS` to the KMM Module CR's `registryTLS` field. As a workaround, scale down the GPU operator controller, patch the Module CR's `registryTLS.insecureSkipTLSVerify` to `true`, and scale back up after the build completes.
 
-  ### DRA Driver Configuration (Optional)
-  To use the DRA driver instead of the traditional Device Plugin:
+  ### Catalog Runtime Defaults
+  The NKP catalog uses the DRA driver instead of the traditional Device Plugin:
   ```
   deviceConfig:
     spec:
@@ -101,6 +116,9 @@ overview: |-
         image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.0"
       devicePlugin:
         enableDevicePlugin: false
+        enableNodeLabeller: false
+      metricsExporter:
+        enable: true
   ```
   All prerequisites (DRA GA, CDI) are met on NKP v2.18.0+ (K8s 1.35+, containerd 2.1+).
 
@@ -127,7 +145,7 @@ overview: |-
     spec:
       driver:
         imageBuild:
-          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/30.30.3"
+          packageRepoURL: "https://my-mirror.internal/amdgpu/ubuntu/30.20.1"
           gpgKeyURL: "https://my-mirror.internal/rocm.gpg.key"
   ```
 

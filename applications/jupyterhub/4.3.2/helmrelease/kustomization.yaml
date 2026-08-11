@@ -4,7 +4,5 @@ resources:
   - namespace.yaml
   - cm.yaml
   - jupyterhub-ui-dashboard-cm.yaml
-  - jupyterhub-postinstall-rbac.yaml
-  - jupyterhub-postinstall-job.yaml
   - helmrelease.yaml
 ---

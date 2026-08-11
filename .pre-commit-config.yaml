@@ -27,6 +27,8 @@ repos:
         stages: [pre-commit]
       - id: check-yaml
         args: ["-m", "--unsafe"]
+        # Helm chart templates use Go templating and aren't parseable as YAML.
+        exclude: ^charts/.*/templates/
         stages: [pre-commit]
       - id: mixed-line-ending
         args: ["-f", "lf"]

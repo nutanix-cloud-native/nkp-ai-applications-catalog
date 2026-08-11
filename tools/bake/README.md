@@ -148,6 +148,12 @@ go -C tools/bake run . --app kubeflow-pipelines --version 2.15.0 \
 `bake-check` runs in CI (`.github/workflows/manifest.yml`), so a stale
 committed chart or manifest fails the build.
 
+To publish baked charts with CI credentials, use the manual GitHub Actions
+workflow `Publish Baked Charts to GHCR` (`.github/workflows/publish-baked-charts-oci.yaml`).
+It can detect changed baked charts from `charts/<app>/` paths or accept an
+explicit `baked_chart_apps` override, then runs `just bake <app>` before pushing via
+`just push-baked-chart <app>`.
+
 ## Layout
 
 | File | Responsibility |

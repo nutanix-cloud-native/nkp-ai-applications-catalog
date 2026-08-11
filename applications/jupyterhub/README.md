@@ -2,6 +2,32 @@
 
 JupyterHub brings the power of notebooks to groups of users. It gives users access to computational environments and resources without burdening the users with installation and maintenance tasks.
 
+## Authentication
+
+JupyterHub uses NKP SSO by default. Users authenticate via Traefik Forward Auth and Dex before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.
+
+### Admin Users
+
+By default, no users have admin privileges. To grant admin access, add usernames to the `admin_users` list via **Workspace Configuration**:
+
+```yaml
+hub:
+  config:
+    Authenticator:
+      admin_users:
+        - alice@company.com
+        - bob@company.com
+```
+
+Usernames must match exactly what Dex returns (typically email addresses).
+
+**What admins can do:**
+
+- Access the Admin panel (`/nkp/jupyter/hub/admin`)
+- Start/stop other users' servers
+- Add/remove users
+- Access other users' notebooks (if configured)
+
 ## Chart Source
 
 The JupyterHub Helm chart is hosted in a **traditional Helm repository**, not an

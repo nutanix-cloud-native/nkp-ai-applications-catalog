@@ -5,12 +5,15 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-device-metrics-exporter:1.4.2
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.4.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1-beta.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kagent:0.7.13
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
+      - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-central-dashboard:1.10.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-pipelines:2.15.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kueue:0.18.0
       - oci://<registry-url>/nkp-ai-applications-catalog/milvus-operator:1.3.6
       - oci://<registry-url>/nkp-ai-applications-catalog/slurm-operator:1.1.1
@@ -30,6 +33,11 @@ applications:
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.5.0
       - docker.io/rocm/gpu-operator:v1.5.0
+  - name: amd-gpu-operator
+    version: 1.5.1
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.5.1
+      - docker.io/rocm/gpu-operator:v1.5.1
   - name: amd-gpu-operator
     version: 1.5.1-beta.0
     images:
@@ -51,7 +59,6 @@ applications:
     version: 4.3.2
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/jupyterhub:4.3.2
-      - docker.io/mesosphere/kubectl:v1.34.1-alpine
       - quay.io/jupyterhub/configurable-http-proxy:5.1.0
       - quay.io/jupyterhub/k8s-hub:4.3.2
       - quay.io/jupyterhub/k8s-image-awaiter:4.3.2
@@ -76,6 +83,33 @@ applications:
       - oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/operator:v0.15.2
+  - name: kubeflow-central-dashboard
+    version: 1.10.0
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-central-dashboard:1.10.0
+      - ghcr.io/kubeflow/kubeflow/central-dashboard:v1.10.0
+  - name: kubeflow-pipelines
+    version: 2.15.0
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-pipelines:2.15.0
+      - docker.io/chrislusf/seaweedfs:4.00
+      - docker.io/library/mysql:8.4
+      - gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
+      - ghcr.io/containerd/busybox
+      - ghcr.io/kubeflow/kfp-api-server:2.15.0
+      - ghcr.io/kubeflow/kfp-cache-deployer:2.15.0
+      - ghcr.io/kubeflow/kfp-cache-server:2.15.0
+      - ghcr.io/kubeflow/kfp-driver:2.15.0
+      - ghcr.io/kubeflow/kfp-frontend:2.15.0
+      - ghcr.io/kubeflow/kfp-launcher:2.15.0
+      - ghcr.io/kubeflow/kfp-metadata-envoy:2.15.0
+      - ghcr.io/kubeflow/kfp-metadata-writer:2.15.0
+      - ghcr.io/kubeflow/kfp-persistence-agent:2.15.0
+      - ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.15.0
+      - ghcr.io/kubeflow/kfp-viewer-crd-controller:2.15.0
+      - ghcr.io/kubeflow/kfp-visualization-server:2.15.0
+      - quay.io/argoproj/argoexec:v3.7.3
+      - quay.io/argoproj/workflow-controller:v3.7.3
   - name: kueue
     version: 0.18.0
     images:
