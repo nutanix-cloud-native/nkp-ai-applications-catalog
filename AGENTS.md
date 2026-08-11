@@ -28,7 +28,7 @@ applications/
 
 ## Adding a New Application
 
-When asked to add a new application, follow this exact workflow. Use an existing application (e.g. `agentgateway/2.2.0`, `kagent/0.7.13`, or `vllm/0.1.1`) as a reference.
+When asked to add a new application, follow this exact workflow. Use an existing application (e.g. `agentgateway/2.2.0`, `kagent/0.9.12`, or `vllm/0.1.1`) as a reference.
 
 ### NKP CLI Workflow
 

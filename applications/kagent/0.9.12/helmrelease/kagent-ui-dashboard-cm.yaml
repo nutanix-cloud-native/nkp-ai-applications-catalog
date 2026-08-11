@@ -10,5 +10,5 @@ metadata:
 data:
   name: "kagent"
   docsLink: "https://kagent.dev"
-  version: "0.7.13"
+  version: "0.9.12"
 ---

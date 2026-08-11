@@ -1,0 +1,6 @@
+# Create kagent namespace before HelmRelease.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kagent
+---

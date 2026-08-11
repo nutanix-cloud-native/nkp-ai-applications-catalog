@@ -1,23 +1,26 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ${releaseName}-crds-chart
+  name: ${releaseName}-chart
   namespace: ${releaseNamespace}
 spec:
   interval: 6h0m0s
   ref:
-    tag: 0.7.13
-  url: oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds
+    tag: "0.9.12"
+  url: oci://ghcr.io/kagent-dev/kagent/helm/kagent
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ${releaseName}-crds
+  name: kagent
   namespace: ${releaseNamespace}
 spec:
   chartRef:
     kind: OCIRepository
-    name: ${releaseName}-crds-chart
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  dependsOn:
+  - name: ${releaseName}-crds
     namespace: ${releaseNamespace}
   install:
     crds: CreateReplace
@@ -30,4 +33,9 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 30
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+  values:
+    fullnameOverride: "kagent"
 ---

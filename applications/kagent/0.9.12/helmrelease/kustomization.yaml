@@ -6,6 +6,4 @@ resources:
 - crds-helmrelease.yaml
 - helmrelease.yaml
 - kagent-ui-dashboard-cm.yaml
-- kagent-postinstall-rbac.yaml
-- kagent-postinstall-job.yaml
 ---

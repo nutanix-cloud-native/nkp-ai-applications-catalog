@@ -1,79 +1,82 @@
 # kagent
 
-Kubernetes-native AI agent framework built on Microsoft AutoGen.
+Kubernetes-native AI agent framework for declarative agent lifecycle management.
 
 ## Chart Source
 
-The kagent Helm chart is published natively as an OCI artifact. No additional
-push step is required.
+The kagent Helm chart is published natively as an OCI artifact.
 
 | Field | Value |
 |-------|-------|
 | Chart OCI URL | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` |
 | CRDs Chart OCI URL | `oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds` |
-| Version | `0.7.13` |
+| Version | `0.9.12` |
 
 ## Default Configuration
 
-The default Helm values configure Ollama as the LLM provider
-(`providers.default=ollama`). The Ollama host is set to the in-cluster
-service at `ollama.${releaseNamespace}.svc.cluster.local:11434`.
-
-To use a different provider, override the values via the NKP app
-configuration UI or update `helmrelease/cm.yaml`.
-
 The catalog defaults include:
 
-- `fullnameOverride: "kagent"` to keep resource names stable (`kagent-*`) so
-  Agent/RemoteMCPServer references resolve consistently.
-- `registry: "ghcr.io"` because the chart defaults its images to
-  `cr.kagent.dev`, which no longer serves the `0.7.13` controller/ui/app images.
-  Those images are published to `ghcr.io/kagent-dev/kagent/*`, so we pin the
-  registry there. (NKP Flux disables chart digest tracking, so the image tag
-  resolves to a clean `0.7.13` with no `+<digest>` suffix and needs no override.)
+- `fullnameOverride: "kagent"` to keep resource names stable (`kagent-*`).
+- `registry: "ghcr.io"` because chart defaults point at `cr.kagent.dev`, while
+  this catalog pins to tags verified in `ghcr.io/kagent-dev/kagent/*` (for
+  example `ghcr.io/kagent-dev/kagent/ui:0.9.12`).
+- `ui.service.type: ClusterIP` to avoid creating billable cloud load balancers by default.
+- `database.postgres.bundled.enabled: true` for quickstart installs.
+- `providers.default=ollama` with host
+  `ollama-ollama.ollama.svc.cluster.local:11434`.
+- `providers.ollama.config.options.num_ctx: "64000"` is carried explicitly
+  because overriding `providers.ollama.config` replaces the full map.
 
-## Dashboard (Launch button)
+### PostgreSQL caveat
 
-This catalog does **not** include a Traefik IngressRoute or Middleware. The kagent UI is exposed via a **LoadBalancer** service
-(`ui.service.type: LoadBalancer` in the default values).
+kagent 0.8+ uses PostgreSQL as the only backend. Upstream documents the bundled
+PostgreSQL as development/evaluation only. For production, set
+`database.postgres.url` to an external database.
 
-- **Launch URL:** A post-install Job discovers the **kagent-ui** LoadBalancer
-  external IP in the `kagent` namespace and patches the `kagent-ui` ConfigMap
-  with `dashboardLink` (e.g. `http://<lb-ip>:8080/`). The NKP Launch button
-  uses that URL.
-- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
-  `http://kagent-ui.kagent.svc.cluster.local:8080` or
-  `kubectl port-forward -n kagent svc/kagent-ui 8080:8080` and open
-  http://localhost:8080.
+### UI access
+
+This catalog entry does not create path-based routing or dashboard launch links.
+This is a current product constraint, not a temporary omission:
+
+- kagent's UI is a Next.js build that emits root-relative URLs and does not
+  support running under a base path like `/nkp/kagent/`.
+- A hostname-based route would work, but it requires per-customer DNS and TLS
+  certificates, which a catalog entry cannot assume.
+- When upstream base-path support lands, this entry can add ingress + auth
+  middleware and a dashboard launch link.
+
+Access the UI with port-forward:
+
+```bash
+kubectl port-forward -n kagent svc/kagent-ui 8080:8080
+```
+
+Then open `http://localhost:8080`.
+
+### `ui.publicBackendUrl` note
+
+Do not override `ui.publicBackendUrl` in chart values for this catalog entry.
+In this kagent version, that value is inlined into the client bundle at build
+time, and the runtime container startup does not rewrite it from env vars.
+An override appears in pod/deployment environment but silently has no effect:
+the browser still uses the compiled default. The chart default `"/api"` is the
+correct value.
 
 ## Dependencies
 
 | Dependency | Type | Notes |
 |------------|------|-------|
-| `ollama` | soft (`dependencies`) | Recommended LLM backend; not required if using a cloud provider |
+| `ollama` | soft (`dependencies`) | Recommended LLM backend; app can use another configured provider |
 
 ## Observability agent
 
-The **observability-agent** (Prometheus/Grafana/Kubernetes monitoring) is enabled
-in the catalog defaults (`agents.observability-agent.enabled: true`). If it shows
-**unavailable** in the UI at `/agents/new?name=observability-agent&...`, either the
-agent deployment was not created (upgrade the Helm release with the catalog values)
-or its tools cannot reach Grafana/Prometheus. The agent expects Grafana at
-`grafana-mcp.grafana.url` (default: `grafana.kagent:3000/api`). Install Grafana (and
-optionally Prometheus) in the cluster or point `grafana-mcp.grafana.url` to an
-existing instance for the agent to become available.
+`observability-agent.enabled` is set in defaults. If it appears unavailable in
+the UI, verify the deployment exists and that Grafana/Prometheus endpoints are
+reachable by the related tools.
 
 ## Icon
 
-The `icon` field in `metadata.yaml` is a base64-encoded SVG. It was generated
-from the kagent logo in the official repository:
-
-| Field | Value |
-|-------|-------|
-| Source URL | `https://raw.githubusercontent.com/kagent-dev/kagent/main/img/icon-light.svg` |
-| Format | SVG (base64-encoded) |
-
-To regenerate:
+The `icon` field in `metadata.yaml` is base64-encoded. To regenerate:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/kagent-dev/kagent/main/img/icon-light.svg | base64 | tr -d '\n'

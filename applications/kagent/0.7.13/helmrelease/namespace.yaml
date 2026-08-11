@@ -1,7 +1,0 @@
-# Create kagent namespace before RBAC (Role in kagent ns) and HelmRelease.
-# Ensures namespace exists when Kustomization applies; HelmRelease also has createNamespace: true.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kagent
----

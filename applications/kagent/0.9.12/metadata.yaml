@@ -13,35 +13,44 @@ licensing:
 overview: |
   **Overview**
 
-  kagent is a Kubernetes-native AI agent framework that enables building, deploying, and managing AI agents directly on Kubernetes. Leverages the AutoGen framework and provides CRDs for declarative agent lifecycle management with built-in tool integrations. CRDs (Agent, Tool, ModelConfig, Team) define agents; a controller reconciles desired state. Deploy from this catalog and use the Launch button to open the web UI via Traefik with optional SSO.
+  kagent is a Kubernetes-native AI agent framework for building, deploying, and
+  managing AI agents directly on Kubernetes. In this version, kagent uses the
+  Go ADK runtime and reconciles declarative resources via a controller.
 
   **Key capabilities**
 
-  - **CRD-driven** — Declarative agent lifecycle via Agent, Tool, ModelConfig, and Team resources.
-  - **AutoGen** — Built on Microsoft AutoGen for multi-agent orchestration.
-  - **Tools** — Integrated ecosystem: Kubernetes operations, Grafana/Prometheus, kgateway, and more.
-  - **MCP** — Model Context Protocol server support via kmcp sidecar.
-  - **Web UI** — Interact with agents and monitor conversations; exposed via Traefik in this catalog.
+  - **CRD-driven** — Declarative lifecycle via kagent resources such as Agent, ModelConfig, and RemoteMCPServer.
+  - **Go ADK runtime** — Modern runtime architecture for multi-agent workflows.
+  - **Tools and MCP** — Integrates Kubernetes/Grafana/Prometheus tooling and MCP servers.
+  - **Web UI** — UI access is supported via in-cluster service + port-forward.
+
+  **Access**
+
+  Use port-forward to access the UI:
+  `kubectl port-forward -n kagent svc/kagent-ui 8080:8080`
+  then open `http://localhost:8080`.
+
+  This catalog version intentionally does not provide an NKP dashboard launch link.
 
   **Dependencies (this catalog)**
 
-  This entry declares a soft dependency on **Ollama**. By default it is configured to use Ollama as the LLM provider (`providers.default=ollama`) at the in-cluster service. Install Ollama in the same workspace or override the provider in Helm values.
+  This entry declares a soft dependency on **Ollama** and defaults to
+  `providers.default=ollama` with an in-cluster host override. Ensure Ollama (or
+  another configured provider) is reachable; otherwise kagent installs but cannot
+  answer model requests.
 
-  **In-cluster usage**
+  **Database**
 
-  To connect kagent to Ollama: `http://ollama.ollama.svc.cluster.local:11434`. For vLLM: `http://vllm.vllm.svc.cluster.local:8000/v1`. Override in Helm values or ModelConfig if your LLM backend uses a different namespace.
-
-  **Prerequisites**
-
-  - **LLM provider** — Ensure an Ollama instance (or another provider) is reachable. For OpenAI, Anthropic, Gemini, or Azure OpenAI, create the API key secret and set `providers.default` in the app configuration.
-  - **CRDs** — The kagent-crds chart is installed automatically with this catalog entry.
+  kagent 0.8+ uses PostgreSQL as the only backend. The bundled PostgreSQL in the
+  chart is intended for development/evaluation only. For production, configure an
+  external database with `database.postgres.url`.
 
   **Resources**
 
   [Documentation](https://kagent.dev) · [Project](https://github.com/kagent-dev/kagent)
 scope:
   - workspace
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.17.0"
 supportLink: https://kagent.dev
 type: nkp-catalog
 ---

@@ -6,8 +6,8 @@
 # definition for each using dkp-licenses-cli.
 #
 # App name and version are derived from the directory structure:
-#   applications/kagent/0.7.13/licenses.yaml
-#                -> bundle-name=kagent, bundle-version=0.7.13
+#   applications/kagent/0.9.12/licenses.yaml
+#                -> bundle-name=kagent, bundle-version=0.9.12
 
 name: licenses/generate-scan-definition
 

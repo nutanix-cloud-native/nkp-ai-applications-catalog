@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    # Keep release names stable (kagent-*) so Agent/RemoteMCPServer references resolve.
+    fullnameOverride: "kagent"
+    # Pin to ghcr.io where the kagent images used by this catalog are available.
+    registry: "ghcr.io"
+    # LoadBalancer was only needed for the postinstall dashboard-link patch flow,
+    # which is removed for this version. ClusterIP avoids provisioning a billable
+    # cloud load balancer on every install.
+    ui:
+      service:
+        type: ClusterIP
+    # Do not set ui.publicBackendUrl here. The UI build inlines this value at
+    # build time and the image entrypoint does not perform runtime substitution,
+    # so overriding it here has no effect. The chart default "/api" is correct.
+    # kagent 0.8+ removed SQLite. PostgreSQL is now the only backend.
+    # The bundled postgres instance is for development/evaluation only.
+    # For production, configure an external DB with database.postgres.url.
+    database:
+      postgres:
+        bundled:
+          enabled: true
+    # Ensure observability-agent is deployed (uses Prometheus/Grafana tools).
+    # 0.9.x reads this at the top-level (not under "agents").
+    observability-agent:
+      enabled: true
+    grafana-mcp:
+      fullnameOverride: "kagent-grafana-mcp"
+    providers:
+      default: ollama
+      ollama:
+        provider: "Ollama"
+        model: "llama3.2"
+        config:
+          host: "ollama-ollama.ollama.svc.cluster.local:11434"
+          options:
+            num_ctx: "64000"
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

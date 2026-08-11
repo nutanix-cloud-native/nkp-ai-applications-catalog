@@ -27,7 +27,7 @@ just e2e-test <app> <version>
 For example:
 
 ```sh
-just e2e-test kagent 0.7.13
+just e2e-test kagent 0.9.12
 ```
 
 By default this creates an ephemeral [Kind](https://kind.sigs.k8s.io/) cluster,
@@ -41,7 +41,7 @@ test completes.
 To skip Kind cluster creation and run against a cluster you already have:
 
 ```sh
-E2E_KUBECONFIG=~/.kube/config just e2e-test kagent 0.7.13
+E2E_KUBECONFIG=~/.kube/config just e2e-test kagent 0.9.12
 ```
 
 When `E2E_KUBECONFIG` is set, the test suite connects to the cluster at that
@@ -53,7 +53,7 @@ also skipped.
 To keep the Kind cluster around after a test run (useful for debugging):
 
 ```sh
-SKIP_CLUSTER_TEARDOWN=1 just e2e-test kagent 0.7.13
+SKIP_CLUSTER_TEARDOWN=1 just e2e-test kagent 0.9.12
 ```
 
 ### Running specific test labels
@@ -65,7 +65,7 @@ label (`install`, `upgrade`). You can filter with `--ginkgo.label-filter`:
 ```sh
 cd apptests && go test ./suites/ -v -count=1 \
   --ginkgo.label-filter="kagent && install" \
-  -app-version=0.7.13
+  -app-version=0.9.12
 ```
 
 ### Docker host

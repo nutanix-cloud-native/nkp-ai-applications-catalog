@@ -122,7 +122,7 @@ nkp generate catalog-repository --apps=<app-name>=<version>
 **Example:**
 
 ```bash
-nkp generate catalog-repository --apps=kagent=0.7.13
+nkp generate catalog-repository --apps=kagent=0.9.12
 ```
 
 This will create the directory structure and required files under `applications/<app-name>/<version>/`.
@@ -347,7 +347,7 @@ These apps demonstrate catalog composability and dependency flow. See [docs/demo
 | Application | Version | Chart | Description |
 |-------------|---------|-------|-------------|
 | agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
-| kagent | 0.7.13 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
+| kagent | 0.9.12 | `oci://ghcr.io/kagent-dev/kagent/helm/kagent` | Kubernetes-native AI agent framework with CRDs for declarative agent lifecycle management |
 | vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
 | flowise | 6.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` | Drag-and-drop UI to build customized LLM flows with LangChain |
 
