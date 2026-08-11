@@ -18,7 +18,8 @@ import (
 const (
 	certManagerManifestURL = "https://github.com/cert-manager/cert-manager/releases/download/v1.19.3/cert-manager.yaml"
 	//nolint:lll // upstream Istio CRD bundle URL cannot be shortened.
-	istioCRDsManifestURL = "https://raw.githubusercontent.com/istio/istio/1.25.0/manifests/charts/base/files/crd-all.gen.yaml"
+	istioCRDsManifestURL    = "https://raw.githubusercontent.com/istio/istio/1.25.0/manifests/charts/base/files/crd-all.gen.yaml"
+	nkpDexStubsManifestPath = "testdata/nkp-dex-stubs.yaml"
 )
 
 var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
@@ -28,6 +29,8 @@ var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: 
 var dependencyProvisioners = map[string]func(context.Context) error{
 	"cert-manager": provisionCertManager,
 	"istio-helm":   provisionIstioCRDs,
+	"dex":          provisionNKPDexStubs,
+	"nkp-dex":      provisionNKPDexStubs,
 }
 
 // provisionDependencies installs every dependency the app declares in its
@@ -104,6 +107,16 @@ func provisionIstioCRDs(ctx context.Context) error {
 	return applyRemoteManifest(ctx, istioCRDsManifestURL)
 }
 
+func provisionNKPDexStubs(ctx context.Context) error {
+	if err := applyManifestFile(ctx, nkpDexStubsManifestPath); err != nil {
+		return err
+	}
+	return harness.WaitForCondition(
+		ctx, harness.Default.Client(), deploymentGVK,
+		"kubeflow", "dex-mock", "Available", 5*time.Minute, 2*time.Second,
+	)
+}
+
 // applyRemoteManifest fetches a multi-doc YAML manifest and server-side applies
 // it through the harness, so it lands on whichever cluster the backend selected.
 func applyRemoteManifest(ctx context.Context, url string) error {
@@ -122,6 +135,16 @@ func applyRemoteManifest(ctx context.Context, url string) error {
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("reading %s: %w", url, err)
+	}
+	return harness.Default.ApplyYAML(ctx, data)
+}
+
+func applyManifestFile(ctx context.Context, relativePath string) error {
+	// Run from apptests/ during tests; fixture path is relative to that root.
+	// #nosec G304 -- path is a fixed constant controlled in test code.
+	data, err := os.ReadFile(relativePath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", relativePath, err)
 	}
 	return harness.Default.ApplyYAML(ctx, data)
 }

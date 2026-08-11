@@ -1,0 +1,53 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Kubeflow Platform (Unified Multi-User)
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+description: One authenticated, multi-user home for your Kubeflow apps - reuses NKP's own login (Dex) and ingress (Istio). Self-configures on enable.
+dependencies:
+  - kubeflow-central-dashboard
+requiredDependencies:
+  - istio-helm
+  - dex
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **What it is** — Enable your Kubeflow apps (Central Dashboard, Pipelines,
+  Katib, ...) individually and each is its own island with its own sign-in.
+  Kubeflow Platform is the "glue" that joins them into **one website with one
+  login and per-user workspaces** - the experience people expect from Kubeflow.
+
+  **What you get**
+  - **One URL, one login.** A single entry point that authenticates every user
+    against **your existing NKP login (Dex)** - no second identity system, no
+    extra passwords.
+  - **Per-user workspaces.** Each user gets their own isolated namespace with the
+    right permissions, so teammates don't see or touch each other's work.
+  - **Everything wired together.** The dashboard, Pipelines and Katib all appear
+    under the same URL and already trust each other.
+
+  **Nothing to configure** — On enable it reads your cluster's login and ingress
+  addresses and generates its own security secrets automatically. There are no
+  addresses to look up and no `openssl` commands to run. (Advanced users can
+  still override any of these in the app's configuration.)
+
+  **Onboard users from the UI** — Add a user by listing them under `profiles` in
+  this app's configuration (their NKP login email). Each entry creates that
+  user's private workspace. No `kubectl` required.
+
+  **Before you enable**
+  - **istio-helm** (required) - the ingress this app binds to.
+  - **Kubeflow Central Dashboard** (recommended) - the home page this makes
+    multi-user.
+  - Enable your component apps too (Pipelines, Katib, ...) to see them in the menu.
+
+  **Resources** — [Kubeflow Profiles](https://www.kubeflow.org/docs/components/central-dash/profiles/) |
+  [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
+scope:
+  - workspace
+supportLink: https://www.kubeflow.org/docs/components/central-dash/
+nkpVersionSupport: ">=2.18.0"
+type: nkp-catalog
+---
