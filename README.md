@@ -424,7 +424,7 @@ All applications in this catalog follow these conventions:
 
 - **Flux CD** is used for GitOps-based deployment and reconciliation.
 - **Kustomize** organizes and overlays Kubernetes resources.
-- **Variable substitution** uses `${releaseName}` and `${releaseNamespace}` for dynamic configuration.
+- **Variable substitution** uses NKP-injected variables such as `${releaseName}`, `${releaseNamespace}`, `${clusterName}`, `${clusterUUID}`, and `${clusterType}` for dynamic configuration.
 - **HelmRelease + OCIRepository** is the standard pattern for deploying charts via Flux.
 
 ## Validation

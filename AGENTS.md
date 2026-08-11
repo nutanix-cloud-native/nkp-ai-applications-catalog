@@ -154,9 +154,17 @@ Flux performs post-build variable substitution. Always use these variables inste
 
 | Variable | Purpose |
 |----------|---------|
+| `${appName}` | The catalog application's ID (from the `applications/<app-name>` directory) |
+| `${appVersion}` | The catalog application's version (from the `<version>` directory) |
 | `${releaseName}` | The release/instance name set by NKP at deploy time |
 | `${releaseNamespace}` | The target namespace set by NKP at deploy time |
 | `${workspaceNamespace}` | The NKP workspace namespace (used in UI dashboard ConfigMaps) |
+| `${workspaceName}` | The name of the workspace the deployment belongs to |
+| `${projectNamespace}` | The project namespace (project-scoped deployments only) |
+| `${projectName}` | The project name (project-scoped deployments only) |
+| `${clusterName}` | The target cluster's name (the KommanderCluster name) |
+| `${clusterUUID}` | The target cluster's ID (from the `kommander.mesosphere.io/cluster-id` label; when set) |
+| `${clusterType}` | The target cluster's type — CAPI `spec.infrastructureRef.kind` (e.g. `NutanixCluster`, `AWSCluster`, `DockerCluster`), or the `kommander.mesosphere.io/cluster-type` label (`EKS`, `GKE`, `AKS`, `Unknown`) |
 
 Never hardcode namespace or release name in places where these variables should be used.
 
