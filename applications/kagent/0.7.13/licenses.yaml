@@ -1,6 +1,30 @@
 ignore: []
 resources:
-- container_image: cr.kagent.dev/kagent-dev/kagent/controller:0.7.13
+- container_image: docker.io/mcp/grafana:latest
+  sources:
+  - ref: main
+    url: https://github.com/grafana/grafana.git
+- container_image: docker.io/mesosphere/kubectl:v1.34.1-alpine
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/mesosphere/kubectl.git
+- container_image: ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/doc2vec.git
+- container_image: ghcr.io/kagent-dev/kagent/controller:0.7.13
   sources:
   - ref: v${image_tag}
     url: https://github.com/kagent-dev/kagent.git
+- container_image: ghcr.io/kagent-dev/kagent/tools:0.0.13
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/tools.git
+- container_image: ghcr.io/kagent-dev/kagent/ui:0.7.13
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/kagent.git
+- container_image: ghcr.io/kagent-dev/kmcp/controller:0.2.2
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/kmcp.git

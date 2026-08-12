@@ -1,0 +1,6 @@
+ignore: []
+resources:
+- container_image: docker.io/milvusdb/milvus-operator:v1.3.6
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/zilliztech/milvus-operator.git

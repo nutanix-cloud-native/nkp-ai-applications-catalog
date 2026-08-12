@@ -1,0 +1,1 @@
+ghcr.io/kubeflow/kubeflow/central-dashboard:v1.10.0

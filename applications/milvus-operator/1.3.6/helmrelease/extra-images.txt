@@ -1,0 +1,1 @@
+docker.io/milvusdb/milvus-operator:v1.3.6

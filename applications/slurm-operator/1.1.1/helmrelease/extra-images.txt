@@ -1,0 +1,2 @@
+ghcr.io/slinkyproject/slurm-operator-webhook:1.1.1
+ghcr.io/slinkyproject/slurm-operator:1.1.1

@@ -1,0 +1,10 @@
+ignore: []
+resources:
+- container_image: ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.15.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kai-scheduler/kai-scheduler.git
+- container_image: ghcr.io/kai-scheduler/kai-scheduler/operator:v0.15.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kai-scheduler/kai-scheduler.git
