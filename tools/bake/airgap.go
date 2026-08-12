@@ -28,7 +28,7 @@ func (c *versionCtx) collectHiddenImages() error {
 func (c *versionCtx) writeExtraImages() error {
 	path := filepath.Join(c.manifestsDir, extraImagesFilename)
 	var existing []string
-	if data, err := os.ReadFile(path); err == nil {
+	if data, err := os.ReadFile(filepath.Clean(path)); err == nil {
 		existing = uniqueSorted(strings.Split(string(data), "\n"))
 	} else if !os.IsNotExist(err) {
 		return err
