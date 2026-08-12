@@ -1,0 +1,76 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Coder
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+certifications:
+  - qualified
+description: Self-hosted remote development platform with browser IDE access and AI-assisted workflows.
+dependencies: []
+requiredDependencies: []
+icon: iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAAFwElEQVR4nOzdQUhbZwDA8dchmBLBgqMyCsnNUYXeFCrYUwft3bKCnjZP01PHKlO624SOFcqYh/VkwbuFBuyt0IAdPVhIacoKFRRSJjSQQIQIFgbrGINEFpLv/95z+/+OD/N9L/Bvfe/zy0vf6Ww2kkL7KOkT0H+TYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCdGX9An85detrQsXLiR9Fm18cu5cvV7v7rWvXr7M5/OhzyiAn1dXby4uolP4P5YQhiWEYQlhWEIYlhBpuSv8fmVlcHAw6bNo46DR6Pq13y4vD2SzQU8njHK5TE+RQFhDQ0OLN2/GP293WhdBHhYKxWKxk9eOjY6m819LrV7ffv4cnSKBsAay2YX5+fjnDWV3b6/DsGZnZtK5jhVFUaFQQMf3GksIwxLCsIQwLCESuHhvNpulUin+eUOpvnvX4U+Wy+Wu/4CNqlQq9BSnTsMLLcNnzw4PDwcftlwuH71/38UL+/v7Px0ZCXsyjYODnZ2d1uOj58/39aVlpfCfqtVq5e1bdAo8rOWlpeWlpeDDdr2bJZ/LvQq9PPikWLxy9WrrcbfNSIEZlhCGJYRhCWFYQuB3hblcjrgzerq11fVyw8TERNiTqddqpRcvWo+Pj49nMpmwcwVRqVTaro8EhIc1OzMzOzsbZKhGozF97VqQoaIo+u7WrcnJySBDlUqltnfv99fWiDW83m1sbPxy7x46Bb58l8/nL01NBRmqFnQVe2x0NNSJHWdifDyd61gx/OXDaywhDEsIwxLCsITAL95LpdL6+nqQoRoHB0HG+eBJsRhqT8tvr1+3Pb7x4MHHQ0NBpgjr2bNn9BT4csPIyEiP21Q2Nze7W7JK3GeXL6dzHevNzg79CbATsG2ml+e9JMttM1JghiWEYQlhWEIYlhD4XWF/f3+Pt9wn9JYwiqJsNpvOT+k0m83Dw0N0CvxtL8zPf33jRpChavX66NhYkKGiKPrp7t3p6ekgQ209fdp2P8/9tbXJixeDTBHW5qNHX87NoVPgYWUymTNnzoQZ69SpMOP8KeCJDQwMHHc82HsP6rgTDshrLCEMSwjDEsKwhMAv3p8Ui9HKSpChms1mkHE+eFgo7O7tBRlqd3e37fH19fUOHyoZs+P2+QSUxlWW42Qymb83Svx45053KzGDg4OxPQE1nU+2/fB5NXqKE7Btpi2fNtMLt83opDIsIQxLCMMSAr8rrNVqx92N9+Lo6KjrFwY/n/39/bbHY3iGbHeq1So9BX5X2Kqvry+byq8u6lDne05Su9wQw7aZBMIibvjj9M3i4urqaic/6XKDFJhhCWFYQhiWEIYlRAK7G37f3//8+vX45w3lZce3tF8tLKTzO6HfwE+2TSasw8PDhy3fG/vD7dv5XC7+k/lXX8zNHXT7+KSrV66k8009fvyYftpMWvZjXZqaav1a7zTo5YOBqX1TMXxU02ssIQxLCMMSwrCESMvF+/b2dtgvngil6/05aX5TMXxKJ4HdDfo/8FehEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiWEYQlhWEIYlhCGJYRhCWFYQhiWEIYlhGEJYVhCGJYQhiXEHwEAAP//zkNmEnQD/DEAAAAASUVORK5CYII=
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Coder provides secure, self-hosted cloud development environments on Kubernetes. Developers use browser or local IDE clients while workspaces run in the cluster, enabling centralized governance and scalable dev infrastructure.
+
+  **Key capabilities**
+
+  - Remote development environments managed on Kubernetes
+  - Browser and local IDE workflows with centralized policy controls
+  - Workspace lifecycle automation and RBAC-backed access
+  - Flexible deployment through Helm and Flux in NKP
+
+  **Prerequisites**
+
+  - Kubernetes cluster resources sized for developer workspaces
+  - External access plan for Coder (either dedicated LoadBalancer IP or ingress + DNS)
+
+  **Access configuration (UI overrides)**
+
+  - Dedicated LoadBalancer IP (direct service exposure):
+
+    ```yaml
+    coder:
+      service:
+        type: LoadBalancer
+        loadBalancerIP: 1.2.3.4
+      ingress:
+        enable: false
+      env:
+        - name: CODER_ACCESS_URL
+          value: http://1.2.3.4
+    ```
+
+  - Host-based ingress (domain routed through Traefik):
+
+    ```yaml
+    coder:
+      service:
+        type: ClusterIP
+      ingress:
+        enable: true
+        className: kommander-traefik
+        host: coder.apps.example.com
+        tls:
+          enable: true
+          secretName: coder-domain-tls
+      env:
+        - name: CODER_ACCESS_URL
+          value: https://coder.apps.example.com
+    ```
+
+  **Resources**
+
+  [Documentation](https://coder.com/docs) · [Project](https://github.com/coder/coder) · [Helm Chart](https://helm.coder.com/v2)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://coder.com/docs
+type: nkp-catalog
+---
