@@ -27,18 +27,27 @@ func (c *versionCtx) collectHiddenImages() error {
 // bundler mirrors them; with none, any stale file is removed.
 func (c *versionCtx) writeExtraImages() error {
 	path := filepath.Join(c.manifestsDir, extraImagesFilename)
-	if len(c.hiddenImages) == 0 {
+	var existing []string
+	if data, err := os.ReadFile(path); err == nil {
+		existing = uniqueSorted(strings.Split(string(data), "\n"))
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	merged := uniqueSorted(append(existing, c.hiddenImages...))
+	if len(merged) == 0 {
 		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 			return err
 		}
 		return nil
 	}
-	fmt.Printf("==> Writing %d hidden image(s) to %s:\n", len(c.hiddenImages), c.rel(path))
-	printIndented(c.hiddenImages)
+
+	fmt.Printf("==> Writing %d merged extra image(s) to %s:\n", len(merged), c.rel(path))
+	printIndented(merged)
 	if err := os.MkdirAll(c.manifestsDir, dirMode); err != nil {
 		return err
 	}
-	return os.WriteFile(path, []byte(strings.Join(c.hiddenImages, "\n")+"\n"), fileMode)
+	return os.WriteFile(path, []byte(strings.Join(merged, "\n")+"\n"), fileMode)
 }
 
 // Reports a copy-paste-ready airgapImages block and aborts.
