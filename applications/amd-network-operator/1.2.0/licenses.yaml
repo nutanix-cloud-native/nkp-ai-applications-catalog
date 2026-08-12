@@ -1,9 +1,5 @@
 ignore: []
 resources:
-- container_image: docker.io/rocm/network-operator:v1.2.0
-  sources:
-  - ref: ${image_tag}
-    url: https://github.com/ROCm/network-operator.git
 # CNI plugins image is pulled by the operator at runtime when a NetworkConfig CR
 # with secondaryNetwork.cniPlugins.enable: true is applied (the default in the
 # example NetworkConfig in metadata.yaml).
@@ -23,6 +19,10 @@ resources:
   sources:
   - ref: release-v1.0.0
     url: https://github.com/ROCm/kernel-module-management.git
+- container_image: docker.io/rocm/network-operator:v1.2.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/network-operator.git
 # Multus is provided by NKP v2.18+ by default (multus.enabled: false),
 # but retained for users on NKP < v2.18 who re-enable the embedded subchart.
 - container_image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2

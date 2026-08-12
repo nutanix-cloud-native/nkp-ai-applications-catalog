@@ -1,0 +1,2 @@
+docker.io/library/busybox:1.36
+docker.io/rocm/device-metrics-exporter:v1.4.2
