@@ -17,6 +17,7 @@ var enabledApps = []string{
 	"kai-scheduler",
 	"jupyterhub",
 	"slurm-operator",
+	"ollama",
 }
 
 // customTestApps deploy via Flux GitRepository + Kustomization instead of a
