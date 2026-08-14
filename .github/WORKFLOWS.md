@@ -60,26 +60,21 @@ Triggered from the Actions tab with inputs:
 
 **Workflow: [publish-chart-oci.yaml](workflows/publish-chart-oci.yaml)**
 
-Triggered from the Actions tab to mirror a chart to GHCR from either:
-- a traditional Helm repository, or
-- an upstream OCI chart registry.
+Triggered from the Actions tab to publish a Helm chart from a Helm repo to an OCI registry (e.g. GHCR). Inputs:
 
-Inputs:
-
-- **source_type** (required): `helm-repo` or `oci`
-- **upstream_url** (required): Source URL  
-  - Helm repo example: `https://otwld.github.io/ollama-helm/`  
-  - OCI example: `oci://registry-1.docker.io/bitnamicharts/nginx`
-- **chart_name** (required for `helm-repo`, ignored for `oci`): Chart name in the Helm repo (e.g., `ollama`)
+- **chart_repo** (required): Source Helm repository URL (e.g., https://weaviate.github.io/weaviate-helm/)
+- **repo_name** (required): Helm repo alias for `helm repo add` / `helm pull` (e.g., weaviate, ollama-helm)
+- **chart_name** (required): Helm chart name in the repo (e.g., weaviate, ollama)
 - **chart_version** (required): Helm chart version
+- **target_oci_registry** (optional): Target OCI registry; default `oci://ghcr.io/nutanix-cloud-native/charts`
 
 | Step | What it does |
 |------|-------------------------------|
 | Checkout | Current ref. |
-| Install Nix + devbox | Prepares the toolchain used by just recipes. |
+| Install Helm | Installs Helm 3. |
 | Login to GHCR | So the chart can be pushed. |
-| Mirror chart (helm-repo mode) | Runs `just mirror-chart-from-repo <upstream_url> <chart_name> <chart_version>`. |
-| Mirror chart (oci mode) | Runs `just mirror-chart-from-oci <upstream_url> <chart_version>`. |
+| Pull chart | Adds repo, updates, pulls the specified chart/version. |
+| Push chart | Pushes the chart tarball to the target OCI registry. |
 
 ---
 
