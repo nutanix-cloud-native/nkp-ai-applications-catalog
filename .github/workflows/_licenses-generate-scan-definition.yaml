@@ -17,7 +17,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'docker.io/mesosphere/dkp-licenses-cli:kjoshi-black-duck-cache-validation'
+        default: 'docker.io/mesosphere/dkp-licenses-cli:licenses-v0.0.17-dev'
     outputs:
       scan_definitions_dir:
         description: 'Directory containing per-app scan definition files'
