@@ -19,6 +19,10 @@ on:
         description: 'Enable container image scanning'
         type: boolean
         default: true
+      force_rescan:
+        description: 'Force Black Duck scans to ignore existing cached project versions'
+        type: boolean
+        default: false
       parallel_scans:
         description: 'Number of concurrent scans'
         type: number
@@ -69,6 +73,7 @@ jobs:
       parent_project: "NKP AI Applications Catalog"
       source_code_scan: ${{ inputs.source_code_scan == '' && true || inputs.source_code_scan }}
       container_image_scan: ${{ inputs.container_image_scan == '' && true || inputs.container_image_scan }}
+      force_rescan: ${{ inputs.force_rescan || false }}
       parallel_scans: ${{ fromJSON(inputs.parallel_scans || '4') }}
       timeout: ${{ inputs.timeout || '4h' }}
       verbosity: ${{ fromJSON(inputs.verbosity || '1') }}

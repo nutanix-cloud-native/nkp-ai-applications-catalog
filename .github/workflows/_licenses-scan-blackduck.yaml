@@ -34,6 +34,10 @@ on:
         description: 'Enable container image scanning'
         type: boolean
         default: true
+      force_rescan:
+        description: 'Force Black Duck scans to ignore existing cached project versions'
+        type: boolean
+        default: false
       verbosity:
         description: 'Logging verbosity level'
         type: number
@@ -41,7 +45,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16'
+        default: 'docker.io/mesosphere/dkp-licenses-cli:kjoshi-black-duck-cache-validation'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
@@ -93,7 +97,10 @@ jobs:
           BLACKDUCK_API_TOKEN: ${{ secrets.BLACKDUCK_API_TOKEN }}
         run: |
           set -euo pipefail
+          # The CLI launches scanner containers through the host Docker socket,
+          # so temp paths must exist on the host for nested bind mounts.
           TMPDIR="$(mktemp -d)"
+          trap 'rm -rf "$TMPDIR"' EXIT
           export TMPDIR
           mkdir -p "$TMPDIR/go/pkg/mod"
 
@@ -105,14 +112,21 @@ jobs:
             echo "|---|---|"
           } >> "$GITHUB_STEP_SUMMARY"
 
+          force_args=()
+          if [ "${{ inputs.force_rescan }}" = "true" ]; then
+            force_args+=(--force)
+          fi
+
           for scan_file in "${GITHUB_WORKSPACE}"/scans/*.yaml; do
             scan_name="$(basename "$scan_file")"
             echo "::group::Scanning $scan_name"
             if docker run --rm \
               -v "${GITHUB_WORKSPACE}/scans:/scans:ro" \
+              -v "${TMPDIR}:${TMPDIR}" \
               -v /tmp/bd-cache:/cache \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -e BLACKDUCK_API_TOKEN \
+              -e TMPDIR \
               "${{ inputs.cli_image }}" \
               scan bd "/scans/${scan_name}" \
                 --blackduck-url "$BLACKDUCK_URL" \
@@ -122,6 +136,7 @@ jobs:
                 --source-code-scan=${{ inputs.source_code_scan }} \
                 --container-image-scan=${{ inputs.container_image_scan }} \
                 --timeout ${{ inputs.timeout }} \
+                "${force_args[@]}" \
                 -v ${{ inputs.verbosity }}; then
               echo "| ✅ PASS | \`$scan_name\` |" >> "$GITHUB_STEP_SUMMARY"
             else

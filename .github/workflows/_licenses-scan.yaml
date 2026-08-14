@@ -12,6 +12,10 @@
 #          +-- source code scans
 #          +-- container image scans
 #
+# BlackDuck parent BOM Components pages can show "Unknown License" for linked
+# SUB_PROJECT rows. Review the uploaded BOM report artifacts or the child
+# project BOM/license reports for detected license details.
+#
 # The parent_project must already exist in BlackDuck. Create it manually
 # in the BD UI before running this workflow.
 #
@@ -45,6 +49,10 @@ on:
         description: 'Enable container image scanning'
         type: boolean
         default: true
+      force_rescan:
+        description: 'Force Black Duck scans to ignore existing cached project versions'
+        type: boolean
+        default: false
       parallel_scans:
         description: 'Number of concurrent scans'
         type: number
@@ -60,7 +68,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'mesosphere/dkp-licenses-cli:licenses-v0.0.16'
+        default: 'docker.io/mesosphere/dkp-licenses-cli:kjoshi-black-duck-cache-validation'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
@@ -85,6 +93,7 @@ jobs:
       timeout: ${{ inputs.timeout }}
       source_code_scan: ${{ inputs.source_code_scan }}
       container_image_scan: ${{ inputs.container_image_scan }}
+      force_rescan: ${{ inputs.force_rescan }}
       verbosity: ${{ inputs.verbosity }}
       cli_image: ${{ inputs.cli_image }}
       scanner_image: ${{ inputs.scanner_image }}
@@ -140,6 +149,14 @@ jobs:
           name: bom-reports
           path: bom-reports/
           retention-days: 7
+
+      - name: Summarize BOM report usage
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Black Duck BOM review
+
+          Parent BOM Components pages can show `Unknown License` for linked `SUB_PROJECT` rows. Use the uploaded `bom-reports` artifact and child project BOM/license reports for detected license details.
+          EOF
 
   link-to-parent-project:
     needs:
