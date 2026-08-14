@@ -1,5 +1,5 @@
 docker.io/mcp/grafana:latest
-docker.io/mesosphere/kubectl:v1.34.1-alpine
+docker.io/mesosphere/kubectl:v1.35.2-alpine
 ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
 ghcr.io/kagent-dev/kagent/controller:0.7.13
 ghcr.io/kagent-dev/kagent/tools:0.0.13

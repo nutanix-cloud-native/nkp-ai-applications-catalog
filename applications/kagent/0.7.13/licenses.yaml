@@ -4,7 +4,7 @@ resources:
   sources:
   - ref: main
     url: https://github.com/grafana/grafana.git
-- container_image: docker.io/mesosphere/kubectl:v1.34.1-alpine
+- container_image: docker.io/mesosphere/kubectl:v1.35.2-alpine
   sources:
   - ref: v0.35.2
     url: https://github.com/kubernetes/kubectl.git
