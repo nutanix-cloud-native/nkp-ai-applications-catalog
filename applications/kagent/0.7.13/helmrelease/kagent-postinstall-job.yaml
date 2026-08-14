@@ -15,7 +15,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: patch-dashboard-link
-          image: mesosphere/kubectl:v1.34.1-alpine
+          image: mesosphere/kubectl:v1.35.2-alpine
           imagePullPolicy: IfNotPresent
           env:
             - name: WORKSPACE_NAMESPACE

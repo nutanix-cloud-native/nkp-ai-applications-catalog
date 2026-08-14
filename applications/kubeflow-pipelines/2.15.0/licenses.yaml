@@ -6,11 +6,11 @@ resources:
     url: https://github.com/seaweedfs/seaweedfs.git
 - container_image: docker.io/library/mysql:8.4
   sources:
-  - ref: ${image_tag}
+  - ref: master
     url: https://github.com/docker-library/mysql.git
 - container_image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
   sources:
-  - ref: ${image_tag}
+  - ref: v${image_tag}
     url: https://github.com/google/ml-metadata.git
 - container_image: ghcr.io/containerd/busybox
   sources:

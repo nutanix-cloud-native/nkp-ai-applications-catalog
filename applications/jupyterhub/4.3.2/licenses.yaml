@@ -22,5 +22,5 @@ resources:
     url: https://github.com/kubernetes/kubernetes.git
 - container_image: registry.k8s.io/pause:3.10.1
   sources:
-  - ref: ${image_tag}
+  - ref: master
     url: https://github.com/kubernetes/kubernetes.git

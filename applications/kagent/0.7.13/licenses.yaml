@@ -6,8 +6,9 @@ resources:
     url: https://github.com/grafana/grafana.git
 - container_image: docker.io/mesosphere/kubectl:v1.34.1-alpine
   sources:
-  - ref: ${image_tag}
-    url: https://github.com/mesosphere/kubectl.git
+  - ref: v0.35.2
+    url: https://github.com/kubernetes/kubectl.git
+    license_path: LICENSE
 - container_image: ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
   sources:
   - ref: v${image_tag}

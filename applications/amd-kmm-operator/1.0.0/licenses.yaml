@@ -2,8 +2,8 @@ ignore: []
 resources:
 - container_image: docker.io/mesosphere/kubectl:v1.35.2-alpine
   sources:
-  - ref: ${image_tag}
-    url: https://github.com/mesosphere/kubectl.git
+  - ref: v0.35.2
+    url: https://github.com/kubernetes/kubectl.git
 - container_image: docker.io/rocm/kernel-module-management-operator:v1.0.0
   sources:
   - ref: release-v1.0.0
