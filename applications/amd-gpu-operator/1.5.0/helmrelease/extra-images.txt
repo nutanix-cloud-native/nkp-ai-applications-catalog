@@ -1,0 +1,10 @@
+docker.io/rocm/gpu-operator:v1.5.0
+docker.io/rocm/kernel-module-management-operator:v1.0.0
+docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
+registry.k8s.io/nfd/node-feature-discovery:v0.18.3
+docker.io/rocm/k8s-device-plugin:1.31.0.10
+docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
+docker.io/rocm/device-metrics-exporter:v1.5.0
+docker.io/rocm/gpu-operator-utils:v1.5.0
+docker.io/rocm/k8s-gpu-dra-driver:v1.0.0
+quay.io/argoproj/workflow-controller:v4.0.3
