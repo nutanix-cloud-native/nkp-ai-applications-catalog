@@ -34,17 +34,17 @@ The catalog defaults include:
 
 ## Dashboard (Launch button)
 
-This catalog does **not** include a Traefik IngressRoute or Middleware. The kagent UI is exposed via a **LoadBalancer** service
-(`ui.service.type: LoadBalancer` in the default values).
+The catalog exposes the kagent UI through Traefik + NKP SSO.
 
-- **Launch URL:** A post-install Job discovers the **kagent-ui** LoadBalancer
-  external IP in the `kagent` namespace and patches the `kagent-ui` ConfigMap
-  with `dashboardLink` (e.g. `http://<lb-ip>:8080/`). The NKP Launch button
-  uses that URL.
-- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
-  `http://kagent-ui.kagent.svc.cluster.local:8080` or
-  `kubectl port-forward -n kagent svc/kagent-ui 8080:8080` and open
-  http://localhost:8080.
+- **Launch URL:** `/nkp/kagent/`
+- **Auth:** Traefik ForwardAuth enforces NKP authentication before traffic reaches kagent.
+- **Service type:** `ClusterIP` (no external LoadBalancer discovery/patch job required).
+
+## Admin access
+
+kagent does not use a catalog-level `admin_users` list. Configure administrator
+permissions in kagent itself after login. Users not granted admin permissions
+are normal users.
 
 ## Dependencies
 

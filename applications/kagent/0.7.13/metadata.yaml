@@ -13,7 +13,7 @@ licensing:
 overview: |
   **Overview**
 
-  kagent is a Kubernetes-native AI agent framework that enables building, deploying, and managing AI agents directly on Kubernetes. Leverages the AutoGen framework and provides CRDs for declarative agent lifecycle management with built-in tool integrations. CRDs (Agent, Tool, ModelConfig, Team) define agents; a controller reconciles desired state. Deploy from this catalog and use the Launch button to open the web UI via Traefik with optional SSO.
+  kagent is a Kubernetes-native AI agent framework that enables building, deploying, and managing AI agents directly on Kubernetes. Leverages the AutoGen framework and provides CRDs for declarative agent lifecycle management with built-in tool integrations. CRDs (Agent, Tool, ModelConfig, Team) define agents; a controller reconciles desired state. Deploy from this catalog and use the Launch button to open the web UI via NKP SSO at `/nkp/kagent/`.
 
   **Key capabilities**
 
@@ -30,6 +30,11 @@ overview: |
   **In-cluster usage**
 
   To connect kagent to Ollama: `http://ollama.ollama.svc.cluster.local:11434`. For vLLM: `http://vllm.vllm.svc.cluster.local:8000/v1`. Override in Helm values or ModelConfig if your LLM backend uses a different namespace.
+
+  **Authentication and roles**
+
+  NKP authenticates users before requests reach kagent (Traefik ForwardAuth). Open kagent from the NKP dashboard at `/nkp/kagent/`.
+  Configure kagent admin roles in the application itself; users not assigned admin privileges remain normal users.
 
   **Prerequisites**
 

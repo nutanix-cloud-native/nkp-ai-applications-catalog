@@ -1,14 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kagent-ui
-  namespace: ${workspaceNamespace}
+  name: ${releaseName}-ui
+  namespace: ${releaseNamespace}
   labels:
-    "kommander.d2iq.io/application": "kagent"
+    "kommander.d2iq.io/application": ${releaseName}
   annotations:
     "kustomize.toolkit.fluxcd.io/ssa": "Merge"
 data:
-  name: "kagent"
+  name: ${releaseName}
+  dashboardLink: "/nkp/kagent/"
   docsLink: "https://kagent.dev"
   version: "0.7.13"
 ---
