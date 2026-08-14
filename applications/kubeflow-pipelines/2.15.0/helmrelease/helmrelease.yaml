@@ -1,0 +1,36 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-${appVersion}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 2.15.0
+  url: oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-pipelines
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubeflow-pipelines
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-${appVersion}-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  # Baked manifests hardcode the kubeflow namespace (upstream Pipelines pins it),
+  # so the chart's resources and RBAC subjects are already resolved for it.
+  targetNamespace: kubeflow
+  upgrade:
+    remediation:
+      retries: 30
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+---

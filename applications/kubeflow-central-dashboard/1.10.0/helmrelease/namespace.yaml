@@ -1,7 +1,0 @@
-# Create namespace before Flux Kustomization deploys remote manifests.
-# Flux Kustomization's targetNamespace rewrites manifests but does not create the namespace.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kubeflow-central-dashboard
----

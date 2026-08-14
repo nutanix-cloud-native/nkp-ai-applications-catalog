@@ -154,9 +154,17 @@ Flux performs post-build variable substitution. Always use these variables inste
 
 | Variable | Purpose |
 |----------|---------|
+| `${appName}` | The catalog application's ID (from the `applications/<app-name>` directory) |
+| `${appVersion}` | The catalog application's version (from the `<version>` directory) |
 | `${releaseName}` | The release/instance name set by NKP at deploy time |
 | `${releaseNamespace}` | The target namespace set by NKP at deploy time |
 | `${workspaceNamespace}` | The NKP workspace namespace (used in UI dashboard ConfigMaps) |
+| `${workspaceName}` | The name of the workspace the deployment belongs to |
+| `${projectNamespace}` | The project namespace (project-scoped deployments only) |
+| `${projectName}` | The project name (project-scoped deployments only) |
+| `${clusterName}` | The target cluster's name (the KommanderCluster name) |
+| `${clusterUUID}` | The target cluster's ID (from the `kommander.mesosphere.io/cluster-id` label; when set) |
+| `${clusterType}` | The target cluster's type — CAPI `spec.infrastructureRef.kind` (e.g. `NutanixCluster`, `AWSCluster`, `DockerCluster`), or the `kommander.mesosphere.io/cluster-type` label (`EKS`, `GKE`, `AKS`, `Unknown`) |
 
 Never hardcode namespace or release name in places where these variables should be used.
 
@@ -185,11 +193,45 @@ Required fields:
 
 - The root `.bloodhound.yml` configures Kubernetes schema validation (strict mode, k8s v1.34.0).
 - Per-app overrides go in `applications/<app>/<version>/.bloodhound.yaml` (e.g. `strict: false` for charts that emit non-standard fields).
+- Always run pre-commit before creating any commit and again before opening a PR: `devbox run -- just pre-commit`.
 - Validate with: `nkp validate catalog-repository --repo-dir=.`
 - Create bundle with: `nkp create catalog-bundle --collection-tag v0.1.0`
 - Push bundle with: `nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>` (delete any stale `nkp-ai-applications-catalog.tar` before rebuilding; nkp reuses an existing file)
 - Deploy on cluster with: `nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/nkp-ai-applications-catalog/collection --tag v0.1.0 --workspace <workspace-name>`
 - Substitution variables `releaseNamespace` and `workspaceNamespace` default to `kommander` and `workspace` respectively during validation.
+
+## Airgapped Bundle Runbook (Generic)
+
+Use this flow to create, push, and validate disconnected (airgapped) catalog bundles.
+
+1. **Prepare environment**
+   - Start from repo root inside `devbox shell`.
+   - If Docker is not on the default socket, set `DOCKER_HOST` (for example, Rancher Desktop or Colima).
+
+2. **Validate manifests first**
+   - Run: `nkp validate catalog-repository --repo-dir=.`
+
+3. **Create the airgapped bundle** (renders `.release/airgapped.yaml.tmpl` with `includeApplicationImages: true`)
+   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-airgapped.tar`:
+     - `just create-application-airgapped-bundle <app> <version>`
+     - Example: `just create-application-airgapped-bundle kai-scheduler 0.15.2`
+   - Full collection → writes `nkp-ai-applications-catalog-<tag>-airgapped.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
+     - `just create-collection-airgapped-bundle <collection-tag>`
+     - Example: `just create-collection-airgapped-bundle 2.19-dev`
+
+4. **Push the bundle to an OCI registry**
+   - Authenticate to your registry first.
+   - Push:
+     - `nkp push bundle --bundle ./<bundle>-airgapped.tar --to-registry <registry>`
+     - Example:
+       - `nkp push bundle --bundle ./kai-scheduler-0.15.2-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>`
+
+5. **Deploy and validate on cluster**
+   - Create/update collection:
+     - `nkp create catalog-collection --url oci://<registry>/nkp-ai-applications-catalog/collection --tag <tag> --workspace <workspace-name>`
+     - Example:
+       - `nkp create catalog-collection --url oci://ghcr.io/<org-or-user>/nkp-ai-applications-catalog/collection --tag 2.19-dev --workspace kommander-workspace`
+   - Verify Flux/Kustomization and HelmRelease become Ready, and verify no image pull errors.
 
 ## App namespace convention
 

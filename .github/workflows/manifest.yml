@@ -5,6 +5,8 @@ name: Manifest validation
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled]
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - main
@@ -34,6 +36,27 @@ jobs:
 
       - name: Run catalog validation
         if: ${{ hashFiles('applications/**') != '' }}
-        env:
-          CHART_REGISTRY: oci://ghcr.io/deepak-muley/charts
         run: devbox run -- just validate
+
+  bake-drift:
+    name: Baked manifests drift check
+    runs-on:
+      - self-hosted-nutanix-medium
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NIX
+        uses: cachix/install-nix-action@v31
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+          skip-nix-installation: true
+
+      # Re-renders every "render & bake" app (scripts/bake-apps.yaml) from its
+      # pinned upstream ref and fails if the committed manifest drifted, so the
+      # baked build output can't diverge from source or be hand-edited.
+      - name: Check baked manifests are up to date
+        run: devbox run -- just bake-check

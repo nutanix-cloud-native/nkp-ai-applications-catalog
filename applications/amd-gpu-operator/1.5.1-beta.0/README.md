@@ -105,6 +105,56 @@ The chart auto-creates a `DeviceConfig` CR named `default` with:
 - DRA driver (default), node labeller, and metrics exporter
 - Device Plugin disabled (mutually exclusive with DRA)
 
+## Grafana Dashboards
+
+The bundled overview, GPU, job, and node dashboards are sourced from the
+[ROCm device-metrics-exporter Grafana dashboards](https://github.com/ROCm/device-metrics-exporter/tree/main/grafana).
+They use NKP's local `prometheus` datasource and filter metrics by GPU and
+node labels.
+
+## Metrics Exporter Configuration
+
+The metrics exporter configuration is vendored from the upstream
+[GPU configuration example](https://github.com/ROCm/device-metrics-exporter/blob/main/example/config-gpu.json)
+at `helmrelease/metrics-exporter-config/config.json`. It enables GPU labels,
+including `GPU_UUID`, uses unprefixed metric names, and omits the upstream
+static `CLUSTER_NAME` label so NKP Thanos provides cluster attribution.
+Review the upstream example when updating the exporter.
+
+### Staged Operator and Driver Upgrades
+
+Use a staged upgrade to separate the controller rollout from the kernel-driver
+transition:
+
+1. Upgrade the application while retaining the existing
+   `deviceConfig.spec.driver.version`. The ConfigOverride must explicitly set
+   that current value so `crds.defaultCR.upgrade: true` does not apply a new
+   driver during the controller transition. Keep DRA and Metrics Exporter
+   enabled, then wait for the target controller to become Ready and verify that
+   the DeviceConfig, loaded driver, runtime agents, and GPU-node boot IDs remain
+   unchanged.
+2. In a separate reconciliation, update
+   `deviceConfig.spec.driver.version`. Keep `upgradePolicy.enable: true` so the
+   operator performs the managed driver upgrade according to the configured
+   reboot and drain policy.
+
+Do not combine the application update and driver change. During a combined
+reconciliation, an operator component can temporarily run with an incompatible
+driver and fail to publish ResourceSlices. The staged workflow above is the
+recommended upgrade path.
+
+Before the controller upgrade, wait for any active driver upgrade to complete.
+The upstream pre-upgrade check blocks an operator upgrade while driver work is
+active. If it fails, inspect the `pre-upgrade-check` Job logs, resolve the
+active driver upgrade, and retry; do not bypass the hook.
+
+Setting `upgradePolicy.enable: false` is not an equivalent gate: it disables
+managed upgrade orchestration rather than preventing KMM Module reconciliation.
+
+> Engineering note: leave `upgradePolicy.enable: true`. To upgrade only the
+> operator, keep the driver version unchanged in the ConfigOverride. When the
+> driver version changes later, the enabled policy performs the safe upgrade.
+
 ## Pinned Image Versions
 
 | Component | Image | Tag |
@@ -164,7 +214,7 @@ deviceConfig:
     driver:
       enable: true
       blacklist: true
-      version: "30.30.3"
+      version: "31.30"
       image: "<registry-host>:<port>/<project>/amdgpu_kmod"
       imageBuild:
         baseImageRegistry: "<registry-host>:<port>/<project>"
@@ -192,7 +242,7 @@ deviceConfig:
 
 | Field | Description |
 |---|---|
-| `driver.blacklist` | When `true`, unloads the in-tree `amdgpu` kernel module before loading the DKMS version. Required on nodes with a built-in `amdgpu` driver (most Ubuntu kernels). |
+| `driver.blacklist` | When `true`, configures the in-tree `amdgpu` module to remain blacklisted after reboot. It does not unload an already-loaded module; reboot the node before the DKMS driver loads. Required on nodes with a built-in `amdgpu` driver (most Ubuntu kernels). |
 | `driver.version` | The amdgpu DKMS driver version to build (e.g. `30.30.3` for ROCm 7.2.1). See the [compatibility matrix](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/user-kernel-space-compat-matrix.html). |
 | `driver.image` | Registry path where built GPU driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically. |
 | `driver.imageRegistrySecret.name` | Must be `kmm-registry-dockerconfig`, auto-created by the AMD KMM Operator reconciler. |

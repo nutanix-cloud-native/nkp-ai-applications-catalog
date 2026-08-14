@@ -1,0 +1,5 @@
+docker.io/rocm/kernel-module-management-operator:v1.0.0
+docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
+docker.io/rocm/kernel-module-management-signimage:v1.0.0
+docker.io/rocm/kernel-module-management-worker:v1.0.0
+gcr.io/kaniko-project/executor:v1.23.2

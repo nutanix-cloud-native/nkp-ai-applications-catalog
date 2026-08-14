@@ -1,27 +1,53 @@
 package suites
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/mesosphere/kommander-applications/apptests/catalog"
+	"github.com/nutanix-cloud-native/nkp-ai-applications-catalog/apptests/harness"
 )
 
-// enabledApps lists applications that have opt-in E2E tests.
-// Add an app name here to get the default install + upgrade template test.
-// Apps with a custom <app>_test.go in this package do NOT need to be listed
-// here — they register their own Ginkgo blocks directly.
+// enabledApps deploy via a HelmRelease and get the generic install + upgrade
+// template test (registerDefaultTestsWithDependencies). Add a HelmRelease app
+// here to enable its E2E test.
 var enabledApps = []string{
 	"kagent",
+	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
+	"jupyterhub",
+	"slurm-operator",
+	"ollama",
+}
+
+// customTestApps deploy via Flux GitRepository + Kustomization instead of a
+// HelmRelease. They run through the shared Kustomize suite
+// (flux_kustomize_apps_test.go); platform dependencies come from each app's
+// metadata.yaml. Add a Flux-Kustomize app here only once it is graduated from
+// parking-lot/drafts-repo into applications/, so its E2E test and CI matrix
+// detection can resolve applications/<app>.
+var customTestApps = []string{
+	"kubeflow-central-dashboard",
+	"kubeflow-pipelines",
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs
 func init() {
-	catalog.InitSuite()
+	harness.InitSuite()
 	for _, app := range enabledApps {
-		catalog.RegisterDefaultTests(app)
+		registerDefaultTestsWithDependencies(app)
+	}
+
+	// Guard against an app being both auto-registered and custom-registered
+	enabled := make(map[string]bool, len(enabledApps))
+	for _, app := range enabledApps {
+		enabled[app] = true
+	}
+	for _, app := range customTestApps {
+		if enabled[app] {
+			panic(fmt.Sprintf("app %q is listed in both enabledApps and customTestApps", app))
+		}
 	}
 }
 
-func TestApplications(t *testing.T) { catalog.RunSuite(t) }
+func TestApplications(t *testing.T) { harness.RunSuite(t) }

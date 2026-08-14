@@ -1,7 +1,9 @@
 ignore: []
 resources:
 - container_image: docker.io/library/busybox:1.36
-  sources: []
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/docker-library/busybox.git
 - container_image: docker.io/rocm/device-metrics-exporter:v1.4.2
   sources:
   - ref: ${image_tag}

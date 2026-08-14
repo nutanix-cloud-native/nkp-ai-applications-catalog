@@ -1,67 +1,14 @@
 schema: catalog.nkp.nutanix.com/v1/catalog-release-spec
 releases:
   - tagName: 2.19-dev
-    fileName: nkp-nutanix-product-catalog-2.19.tar
+    fileName: nkp-ai-applications-catalog-2.19-dev.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     constraints:
       nkpVersion: "2.19"
-  - tagName: "2.18-dev"
+  - tagName: 2.18-dev
     fileName: nkp-ai-applications-catalog-2.18-dev.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     constraints:
       nkpVersion: "2.18"
-    applications:
-      - name: amd-gpu-operator
-        version: "1.4.1"
-      - name: amd-gpu-operator
-        version: "1.5.0"
-      - name: amd-gpu-operator
-        version: "1.5.1-beta.0"
-      - name: amd-kmm-operator
-        version: "1.0.0"
-      - name: amd-network-operator
-        version: "1.2.0"
-  # Deprecated versioning, tag will be removed in the future
-  - tagName: "0.1.2"
-    fileName: nkp-ai-applications-catalog-2.18-dev.tar
-    collectionAnnotations:
-      org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
-    applications:
-      - name: agentgateway
-        version: "2.2.0"
-      - name: amd-device-metrics-exporter
-        version: "1.4.2"
-      - name: amd-gpu-operator
-        version: "1.4.1"
-      - name: amd-gpu-operator
-        version: "1.5.0"
-      - name: amd-gpu-operator
-        version: "1.5.1-beta.0"
-      - name: amd-kmm-operator
-        version: "1.0.0"
-      - name: amd-network-operator
-        version: "1.2.0"
-      - name: coder
-        version: "2.30.2"
-      - name: demo-full-rag
-        version: "1.1.0"
-      - name: flowise
-        version: "6.0.0"
-      - name: jupyterhub
-        version: "4.3.2"
-      - name: kagent
-        version: "0.7.13"
-      - name: milvus-operator
-        version: "1.3.6"
-      - name: mlflow
-        version: "1.8.1"
-      - name: ollama
-        version: "1.39.0"
-      - name: open-webui
-        version: "12.0.1"
-      - name: vllm
-        version: "0.1.1"
-      - name: weaviate
-        version: "17.7.0"

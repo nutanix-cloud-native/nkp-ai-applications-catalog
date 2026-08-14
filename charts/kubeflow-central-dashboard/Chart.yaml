@@ -1,0 +1,9 @@
+apiVersion: v2
+name: kubeflow-central-dashboard
+description: Auto-generated from baked upstream manifests. Regenerate with 'just bake kubeflow-central-dashboard'; do not edit by hand.
+home: https://github.com/kubeflow/manifests
+type: application
+version: 1.10.0
+appVersion: "v1.10.0"
+sources:
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog

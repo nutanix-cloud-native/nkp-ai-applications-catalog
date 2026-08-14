@@ -22,12 +22,6 @@ default:
 generate-app appname version: nkp-cli
   "{{ NKP_CLI }}" generate catalog-repository --apps={{ appname }}={{ version }}
 
-# Pull a Helm chart, push to OCI, and generate the app scaffold — all in one
-# Usage: just add-app <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
-add-app app repo-name repo-url chart version oci-registry:
-    just push-helm-to-oci {{ app }} {{ repo-name }} {{ repo-url }} {{ chart }} {{ version }} {{ oci-registry }}
-    just generate-app {{ app }} {{ version }}
-
 # ---------- Checks ----------
 
 # Run pre-commit hooks and gitlint
@@ -44,11 +38,6 @@ check: pre-commit
 # Full check: pre-commit + catalog validation (ready to push)
 check-all: pre-commit validate
 
-# Check if catalog apps have newer versions at source (Helm repo or OCI)
-# Requires: helm, crane (for OCI apps). Usage: just check-versions [--json] [--app NAME]
-check-versions *ARGS:
-    ./scripts/check-app-versions.sh {{ ARGS }}
-
 # ---------- OCI registry ----------
 
 # Login to GHCR (reads .env.local)
@@ -61,117 +50,74 @@ login:
 #   OCI_REGISTRY=oci://my-registry.com/charts just push-ollama
 OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/charts')
 
-# Pull a Helm chart and push it to an OCI registry, then generate .catalog-source.yaml
-# Usage: just push-helm-to-oci <app> <repo-name> <repo-url> <chart> <version> <oci-registry>
-push-helm-to-oci app repo-name repo-url chart version oci-registry:
-    ./scripts/push-helm-to-oci.sh {{app}} {{repo-name}} {{repo-url}} {{chart}} {{version}} {{oci-registry}}
+# Mirror a chart from a Helm repository to our OCI registry
+# Usage: just mirror-chart-from-repo <repo-url> <chart> <version> [oci-registry]
+mirror-chart-from-repo repo-url chart version oci-registry=OCI_REGISTRY:
+    ./scripts/push-helm-to-oci.sh {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
-# Shortcut: push ollama chart to OCI
-push-ollama version="1.39.0" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
+# Package a bake-generated chart (charts/<app>, produced by `just bake <app>`)
+# and push it to our OCI registry. Login first with `just login`.
+# Usage: just push-baked-chart kubeflow-central-dashboard [oci-registry]
+push-baked-chart app oci-registry=OCI_REGISTRY:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    [ -f "charts/{{ app }}/Chart.yaml" ] || { echo "No chart at charts/{{ app }}; run 'just bake {{ app }}' first" >&2; exit 1; }
+    workdir=$(mktemp -d)
+    trap 'rm -rf "$workdir"' EXIT
+    echo "==> Packaging charts/{{ app }}"
+    helm package "charts/{{ app }}" -d "$workdir"
+    echo "==> Pushing to {{ oci-registry }}"
+    helm push "$workdir"/*.tgz {{ oci-registry }}
 
-# Shortcut: push ollama chart and generate scaffold in one step
-add-ollama version="1.39.0" oci-registry=OCI_REGISTRY:
-    just add-app ollama ollama-helm https://otwld.github.io/ollama-helm/ ollama {{version}} {{oci-registry}}
+# Push the generated kubeflow-central-dashboard chart to OCI.
+push-kubeflow-central-dashboard: (push-baked-chart "kubeflow-central-dashboard")
 
-# Shortcut: push vllm chart to OCI
-push-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
+# Mirror a chart from an upstream OCI registry to our OCI registry
+# Usage: just mirror-chart-from-oci oci://upstream-registry/chart <version> [oci-registry]
+mirror-chart-from-oci upstream-oci-url upstream-version oci-registry=OCI_REGISTRY:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    workdir=$(mktemp -d)
+    trap 'rm -rf "$workdir"' EXIT
+    echo "==> Pulling {{upstream-oci-url}} version {{upstream-version}}"
+    helm pull {{upstream-oci-url}} --version {{upstream-version}} -d "$workdir"
+    echo "==> Pushing to {{oci-registry}}"
+    helm push "$workdir"/*.tgz {{oci-registry}}
 
-# Shortcut: push vllm chart and generate scaffold in one step
-add-vllm version="0.1.1" oci-registry=OCI_REGISTRY:
-    just add-app vllm vllm https://open-source-ai-dev.github.io/vllm-helm-chart vllm {{version}} {{oci-registry}}
+# ---------- Render & bake (air-gappable manifests) ----------
 
-# Shortcut: push open-webui chart to OCI
-push-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci open-webui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
+# Run bake tool Go module from tools/bake; artifacts land in repo root.
+GO_BAKE := 'go -C tools/bake'
+BAKE := GO_BAKE + ' run .'
 
-# Shortcut: push weaviate chart to OCI
-push-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
+# Render and bake an app's manifest into its helmrelease/ directory.
+# Usage: just bake <app> [version]
+bake app version="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -n "{{ version }}" ]; then
+      {{ BAKE }} --app "{{ app }}" --version "{{ version }}"
+    else
+      {{ BAKE }} --app "{{ app }}"
+    fi
 
-# Shortcut: push coder chart to OCI
-push-coder version="2.30.2" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
+# Re-bake all apps and fail if committed artifacts have drifted.
+bake-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{ BAKE }} --all
+    if ! git diff --exit-code -- applications/ charts/; then
+      echo "::error::Baked artifacts are stale. Run 'just bake <app> [version]' and commit the result." >&2
+      exit 1
+    fi
 
-# Shortcut: push mlflow chart to OCI
-push-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci mlflow community-charts https://community-charts.github.io/helm-charts mlflow {{version}} {{oci-registry}}
+# Compile-check the bake tool without creating a binary.
+bake-build:
+    {{ GO_BAKE }} build -o /dev/null ./...
 
-# Shortcut: push flowise chart to OCI
-push-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
-
-# Shortcut: push jupyterhub chart to OCI
-push-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci jupyterhub jupyterhub https://hub.jupyter.org/helm-chart/ jupyterhub {{version}} {{oci-registry}}
-
-# Shortcut: push milvus-operator chart to OCI
-push-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
-
-# Shortcut: push amd-gpu-operator chart to OCI
-push-amd-gpu-operator version="1.4.1" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci amd-gpu-operator rocm https://rocm.github.io/gpu-operator gpu-operator-charts {{version}} {{oci-registry}}
-
-# Shortcut: push amd-network-operator chart to OCI
-push-amd-network-operator version="1.0.0" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci amd-network-operator rocm-network https://rocm.github.io/network-operator network-operator-charts {{version}} {{oci-registry}}
-
-# Shortcut: push amd-device-metrics-exporter chart to OCI
-push-amd-device-metrics-exporter version="1.4.2" oci-registry=OCI_REGISTRY:
-    just push-helm-to-oci amd-device-metrics-exporter rocm-exporter https://rocm.github.io/device-metrics-exporter device-metrics-exporter-charts {{version}} {{oci-registry}}
-
-# ---------- Add App (push + generate) ----------
-
-# Shortcut: push open-webui chart and generate scaffold in one step
-add-openwebui version="12.0.1" oci-registry=OCI_REGISTRY:
-    just add-app open-webui open-webui https://helm.openwebui.com/ open-webui {{version}} {{oci-registry}}
-
-# Shortcut: push weaviate chart and generate scaffold in one step
-add-weaviate version="17.7.0" oci-registry=OCI_REGISTRY:
-    just add-app weaviate weaviate https://weaviate.github.io/weaviate-helm/ weaviate {{version}} {{oci-registry}}
-
-# Shortcut: push coder chart and generate scaffold in one step
-add-coder version="2.30.2" oci-registry=OCI_REGISTRY:
-    just add-app coder coder-v2 https://helm.coder.com/v2 coder {{version}} {{oci-registry}}
-
-# Shortcut: push mlflow chart and generate scaffold in one step
-add-mlflow version="1.8.1" oci-registry=OCI_REGISTRY:
-    just add-app mlflow community-charts https://community-charts.github.io/helm-charts mlflow {{version}} {{oci-registry}}
-
-# Shortcut: push flowise chart and generate scaffold in one step
-add-flowise version="6.0.0" oci-registry=OCI_REGISTRY:
-    just add-app flowise cowboysysop https://cowboysysop.github.io/charts/ flowise {{version}} {{oci-registry}}
-
-# Shortcut: push jupyterhub chart and generate scaffold in one step
-add-jupyterhub version="4.3.2" oci-registry=OCI_REGISTRY:
-    just add-app jupyterhub jupyterhub https://hub.jupyter.org/helm-chart/ jupyterhub {{version}} {{oci-registry}}
-
-# Shortcut: push milvus-operator chart and generate scaffold in one step
-add-milvus-operator version="1.3.6" oci-registry=OCI_REGISTRY:
-    just add-app milvus-operator milvus-operator https://zilliztech.github.io/milvus-operator/ milvus-operator {{version}} {{oci-registry}}
-
-# Shortcut: push amd-gpu-operator chart and generate scaffold in one step
-add-amd-gpu-operator version="1.4.1" oci-registry=OCI_REGISTRY:
-    just add-app amd-gpu-operator rocm https://rocm.github.io/gpu-operator gpu-operator-charts {{version}} {{oci-registry}}
-
-# Shortcut: push amd-network-operator chart and generate scaffold in one step
-add-amd-network-operator version="1.0.0" oci-registry=OCI_REGISTRY:
-    just add-app amd-network-operator rocm-network https://rocm.github.io/network-operator network-operator-charts {{version}} {{oci-registry}}
-
-# Shortcut: push amd-device-metrics-exporter chart and generate scaffold in one step
-add-amd-device-metrics-exporter version="1.4.2" oci-registry=OCI_REGISTRY:
-    just add-app amd-device-metrics-exporter rocm-exporter https://rocm.github.io/device-metrics-exporter device-metrics-exporter-charts {{version}} {{oci-registry}}
-
-# ---------- Kubeflow Kustomize image mirroring ----------
-
-# List container images from Kubeflow Kustomize apps (excludes kubeflow-pipelines)
-list-kubeflow-images:
-    ./scripts/mirror-kubeflow-images.sh --list-only
-
-# Mirror Kubeflow Kustomize images to a registry (requires crane or docker)
-# Usage: just mirror-kubeflow-images ghcr.io/deepak-muley
-#        just mirror-kubeflow-images ghcr.io/deepak-muley katib
-mirror-kubeflow-images registry app="":
-    bash -c 'if [ -n "{{app}}" ]; then ./scripts/mirror-kubeflow-images.sh --push {{registry}} --app {{app}}; else ./scripts/mirror-kubeflow-images.sh --push {{registry}}; fi'
+# Vet and unit-test the bake tool.
+bake-test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{ GO_BAKE }} vet ./...
+    {{ GO_BAKE }} test ./...

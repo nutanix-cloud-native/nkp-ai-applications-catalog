@@ -1,22 +1,71 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
 data:
   values.yaml: |
     ---
     fullnameOverride: jupyterhub
     hub:
-      baseUrl: /jupyter
+      baseUrl: /nkp/jupyter
       config:
+        JupyterHub:
+          authenticator_class: remoteuser
         Authenticator:
+          auto_login: true
           admin_users:
             - admin
-          allowed_users:
-            - user
-        JupyterHub:
-          authenticator_class: dummy
+      extraConfig:
+        # Inline RemoteUserAuthenticator - reads username from X-Forwarded-User header
+        # set by Traefik Forward Auth after NKP SSO authentication.
+        # Based on https://github.com/cwaldbieser/jhub_remote_user_authenticator
+        remoteuser.py: |
+          from jupyterhub.handlers import BaseHandler
+          from jupyterhub.auth import Authenticator
+          from tornado import web
+          from traitlets import Unicode
+
+          class RemoteUserLoginHandler(BaseHandler):
+              def get(self):
+                  header_name = self.authenticator.header_name
+                  remote_user = self.request.headers.get(header_name, "")
+                  if remote_user == "":
+                      raise web.HTTPError(401)
+                  user = self.user_from_username(remote_user)
+                  self.set_login_cookie(user)
+                  next_url = self.get_next_url(user)
+                  self.redirect(next_url)
+
+          class RemoteUserAuthenticator(Authenticator):
+              header_name = Unicode(
+                  default_value='X-Forwarded-User',
+                  config=True,
+                  help="HTTP header to inspect for the authenticated username.")
+
+              def get_handlers(self, app):
+                  return [(r'/login', RemoteUserLoginHandler)]
+
+              async def authenticate(self, *args):
+                  raise NotImplementedError()
+
+          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
       networkPolicy:
         egress:
           - ports:
               - port: 6443
+    singleuser:
+      # Block cloud-metadata egress via NetworkPolicy instead of the chart's default iptables
+      # init container, which uses legacy iptables and crashes on nftables-only nodes
+      # (e.g. Rocky 9: "can't initialize iptables table filter"), blocking user server spawn.
+      # The NetworkPolicy denies egress to 169.254.169.254 at the CNI layer; set explicitly so
+      # the security posture is reviewable and cannot regress if chart defaults change.
+      cloudMetadata:
+        blockWithIptables: false
+      networkPolicy:
+        enabled: true
+        egressAllowRules:
+          cloudMetadataServer: false
     # Use ClusterIP when Ingress is enabled so Helm does not wait for LoadBalancer IP
     # (LoadBalancer can stay Pending on bare-metal; Ingress provides external access)
     proxy:
@@ -27,10 +76,7 @@ data:
       annotations:
         # Do NOT use stripprefixes: JupyterHub expects full path (hub.baseUrl: /jupyter)
         traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.middlewares: "${releaseNamespace}-forwardauth@kubernetescrd"
       ingressClassName: kommander-traefik
       pathType: ImplementationSpecific
-kind: ConfigMap
-metadata:
-  name: ${releaseName}-config-defaults
-  namespace: ${releaseNamespace}
 ---

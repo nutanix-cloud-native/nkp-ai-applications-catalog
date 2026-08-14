@@ -6,27 +6,26 @@ name: Publish Chart to GHCR
 on:
   workflow_dispatch:
     inputs:
-      chart_repo:
-        description: 'Source Helm/OCI repository URL (e.g., https://weaviate.github.io/weaviate-helm/, oci://harbor.eng.nutanix.com/amd-operators)'
-        type: string
+      source_type:
+        description: 'Source type: "helm-repo" for traditional Helm repos, "oci" for upstream OCI registries'
+        type: choice
+        options:
+          - helm-repo
+          - oci
+        default: helm-repo
         required: true
-      repo_name:
-        description: 'Helm repo alias for helm repo add / helm pull (e.g., weaviate, ollama-helm)'
+      upstream_url:
+        description: 'Upstream URL — Helm repo (e.g., https://otwld.github.io/ollama-helm/) or OCI (e.g., oci://registry-1.docker.io/bitnamicharts/nginx)'
         type: string
         required: true
       chart_name:
-        description: 'Helm chart name in the repo (e.g., weaviate, ollama)'
-        type: string
-        required: true
-      chart_version:
-        description: 'Helm chart version'
-        type: string
-        required: true
-      target_oci_registry:
-        description: 'Target OCI registry (e.g., oci://ghcr.io/nutanix-cloud-native/charts)'
+        description: 'Chart name in the Helm repo (helm-repo only, e.g., ollama)'
         type: string
         required: false
-        default: 'oci://ghcr.io/nutanix-cloud-native/charts'
+      chart_version:
+        description: 'Chart version to mirror'
+        type: string
+        required: true
 
 jobs:
   push-chart:
@@ -57,15 +56,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push chart using just/script
+      - name: Mirror chart from Helm repo
+        if: inputs.source_type == 'helm-repo'
         run: |
-          devbox run -- just push-helm-to-oci \
-            "${{ github.event.inputs.chart_name }}" \
-            "${{ github.event.inputs.repo_name }}" \
-            "${{ github.event.inputs.chart_repo }}" \
-            "${{ github.event.inputs.chart_name }}" \
-            "${{ github.event.inputs.chart_version }}" \
-            "${{ github.event.inputs.target_oci_registry }}"
+          devbox run -- just mirror-chart-from-repo \
+            "${{ inputs.upstream_url }}" \
+            "${{ inputs.chart_name }}" \
+            "${{ inputs.chart_version }}"
+        env:
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror chart from upstream OCI registry
+        if: inputs.source_type == 'oci'
+        run: |
+          devbox run -- just mirror-chart-from-oci \
+            "${{ inputs.upstream_url }}" \
+            "${{ inputs.chart_version }}"
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
