@@ -1,0 +1,2 @@
+ghcr.io/kagent-dev/kagent/app:0.9.12
+ghcr.io/kagent-dev/kagent/skills-init:0.9.12

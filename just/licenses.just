@@ -3,7 +3,7 @@
 # Usage:
 #   just generate-licenses
 #   just generate-licenses
-#   just generate-licenses kagent=0.7.13 ollama=1.39.0
+#   just generate-licenses kagent=0.9.12 ollama=1.72.0
 #   just generate-licenses amd*
 #
 # Notes:

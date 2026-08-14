@@ -1,6 +1,14 @@
 ignore: []
 resources:
+- container_image: ghcr.io/kagent-dev/kagent/app:0.9.12
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/kagent.git
 - container_image: ghcr.io/kagent-dev/kagent/controller:0.9.12
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/kagent-dev/kagent.git
+- container_image: ghcr.io/kagent-dev/kagent/skills-init:0.9.12
   sources:
   - ref: v${image_tag}
     url: https://github.com/kagent-dev/kagent.git

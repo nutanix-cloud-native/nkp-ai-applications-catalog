@@ -74,7 +74,9 @@ applications:
       - docker.io/library/postgres:18.3-alpine
       - docker.io/mcp/grafana:latest
       - ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
+      - ghcr.io/kagent-dev/kagent/app:0.9.12
       - ghcr.io/kagent-dev/kagent/controller:0.9.12
+      - ghcr.io/kagent-dev/kagent/skills-init:0.9.12
       - ghcr.io/kagent-dev/kagent/tools:0.2.1
       - ghcr.io/kagent-dev/kagent/ui:0.9.12
       - ghcr.io/kagent-dev/kmcp/controller:0.3.0

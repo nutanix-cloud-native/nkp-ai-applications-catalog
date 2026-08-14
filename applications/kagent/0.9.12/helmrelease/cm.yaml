@@ -11,6 +11,10 @@ data:
     ui:
       service:
         type: ClusterIP
+      # The chart otherwise creates an OpenShift Route when the Route API exists.
+      # Keep all external routing disabled for this catalog entry.
+      route:
+        enabled: false
     # Do not set ui.publicBackendUrl here. The UI build inlines this value at
     # build time and the image entrypoint does not perform runtime substitution,
     # so overriding it here has no effect. The chart default "/api" is correct.
@@ -33,7 +37,7 @@ data:
         provider: "Ollama"
         model: "llama3.2"
         config:
-          host: "ollama-ollama.ollama.svc.cluster.local:11434"
+          host: "ollama.ollama.svc.cluster.local:11434"
           options:
             num_ctx: "64000"
 kind: ConfigMap
