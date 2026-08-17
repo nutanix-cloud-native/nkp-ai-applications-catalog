@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow
+{{- if .Values.strictMesh }}
+  labels:
+    istio.io/rev: istio-helm
+{{- end }}

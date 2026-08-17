@@ -1,0 +1,94 @@
+{{- $c := include "kubeflow-platform.derived" . | fromYaml -}}
+{{- if lookup "v1" "Namespace" "" "kube-system" -}}
+{{- if not $c.kubeflowIngressHost }}{{- fail "kubeflow-platform: the ingress gateway has no LoadBalancer address yet - ensure istio-helm is Ready (Flux will retry), or set config.kubeflowIngressHost." }}{{- end }}
+{{- if not $c.dexIssuerURL }}{{- fail "kubeflow-platform: could not derive the Dex issuer from kommander-vars.ingressAddress - set config.dexIssuerURL." }}{{- end }}
+{{- end }}
+# Persists the generated secrets so upgrades reuse them (no login churn).
+# Note: We use Helm lookups to preserve these secrets. If this Secret is
+# deleted, Helm regenerates values on the next reconciliation. This is safe,
+# but it invalidates active sessions and users must sign in again.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubeflow-platform-generated
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+  oauth2ClientSecret: {{ $c.oauth2ClientSecret | quote }}
+  oauth2CookieSecret: {{ $c.oauth2CookieSecret | quote }}
+---
+# Single sign-on entry point: authenticates against NKP Dex, injects
+# kubeflow-userid/-groups, and path-routes to each UI. Inline reverse-proxy, so no
+# change to NKP's shared istiod.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oauth2-proxy-config
+  namespace: kubeflow
+stringData:
+  oauth2_proxy.cfg: |
+    reverse_proxy = true
+    email_domains = ["*"]
+    cookie_secret = "{{ $c.oauth2CookieSecret }}"
+    cookie_name = "oauth2_proxy_kubeflow"
+    cookie_secure = false
+    ssl_insecure_skip_verify = true
+    skip_provider_button = false
+    redirect_url = "{{ $c.kubeflowIngressURL }}/oauth2/callback"
+    whitelist_domains = ["{{ $c.kubeflowIngressHost }}"]
+  alpha.yaml: |
+    server:
+      bindAddress: "0.0.0.0:4180"
+    # Routes come from .Values.routes (add a component = one entry). OIDC apps like
+    # JupyterHub are absent by design - they use their own Dex client + ingress.
+    upstreamConfig:
+      upstreams:
+{{- range .Values.routes }}
+        - id: {{ .id }}
+          path: {{ .path }}
+          uri: {{ .uri }}
+{{- end }}
+    injectRequestHeaders:
+      - name: kubeflow-userid
+        values:
+          - claim: email
+      - name: kubeflow-groups
+        values:
+          - claim: groups
+    providers:
+      - id: dex
+        provider: oidc
+        clientID: dex-controller-kubeflow-oauth2-proxy
+        clientSecret: "{{ $c.oauth2ClientSecret }}"
+        scope: "openid profile email groups"
+        oidcConfig:
+          issuerURL: "{{ $c.dexIssuerURL }}"
+          emailClaim: email
+          groupsClaim: groups
+          userIDClaim: email
+          # alpha oidcConfig drops the legacy ["aud"] default; without it the
+          # audience check fails ("audience claims []") -> 500.
+          audienceClaims: ["aud"]
+          insecureAllowUnverifiedEmail: true
+---
+# Registers oauth2-proxy as a Dex client; the resulting client_id is the CR name
+# prefixed with "dex-controller-".
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubeflow-oauth2-client-secret
+  namespace: kommander
+stringData:
+  client-secret: "{{ $c.oauth2ClientSecret }}"
+---
+apiVersion: dex.mesosphere.io/v1alpha1
+kind: Client
+metadata:
+  name: kubeflow-oauth2-proxy
+  namespace: kommander
+spec:
+  clientSecretRef:
+    name: kubeflow-oauth2-client-secret
+  displayName: Kubeflow
+  redirectURIs:
+    - "{{ $c.kubeflowIngressURL }}/oauth2/callback"

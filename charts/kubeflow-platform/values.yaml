@@ -1,0 +1,73 @@
+# Empty fields are derived from the cluster or generated on install, so the app
+# needs no manual setup. Override any of them here or via configOverrides.
+config:
+  # Empty -> https://<kommander-vars.ingressAddress>/dex
+  dexIssuerURL: ""
+  # Empty -> read from the ingress gateway Service
+  kubeflowIngressURL: ""
+  kubeflowIngressHost: ""
+  # Empty -> generated once, then preserved across upgrades
+  oauth2ClientSecret: ""
+  oauth2CookieSecret: ""
+  # Where to read the ingress gateway LoadBalancer address
+  ingressGatewayNamespace: istio-helm-gateway-ns
+  ingressGatewayService: istio-helm-ingressgateway
+
+# Soft mode keeps multi-user isolation without strict in-mesh mTLS policy.
+# Enable when you need principal-based mesh enforcement.
+strictMesh: false
+
+# oauth2-proxy's route table: it logs users in once against Dex, then path-routes to
+# each component UI. Add a component by appending {id, path, uri} here or via
+# configOverrides - no template edit. Keep the catch-all "/" last. OIDC-capable apps
+# (e.g. JupyterHub) don't belong here; they use their own Dex client + ingress.
+routes:
+  - id: katib
+    path: /katib/
+    uri: http://katib-ui.katib.svc.cluster.local
+  - id: pipeline-apis
+    path: /apis/
+    uri: http://ml-pipeline-ui.kubeflow.svc.cluster.local
+  # gRPC-Web MLMD. Trailing slash is required: a non-slash path is an exact match,
+  # so it misses and falls through to the dashboard ("Unknown Content-type").
+  - id: pipeline-mlmd
+    path: /ml_metadata.MetadataStoreService/
+    uri: http://metadata-envoy-service.kubeflow.svc.cluster.local:9090
+  - id: pipeline-artifacts
+    path: /artifacts/
+    uri: http://ml-pipeline-ui.kubeflow.svc.cluster.local
+  - id: pipeline
+    path: /pipeline/
+    uri: http://ml-pipeline-ui.kubeflow.svc.cluster.local
+  - id: dashboard
+    path: /
+    uri: http://centraldashboard.kubeflow-central-dashboard.svc.cluster.local
+
+# Labels stamped on every user Profile namespace so component controllers/webhooks
+# act on it. Add a component's required label here when you onboard it.
+profileNamespaceLabels:
+  katib.kubeflow.org/metrics-collector-injection: "enabled"
+  serving.kubeflow.org/inferenceservice: "enabled"
+  pipelines.kubeflow.org/enabled: "true"
+  app.kubernetes.io/part-of: "kubeflow-profile"
+
+# Per-user workspaces. Each entry renders a Kubeflow Profile (isolated namespace +
+# RBAC); owner must equal the user's Dex email. Removing an entry prunes that
+# namespace, so edit with care.
+profiles: []
+#  - name: alice
+#    owner: alice@example.com
+
+workloads:
+  oauth2proxy:
+    replicas: 1
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  profiles:
+    replicas: 1
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
