@@ -28,7 +28,7 @@ applications/
 
 ## Adding a New Application
 
-When asked to add a new application, follow this exact workflow. Use an existing application (e.g. `agentgateway/2.2.0`, `kagent/0.7.13`, or `vllm/0.1.1`) as a reference.
+When asked to add a new application, follow this exact workflow. Use an existing application as a reference.
 
 ### NKP CLI Workflow
 
@@ -235,7 +235,7 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 
 ## App namespace convention
 
-Every application must deploy workloads to its **own dedicated namespace** (e.g. `kagent`, `ollama`, `weaviate`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
+Every application must deploy workloads to its **own dedicated namespace** (`ollama`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
 **Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, tensorboard-controller, training-operator, spark-operator.
 
