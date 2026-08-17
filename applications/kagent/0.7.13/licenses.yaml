@@ -1,6 +1,0 @@
-ignore: []
-resources:
-- container_image: cr.kagent.dev/kagent-dev/kagent/controller:0.7.13
-  sources:
-  - ref: v${image_tag}
-    url: https://github.com/kagent-dev/kagent.git
