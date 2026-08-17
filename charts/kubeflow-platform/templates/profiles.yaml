@@ -1,0 +1,294 @@
+{{- $w := .Values.workloads.profiles -}}
+{{- $c := include "kubeflow-platform.derived" . | fromYaml -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-controller-service-account
+  namespace: kubeflow
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-leader-election-role
+  namespace: kubeflow
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-leader-election-rolebinding
+  namespace: kubeflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: profiles-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: profiles-controller-service-account
+  namespace: kubeflow
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-cluster-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: profiles-controller-service-account
+  namespace: kubeflow
+---
+apiVersion: v1
+data:
+  # From .Values.profileNamespaceLabels - onboarding a component's label is one line.
+  namespace-labels.yaml: |
+    {{- range $k, $v := .Values.profileNamespaceLabels }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
+kind: ConfigMap
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: namespace-labels-data-4df5t8mdgf
+  namespace: kubeflow
+---
+apiVersion: v1
+data:
+  ADMIN: ""
+  ISTIO_INGRESS_GATEWAY_PRINCIPAL: {{ $c.ingressGatewayPrincipal | quote }}
+  KFP_UI_PRINCIPAL: cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+  NOTEBOOK_CONTROLLER_PRINCIPAL: cluster.local/ns/kubeflow/sa/notebook-controller-service-account
+  USERID_HEADER: kubeflow-userid
+  USERID_PREFIX: ""
+  WORKLOAD_IDENTITY: ""
+kind: ConfigMap
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-config-5h9m86f79f
+  namespace: kubeflow
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-kfam
+  namespace: kubeflow
+spec:
+  ports:
+  - port: 8081
+  selector:
+    kustomize.component: profiles
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-deployment
+  namespace: kubeflow
+spec:
+  replicas: {{ $w.replicas | default 1 }}
+  selector:
+    matchLabels:
+      kustomize.component: profiles
+  template:
+    metadata:
+      labels:
+        kustomize.component: profiles
+        sidecar.istio.io/inject: "true"
+        istio.io/rev: istio-helm
+    spec:
+      containers:
+      - command:
+        - /access-management
+        - -cluster-admin
+        - $(ADMIN)
+        - -userid-header
+        - $(USERID_HEADER)
+        - -userid-prefix
+        - $(USERID_PREFIX)
+        envFrom:
+        - configMapRef:
+            name: profiles-config-5h9m86f79f
+        image: ghcr.io/kubeflow/kubeflow/kfam:v1.10.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        name: kfam
+        ports:
+        - containerPort: 8081
+          name: kfam-http
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+      - command:
+        - /manager
+        - -userid-header
+        - $(USERID_HEADER)
+        - -userid-prefix
+        - $(USERID_PREFIX)
+        - -workload-identity
+        - $(WORKLOAD_IDENTITY)
+        envFrom:
+        - configMapRef:
+            name: profiles-config-5h9m86f79f
+        image: ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9876
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        ports:
+        - containerPort: 9876
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 9876
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        {{- with $w.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /etc/profile-controller
+          name: namespace-labels
+          readOnly: true
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: profiles-controller-service-account
+      {{- with $w.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $w.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $w.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - configMap:
+          name: namespace-labels-data-4df5t8mdgf
+        name: namespace-labels
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-kfam
+  namespace: kubeflow
+spec:
+  gateways:
+  - kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - headers:
+      request:
+        add:
+          x-forwarded-prefix: /kfam
+    match:
+    - uri:
+        prefix: /kfam/
+    rewrite:
+      uri: /kfam/
+    route:
+    - destination:
+        host: profiles-kfam.kubeflow.svc.cluster.local
+        port:
+          number: 8081
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  labels:
+    kustomize.component: profiles
+  name: profiles-kfam
+  namespace: kubeflow
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/kubeflow-central-dashboard/sa/centraldashboard
+        - cluster.local/ns/kubeflow/sa/centraldashboard
+        - cluster.local/ns/kubeflow/sa/ml-pipeline
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+  selector:
+    matchLabels:
+      kustomize.component: profiles
+{{- range .Values.profiles }}
+---
+# User workspace from .Values.profiles (owner MUST equal the Dex email claim).
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: {{ .name }}
+spec:
+  owner:
+    kind: User
+    name: {{ .owner | quote }}
+{{- end }}

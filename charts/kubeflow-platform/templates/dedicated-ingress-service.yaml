@@ -1,0 +1,26 @@
+{{- if .Values.dedicatedIngress.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.dedicatedIngress.serviceName }}
+  namespace: kubeflow
+  labels:
+    app.kubernetes.io/name: kubeflow-platform
+  {{- with .Values.dedicatedIngress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: LoadBalancer
+  {{- with .Values.dedicatedIngress.loadBalancerIP }}
+  loadBalancerIP: {{ . | quote }}
+  {{- end }}
+  externalTrafficPolicy: {{ .Values.dedicatedIngress.externalTrafficPolicy }}
+  selector:
+    istio: {{ .Values.dedicatedIngress.gatewayLabel }}
+  ports:
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+{{- end }}
