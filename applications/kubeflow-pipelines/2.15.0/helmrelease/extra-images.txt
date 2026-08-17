@@ -1,4 +1,5 @@
 ghcr.io/containerd/busybox
 ghcr.io/kubeflow/kfp-driver:2.15.0
+ghcr.io/kubeflow/kfp-frontend
 ghcr.io/kubeflow/kfp-launcher:2.15.0
 quay.io/argoproj/argoexec:v3.7.3

@@ -7,7 +7,7 @@ spec:
   interval: 6h0m0s
   ref:
     tag: 2.15.0
-  url: oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-pipelines
+  url: oci://ghcr.io/snimars/charts/kubeflow-pipelines
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease

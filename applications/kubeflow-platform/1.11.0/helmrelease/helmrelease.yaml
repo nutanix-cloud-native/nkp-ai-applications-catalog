@@ -6,13 +6,13 @@ metadata:
 spec:
   interval: 6h0m0s
   ref:
-    tag: 1.10.0
-  url: oci://ghcr.io/snimars/charts/kubeflow-central-dashboard
+    tag: 1.11.0
+  url: oci://ghcr.io/snimars/charts/kubeflow-platform
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: kubeflow-central-dashboard
+  name: kubeflow-platform
   namespace: ${releaseNamespace}
 spec:
   chartRef:
@@ -22,14 +22,14 @@ spec:
   install:
     createNamespace: true
     remediation:
-      retries: 30
+      retries: 60
   interval: 15s
-  # Baked manifests hardcode this namespace (kustomize namespace transform at bake
-  # time), and RBAC subjects/menu links are already resolved for it.
+  # createNamespace makes the shared kubeflow namespace without the chart owning it,
+  # so disabling the app won't prune it.
   targetNamespace: kubeflow
   upgrade:
     remediation:
-      retries: 30
+      retries: 60
   valuesFrom:
   - kind: ConfigMap
     name: ${releaseName}-${appVersion}-defaults

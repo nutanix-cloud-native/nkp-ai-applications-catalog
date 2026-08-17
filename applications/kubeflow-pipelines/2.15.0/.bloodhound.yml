@@ -9,4 +9,8 @@ k8s_versions:
 strict: true
 
 # types to be skipped (e.g. certmanager.k8s.io/v1, or certmanager.k8s.io/v1/Certificate)
-skip_types: []
+skip_types:
+  - networking.istio.io/v1alpha3/DestinationRule
+  - networking.istio.io/v1alpha3/VirtualService
+  - networking.istio.io/v1alpha3/EnvoyFilter
+  - security.istio.io/v1beta1/AuthorizationPolicy
