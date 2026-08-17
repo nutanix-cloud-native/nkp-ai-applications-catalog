@@ -10,7 +10,6 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
-      - oci://<registry-url>/nkp-ai-applications-catalog/kagent:0.7.13
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-central-dashboard:1.10.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-pipelines:2.15.0
@@ -104,18 +103,6 @@ applications:
       - quay.io/jupyterhub/k8s-singleuser-sample:4.3.2
       - registry.k8s.io/kube-scheduler:v1.30.14
       - registry.k8s.io/pause:3.10.1
-  - name: kagent
-    version: 0.7.13
-    images:
-      - oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds:0.7.13
-      - oci://ghcr.io/kagent-dev/kagent/helm/kagent:0.7.13
-      - docker.io/mcp/grafana:latest
-      - docker.io/mesosphere/kubectl:v1.34.1-alpine
-      - ghcr.io/kagent-dev/doc2vec/mcp:1.1.14
-      - ghcr.io/kagent-dev/kagent/controller:0.7.13
-      - ghcr.io/kagent-dev/kagent/tools:0.0.13
-      - ghcr.io/kagent-dev/kagent/ui:0.7.13
-      - ghcr.io/kagent-dev/kmcp/controller:0.2.2
   - name: kai-scheduler
     version: 0.15.2
     images:
