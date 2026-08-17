@@ -120,7 +120,7 @@ apiVersion: v1
 data:
   CD_CLUSTER_DOMAIN: cluster.local
   CD_COLLECT_METRICS: "true"
-  CD_REGISTRATION_FLOW: "false"
+  CD_REGISTRATION_FLOW: "true"
   CD_USERID_HEADER: kubeflow-userid
   CD_USERID_PREFIX: ""
 kind: ConfigMap
@@ -198,7 +198,7 @@ spec:
             - name: PROFILES_KFAM_SERVICE_HOST
               value: profiles-kfam.kubeflow
             - name: REGISTRATION_FLOW
-              value: "false"
+              value: "true"
             - name: DASHBOARD_CONFIGMAP
               value: centraldashboard-config
             - name: POD_NAMESPACE

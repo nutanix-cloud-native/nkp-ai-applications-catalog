@@ -16,7 +16,8 @@
     "jq@latest",
     "kind@latest",
     "awscli2@latest",
-    "kustomize@5.8.1"
+    "kustomize@5.8.1",
+    "go@1.26.4"
   ],
   "shell": {
     "init_hook": [

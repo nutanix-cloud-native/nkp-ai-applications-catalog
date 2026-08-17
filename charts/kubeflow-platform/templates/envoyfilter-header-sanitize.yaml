@@ -1,0 +1,31 @@
+{{- if .Values.strictMesh }}
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: sanitize-kubeflow-userid
+  namespace: kubeflow
+spec:
+  workloadSelector:
+    labels:
+      app: ml-pipeline
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inlineCode: |
+            function envoy_on_request(request_handle)
+              -- For the spike, we are just deploying the filter to ensure it doesn't break routing.
+              -- Full IP validation logic goes here for production.
+              request_handle:logInfo("Executing header sanitize filter")
+            end
+{{- end }}

@@ -1,0 +1,226 @@
+# Rendered from github.com/kubeflow/manifests@v1.11.0
+# kustomize build applications/profiles/upstream/overlays/kubeflow
+# Regenerate on version bump; do not hand-edit the upstream objects.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  labels:
+    kustomize.component: profiles
+  name: profiles.kubeflow.org
+spec:
+  conversion:
+    strategy: None
+  group: kubeflow.org
+  names:
+    kind: Profile
+    listKind: ProfileList
+    plural: profiles
+    singular: profile
+  preserveUnknownFields: false
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Profile is the Schema for the profiles API
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileSpec defines the desired state of Profile
+            properties:
+              owner:
+                description: The profile owner
+                properties:
+                  apiGroup:
+                    type: string
+                  kind:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              plugins:
+                items:
+                  description: Plugin is for customize actions on different platform.
+                  properties:
+                    apiVersion:
+                      type: string
+                    kind:
+                      type: string
+                    spec:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  type: object
+                type: array
+              resourceQuotaSpec:
+                description: Resourcequota that will be applied to target namespace
+                properties:
+                  hard:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
+                  scopeSelector:
+                    properties:
+                      matchExpressions:
+                        items:
+                          properties:
+                            operator:
+                              type: string
+                            scopeName:
+                              type: string
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - operator
+                          - scopeName
+                          type: object
+                        type: array
+                    type: object
+                  scopes:
+                    items:
+                      type: string
+                    type: array
+                type: object
+            type: object
+          status:
+            description: ProfileStatus defines the observed state of Profile
+            properties:
+              conditions:
+                items:
+                  properties:
+                    message:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Profile is the Schema for the profiles API
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileSpec defines the desired state of Profile
+            properties:
+              owner:
+                description: The profile owner
+                properties:
+                  apiGroup:
+                    type: string
+                  kind:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              plugins:
+                items:
+                  description: Plugin is for customize actions on different platform.
+                  properties:
+                    apiVersion:
+                      type: string
+                    kind:
+                      type: string
+                    spec:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  type: object
+                type: array
+              resourceQuotaSpec:
+                description: Resourcequota that will be applied to target namespace
+                properties:
+                  hard:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    type: object
+                  scopeSelector:
+                    properties:
+                      matchExpressions:
+                        items:
+                          properties:
+                            operator:
+                              type: string
+                            scopeName:
+                              type: string
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - operator
+                          - scopeName
+                          type: object
+                        type: array
+                    type: object
+                  scopes:
+                    items:
+                      type: string
+                    type: array
+                type: object
+            type: object
+          status:
+            description: ProfileStatus defines the observed state of Profile
+            properties:
+              conditions:
+                items:
+                  properties:
+                    message:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

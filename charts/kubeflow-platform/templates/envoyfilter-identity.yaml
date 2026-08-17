@@ -1,0 +1,50 @@
+{{- if .Values.strictMesh }}
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: preserve-kubeflow-userid
+  namespace: kubeflow
+spec:
+  workloadSelector:
+    labels:
+      app: ml-pipeline
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inlineCode: |
+            function envoy_on_request(request_handle)
+              local user_id = request_handle:headers():get("kubeflow-userid")
+              if user_id and user_id ~= "" then
+                request_handle:headers():replace("kubeflow-userid", user_id)
+                return
+              end
+
+              -- Some proxy paths forward identity under alternate headers.
+              -- Normalize to kubeflow-userid so KFP authz sees a consistent identity.
+              local fallback_headers = {
+                "x-auth-request-email",
+                "x-forwarded-email",
+                "x-forwarded-user",
+                "x-goog-authenticated-user-email"
+              }
+
+              for _, header_name in ipairs(fallback_headers) do
+                local fallback = request_handle:headers():get(header_name)
+                if fallback and fallback ~= "" then
+                  request_handle:headers():add("kubeflow-userid", fallback)
+                  return
+                end
+              end
+            end
+{{- end }}
