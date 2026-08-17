@@ -1,0 +1,10 @@
+ignore: []
+resources:
+- container_image: ghcr.io/slinkyproject/slurm-operator-webhook:1.1.1
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/SlinkyProject/slurm-operator.git
+- container_image: ghcr.io/slinkyproject/slurm-operator:1.1.1
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/SlinkyProject/slurm-operator.git

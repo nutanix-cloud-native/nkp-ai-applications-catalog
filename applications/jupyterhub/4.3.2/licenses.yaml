@@ -1,0 +1,26 @@
+ignore: []
+resources:
+- container_image: quay.io/jupyterhub/configurable-http-proxy:5.1.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/jupyterhub/configurable-http-proxy.git
+- container_image: quay.io/jupyterhub/k8s-hub:4.3.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/jupyterhub/zero-to-jupyterhub-k8s.git
+- container_image: quay.io/jupyterhub/k8s-image-awaiter:4.3.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/jupyterhub/zero-to-jupyterhub-k8s.git
+- container_image: quay.io/jupyterhub/k8s-singleuser-sample:4.3.2
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/jupyterhub/zero-to-jupyterhub-k8s.git
+- container_image: registry.k8s.io/kube-scheduler:v1.30.14
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubernetes/kubernetes.git
+- container_image: registry.k8s.io/pause:3.10.1
+  sources:
+  - ref: master
+    url: https://github.com/kubernetes/kubernetes.git

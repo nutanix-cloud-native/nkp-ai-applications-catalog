@@ -1,0 +1,6 @@
+ignore: []
+resources:
+- container_image: ghcr.io/kubeflow/kubeflow/central-dashboard:v1.10.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/kubeflow.git

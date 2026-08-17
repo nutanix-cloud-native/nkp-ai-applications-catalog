@@ -1,0 +1,74 @@
+ignore: []
+resources:
+- container_image: docker.io/chrislusf/seaweedfs:4.00
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/seaweedfs/seaweedfs.git
+- container_image: docker.io/library/mysql:8.4
+  sources:
+  - ref: master
+    url: https://github.com/docker-library/mysql.git
+- container_image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/google/ml-metadata.git
+- container_image: ghcr.io/containerd/busybox
+  sources:
+  - ref: main
+    url: https://github.com/containerd/containerd.git
+- container_image: ghcr.io/kubeflow/kfp-api-server:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-cache-deployer:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-cache-server:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-driver:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-frontend:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-launcher:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-metadata-envoy:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-metadata-writer:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-persistence-agent:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-viewer-crd-controller:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: ghcr.io/kubeflow/kfp-visualization-server:2.15.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/pipelines.git
+- container_image: quay.io/argoproj/argoexec:v3.7.3
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/argoproj/argo-workflows.git
+- container_image: quay.io/argoproj/workflow-controller:v3.7.3
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/argoproj/argo-workflows.git
