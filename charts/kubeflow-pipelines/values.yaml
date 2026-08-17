@@ -50,3 +50,20 @@ workloads:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+  seaweedfs:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 32m
+        memory: 128Mi
+    nodeSelector: {}
+    # Allows scheduling on control-plane nodes in small/dev clusters where
+    # worker pools can be CPU-saturated during first install.
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    affinity: {}
+storage:
+  mysql: 20Gi
+  seaweedfs: 10Gi

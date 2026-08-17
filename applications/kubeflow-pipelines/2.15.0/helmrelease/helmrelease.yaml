@@ -21,9 +21,13 @@ spec:
     namespace: ${releaseNamespace}
   install:
     createNamespace: true
+    disableWait: true
     remediation:
       retries: 30
   interval: 15s
+  # Pipelines first install can take longer under constrained clusters due many
+  # Deployments + Istio sidecars + PVC provisioning; avoid premature remediation.
+  timeout: 20m0s
   # Baked manifests hardcode the kubeflow namespace (upstream Pipelines pins it),
   # so the chart's resources and RBAC subjects are already resolved for it.
   targetNamespace: kubeflow

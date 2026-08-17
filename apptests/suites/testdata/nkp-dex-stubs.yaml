@@ -1,0 +1,119 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clients.dex.mesosphere.io
+spec:
+  group: dex.mesosphere.io
+  names:
+    kind: Client
+    listKind: ClientList
+    plural: clients
+    singular: client
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kommander
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kommander-vars
+  namespace: kommander
+data:
+  ingressAddress: "dex-mock.kubeflow.svc.cluster.local"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-helm-gateway-ns
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dex-mock
+  namespace: kubeflow
+data:
+  Caddyfile: |
+    dex-mock.kubeflow.svc.cluster.local:443 {
+      tls internal
+
+      @openid path /dex/.well-known/openid-configuration
+      handle @openid {
+        header Content-Type application/json
+        respond "{\"issuer\":\"https://dex-mock.kubeflow.svc.cluster.local/dex\",\"authorization_endpoint\":\"https://dex-mock.kubeflow.svc.cluster.local/dex/auth\",\"token_endpoint\":\"https://dex-mock.kubeflow.svc.cluster.local/dex/token\",\"userinfo_endpoint\":\"https://dex-mock.kubeflow.svc.cluster.local/dex/userinfo\",\"jwks_uri\":\"https://dex-mock.kubeflow.svc.cluster.local/dex/keys\",\"response_types_supported\":[\"code\"],\"subject_types_supported\":[\"public\"],\"id_token_signing_alg_values_supported\":[\"RS256\"]}" 200
+      }
+
+      @keys path /dex/keys
+      handle @keys {
+        header Content-Type application/json
+        respond "{\"keys\":[]}" 200
+      }
+
+      handle {
+        respond "dex-mock" 200
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dex-mock
+  namespace: kubeflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dex-mock
+  template:
+    metadata:
+      labels:
+        app: dex-mock
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:2.8.4-alpine
+          ports:
+            - containerPort: 443
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: caddyfile
+              mountPath: /etc/caddy/Caddyfile
+              subPath: Caddyfile
+      volumes:
+        - name: caddyfile
+          configMap:
+            name: dex-mock
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dex-mock
+  namespace: kubeflow
+spec:
+  selector:
+    app: dex-mock
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443

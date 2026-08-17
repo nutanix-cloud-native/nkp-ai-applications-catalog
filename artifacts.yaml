@@ -13,6 +13,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-central-dashboard:1.10.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-pipelines:2.15.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-platform:1.11.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kueue:0.18.0
       - oci://<registry-url>/nkp-ai-applications-catalog/milvus-operator:1.3.6
       - oci://<registry-url>/nkp-ai-applications-catalog/ollama:1.72.0
@@ -126,6 +127,7 @@ applications:
       - ghcr.io/kubeflow/kfp-cache-deployer:2.15.0
       - ghcr.io/kubeflow/kfp-cache-server:2.15.0
       - ghcr.io/kubeflow/kfp-driver:2.15.0
+      - ghcr.io/kubeflow/kfp-frontend
       - ghcr.io/kubeflow/kfp-frontend:2.15.0
       - ghcr.io/kubeflow/kfp-launcher:2.15.0
       - ghcr.io/kubeflow/kfp-metadata-envoy:2.15.0
@@ -136,6 +138,14 @@ applications:
       - ghcr.io/kubeflow/kfp-visualization-server:2.15.0
       - quay.io/argoproj/argoexec:v3.7.3
       - quay.io/argoproj/workflow-controller:v3.7.3
+  - name: kubeflow-platform
+    version: 1.11.0
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-platform:1.11.0
+      - ghcr.io/kubeflow/kubeflow/kfam:v1.10.0
+      - ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
+      - quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+      - docker.io/alpine/kubectl:1.31.2
   - name: kueue
     version: 0.18.0
     images:
