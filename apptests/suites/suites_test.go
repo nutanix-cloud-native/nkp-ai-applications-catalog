@@ -11,7 +11,6 @@ import (
 // template test (registerDefaultTestsWithDependencies). Add a HelmRelease app
 // here to enable its E2E test.
 var enabledApps = []string{
-	"kagent",
 	"milvus-operator",
 	"kueue",
 	"kai-scheduler",
