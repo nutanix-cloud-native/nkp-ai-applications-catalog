@@ -4,6 +4,8 @@ appScreens:
   - ai
 category:
   - model-development-and-training
+certifications:
+  - qualified
 dependencies: []
 requiredDependencies:
   - istio-helm
