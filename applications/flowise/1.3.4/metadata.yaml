@@ -1,0 +1,32 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Flowise
+appScreens:
+  - ai
+description: Drag-and-drop UI to build and deploy LLM workflows and agents with LangChain.
+category:
+  - artificial-intelligence
+nkpVersionSupport: ">=2.18.0"
+scope:
+  - workspace
+supportLink: https://docs.flowiseai.com/
+type: nkp-catalog
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Flowise is an open-source, low-code builder for LLM applications. It provides a visual canvas to compose prompts, chains, agents, memory, tools, and model providers, then deploy those flows as chat or API endpoints.
+
+  **Key capabilities**
+
+  - **Visual builder** — Compose LangChain/LangGraph-style flows with a drag-and-drop UI.
+  - **Model flexibility** — Connect to providers such as OpenAI-compatible APIs and self-hosted backends.
+  - **Agent workflows** — Build multi-step tool-using agents with memory and retrieval components.
+  - **API ready** — Expose completed flows for application integration.
+
+  **Resources**
+
+  [Documentation](https://docs.flowiseai.com/) · [Project](https://github.com/FlowiseAI/Flowise)
+icon: iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAA2FBMVEUBAw9ubv4EAgsQBxcUCBxktfYEAgeZ6vMCBRUOBRQSCyEPCRsJAg4GAh0EASkFADMTDCYyDEQpBjsjCTY2EEwbBjMKBhMEARUICUAWDiwwBUAQAyIHAzsZEDIXBCoJFUoWCjokEkCb7PUGD0YpFkYeEjhluPojATQbDz8QD0MbCCcVBTAQEyI1GU8YFUeN1eAhL1FUl88dUHQyLXEdPGEqI2JVfZYjK0hsbPpFfa0PIzpVU8aR3uhisvIpjZ0veI1EQZ5Pj8Qga3p1sMBqavVDZ49gru5mZuwGPd0sAAAEWElEQVRYw6WWf1uiShiGJ3BZUjQRBdM0KNrsSGqEq1GrZXXO9/9G533nB8zIsO117dNV+s9987wDzETuIXEcR9HNzc1kcn7e7XabzVarZZrmKQ18MVs0Dcw/EA8SRW6MLOF8TPkaQUsScIPruW7sSgJR4Bx5vaDgPVrBjdw+E8QoEAVkgVkjoDNgBTQQxkfKBLJALAF+igY0Ls7Qvycqzwo0Gw0KmBQveFNu4PVA0e/3icRXBSYXiG+Nxhj5AfI9t4cGgrxcgAsaDVMNnWZcCkAxKgQFrxX4fnE/xuPxdDodDAbYoDdCA2HXLwt0OS8MPuSUC8aSQBiIzHNBQwSKI+87NKCghvlcrkCqfFPhW+tHNdFUEoxcciPfAUVA+ebrx/bkZLs9gb802+e4IpioBQoB8Mb64+Q4r/IIfVLlm9L8zmOFP3kOB2hgfJ9MZF4qwNbP0ArmJU8F53oeV96oaeCxBWAClecDnDp+kuer7FkvuBUFQKDnk1UKyVavWkHJ3xM9n6dZnsAaWroRvNtb9hgD3yfK+gu+mW4cA37qBEUB2qBb4Z08hSU06gS9ogCuQbfCgyDLLAcLOFaseZCwgOtyAzkan/JOtrKwACjM1/+2Sj6e+6wANxD18ow3stwyIBYY/MVayuN6PUJ+NBIdSJOH77oJTbpin00fahASBEG73aabwS2kxwwjaiACR4F58/n2IOftaYM04owXgp4i4AdPy2x9/pDzDX4fkkC6/nSAvChBhyCNkjeTtx/fjvLvSh6AFgCaxuWCViFoJA8Vwa+MHBWA4F4Am3qkCmD9vxaAge/pPcDhgO4TOjs/TL8S3OKGzLbkmdeLIibghxfuQFqBVIDx1AD/H0CHKI4J3/1NH3aQLwVzJgi9mefNoEEsBD7b/msFYyGgZ8IgDMPZLPKogdBj6w8FcyYIPawwYxXIaSFwjJbuOeATCMGcFoAGFQG8Q1b6q3wGWZ66vEAhCKkgVAS8gGX52f4JAy8BSzoJxAioYIawrCAJ4P23IA6+xv4hNXwb49tBkm94VpjNbF4KFgsUOBLPc0gtgoHLZ+9LNe/ZXAhmi8WC4PGBZ4jMW+nB4HzyfvVdzdX7TAgWQuAcCzY7nws2y+/HWW50AoW3kl0OvB0EzuqlKlhRwd3dnSxQeIvsU4MKAr3gIgw5LwRqAcPId2me2HaNAHgUyA2OeGLk+91utz8c9nrBkAruCoFxxBNi2ckmg+NVLxgOh4jfXV5eVgT4IOEdsOEXvulHGIZD2kAIpIdI8GCABP7qNw0uhcAoBEbJM0GQLysP0nLBBcgXAqNMydvwHv18uVLz8nmBAjBcUwEhjqFEKmDDVtBNf6pJh1xwLQQ6vBS0g3aH54zlggqAFwJSgRVBu4KzBlVBldcJzjQCptDwqqBTEVwXgkokQae+Qb3A/kuBrRN01EW8Vtaghtc1qNyF4M/4M52AjhAEXwja1SVQBfW83bY72jWUBf8DZG8pxYm5emgAAAAASUVORK5CYII=
+---
