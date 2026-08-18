@@ -1,5 +1,7 @@
 schema: catalog.nkp.nutanix.com/v1/application-metadata
 displayName: Ollama
+appScreens:
+  - ai
 allowMultipleInstances: false
 category:
   - data-and-agents
