@@ -4,7 +4,7 @@ appScreens:
   - ai
 description: Drag-and-drop UI to build and deploy LLM workflows and agents with LangChain.
 category:
-  - artificial-intelligence
+  - model-development-and-training
 nkpVersionSupport: ">=2.18.0"
 scope:
   - workspace
