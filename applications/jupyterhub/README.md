@@ -53,6 +53,60 @@ To roll back to the previous model, restore the prior `remoteuser` authenticator
 
 This catalog entry now uses direct OIDC in JupyterHub (instead of trusting `X-Forwarded-User` from Traefik Forward Auth).
 
+## Detailed Comparison: Header-Based Auth vs Direct Dex/OIDC
+
+This section compares the previous implementation (`remoteuser` + Traefik Forward Auth header trust) and the current implementation (`generic-oauth` + direct Dex/OIDC in JupyterHub).
+
+### At a glance
+
+| Area | Previous: `remoteuser` + `X-Forwarded-User` | Current: `generic-oauth` + Dex OIDC |
+|---|---|---|
+| Where auth happens | Upstream (Traefik Forward Auth) | In JupyterHub (OIDC client flow) |
+| Hub identity source | Trusted HTTP header | OIDC code/token/userinfo exchange |
+| Custom code | Required (`remoteuser.py`) | Not required (chart config only) |
+| Secret handling | Mostly at ingress/SSO layer | App requires OIDC client credentials |
+| Failure visibility | Split across ingress + hub | Mostly visible in hub auth flow/logs |
+| Extensibility | Limited claim/policy control in hub | Strong claim/policy control in hub |
+| Redirect loop risk | Low in single-gate header mode | Low in direct mode; high if dual-gated |
+
+### Flow differences
+
+- **Previous model (header-based)**:
+  1. User hits ingress.
+  2. Traefik Forward Auth enforces SSO.
+  3. Request reaches JupyterHub with `X-Forwarded-User`.
+  4. Custom `RemoteUserAuthenticator` logs user in.
+
+- **Current model (direct OIDC)**:
+  1. User hits `/nkp/jupyter`.
+  2. JupyterHub redirects user to Dex (`authorize_url`).
+  3. Dex authenticates and redirects to Hub callback.
+  4. Hub exchanges code at `token_url`, fetches profile from `userdata_url`.
+  5. Hub maps identity (`username_claim`) and starts session.
+
+### Tradeoffs
+
+- **Previous model strengths**
+  - Centralized SSO enforcement at ingress.
+  - Minimal OIDC config inside JupyterHub.
+- **Previous model limitations**
+  - Tight trust-boundary coupling to header integrity.
+  - More implicit behavior and cross-component debugging.
+  - Requires custom authenticator code maintenance.
+
+- **Current model strengths**
+  - Standards-based OAuth/OIDC flow owned by JupyterHub.
+  - Clearer auth observability and easier provider portability.
+  - Richer per-app identity control (`username_claim`, authenticator policy).
+- **Current model limitations**
+  - Requires proper OIDC client registration and secret management.
+  - Misconfigured callback/endpoints break login quickly.
+
+### Extensibility implications
+
+- **Previous model** is best when all auth policy must stay at platform ingress and app-level identity behavior is simple.
+- **Current model** is better when teams need app-specific claim mapping, admin policy evolution, provider-specific tuning, or future multi-provider flexibility.
+
 ### What changed
 
 - `4.3.2/helmrelease/cm.yaml`
@@ -83,6 +137,63 @@ This catalog entry now uses direct OIDC in JupyterHub (instead of trusting `X-Fo
 4. Deploy/upgrade JupyterHub app from NKP catalog.
 5. Validate login and notebook spawn with a non-admin user.
 6. Validate admin panel access with at least one admin user.
+
+## Dex Configuration Guide
+
+Use this section when wiring the current catalog defaults to a real Dex deployment.
+
+### 1) Dex client registration requirements
+
+Register a **confidential OIDC client** in Dex for JupyterHub with:
+
+- Redirect URI: `https://<jupyterhub-host>/nkp/jupyter/hub/oauth_callback`
+- Grant/response type compatible with authorization code flow
+- Scopes sufficient for user identity (typically `openid`, `profile`, `email`)
+
+### 2) Required Workspace Configuration keys
+
+Set all of these (the catalog defaults intentionally leave them blank):
+
+- `hub.config.GenericOAuthenticator.client_id`
+- `hub.config.GenericOAuthenticator.client_secret`
+- `hub.config.GenericOAuthenticator.oauth_callback_url`
+- `hub.config.GenericOAuthenticator.authorize_url`
+- `hub.config.GenericOAuthenticator.token_url`
+- `hub.config.GenericOAuthenticator.userdata_url`
+
+### 3) Recommended baseline sample
+
+```yaml
+hub:
+  config:
+    GenericOAuthenticator:
+      client_id: "<dex-client-id>"
+      client_secret: "<dex-client-secret>"
+      oauth_callback_url: "https://<jupyterhub-host>/nkp/jupyter/hub/oauth_callback"
+      authorize_url: "https://<dex-host>/dex/auth"
+      token_url: "https://<dex-host>/dex/token"
+      userdata_url: "https://<dex-host>/dex/userinfo"
+      login_service: "Dex"
+      username_claim: "preferred_username"
+      allow_all: true
+    Authenticator:
+      admin_users:
+        - "admin1@company.com"
+        - "admin2@company.com"
+```
+
+### 4) Claim mapping choice
+
+- Use `username_claim: preferred_username` when Dex emits stable usernames.
+- Use `username_claim: email` when email is the canonical identity key.
+- Ensure `admin_users` values exactly match the selected claim values.
+
+### 5) Common misconfigurations
+
+- Callback mismatch (`oauth_callback_url` not identical to registered redirect URI).
+- Incorrect endpoint paths for Dex (`/dex/auth`, `/dex/token`, `/dex/userinfo`).
+- Wrong `username_claim`, causing successful auth but failed user/admin mapping.
+- Reintroducing forward-auth middleware while direct OIDC is enabled, causing redirect loops.
 
 ### Sample Workspace Configuration (direct Dex/OIDC)
 
