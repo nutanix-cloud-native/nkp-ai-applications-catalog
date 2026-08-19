@@ -84,6 +84,45 @@ This section compares the previous implementation (`remoteuser` + Traefik Forwar
   4. Hub exchanges code at `token_url`, fetches profile from `userdata_url`.
   5. Hub maps identity (`username_claim`) and starts session.
 
+### Current implementation diagram (direct Dex/OIDC)
+
+```mermaid
+flowchart LR
+  userBrowser[UserBrowser]
+  traefikIngress[TraefikIngress]
+  jupyterHubDirect["JupyterHub (GenericOAuthenticator)"]
+  dexOidcDirect["Dex OIDC Provider"]
+
+  userBrowser -->|"1) Request /nkp/jupyter"| traefikIngress
+  traefikIngress -->|"2) Route to service"| jupyterHubDirect
+  jupyterHubDirect -->|"3) Redirect to authorize_url"| userBrowser
+  userBrowser -->|"4) OIDC login"| dexOidcDirect
+  dexOidcDirect -->|"5) Redirect to /nkp/jupyter/hub/oauth_callback"| userBrowser
+  userBrowser -->|"6) Callback request"| traefikIngress
+  traefikIngress -->|"7) Forward callback to hub"| jupyterHubDirect
+  jupyterHubDirect -->|"8) token_url + userdata_url exchange"| dexOidcDirect
+  jupyterHubDirect -->|"9) Session established / notebook UI"| userBrowser
+```
+
+### Previous implementation diagram (ForwardAuth + header trust)
+
+```mermaid
+flowchart LR
+  userBrowserPrev[UserBrowser]
+  traefikIngressPrev[TraefikIngress]
+  traefikForwardAuth["Traefik ForwardAuth Middleware"]
+  dexOidcPrev["Dex OIDC Provider"]
+  jupyterHubRemote["JupyterHub (RemoteUserAuthenticator)"]
+
+  userBrowserPrev -->|"1) Request /nkp/jupyter"| traefikIngressPrev
+  traefikIngressPrev -->|"2) ForwardAuth check"| traefikForwardAuth
+  traefikForwardAuth -->|"3) Redirect/token flow"| dexOidcPrev
+  dexOidcPrev -->|"4) Auth result to middleware"| traefikForwardAuth
+  traefikForwardAuth -->|"5) Forward request + X-Forwarded-User"| traefikIngressPrev
+  traefikIngressPrev -->|"6) Route to service"| jupyterHubRemote
+  jupyterHubRemote -->|"7) Trust header and create hub session"| userBrowserPrev
+```
+
 ### Tradeoffs
 
 - **Previous model strengths**
