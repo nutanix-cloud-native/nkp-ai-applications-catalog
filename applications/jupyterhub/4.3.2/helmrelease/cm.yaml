@@ -11,45 +11,28 @@ data:
       baseUrl: /nkp/jupyter
       config:
         JupyterHub:
-          authenticator_class: remoteuser
+          authenticator_class: generic-oauth
         Authenticator:
           auto_login: true
+          # Intentionally empty by default. Set concrete users through Workspace Configuration.
           admin_users:
-            - admin
-      extraConfig:
-        # Inline RemoteUserAuthenticator - reads username from X-Forwarded-User header
-        # set by Traefik Forward Auth after NKP SSO authentication.
-        # Based on https://github.com/cwaldbieser/jhub_remote_user_authenticator
-        remoteuser.py: |
-          from jupyterhub.handlers import BaseHandler
-          from jupyterhub.auth import Authenticator
-          from tornado import web
-          from traitlets import Unicode
-
-          class RemoteUserLoginHandler(BaseHandler):
-              def get(self):
-                  header_name = self.authenticator.header_name
-                  remote_user = self.request.headers.get(header_name, "")
-                  if remote_user == "":
-                      raise web.HTTPError(401)
-                  user = self.user_from_username(remote_user)
-                  self.set_login_cookie(user)
-                  next_url = self.get_next_url(user)
-                  self.redirect(next_url)
-
-          class RemoteUserAuthenticator(Authenticator):
-              header_name = Unicode(
-                  default_value='X-Forwarded-User',
-                  config=True,
-                  help="HTTP header to inspect for the authenticated username.")
-
-              def get_handlers(self, app):
-                  return [(r'/login', RemoteUserLoginHandler)]
-
-              async def authenticate(self, *args):
-                  raise NotImplementedError()
-
-          c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+            []
+        GenericOAuthenticator:
+          # Register a dedicated Dex OIDC client and set these through Workspace Configuration.
+          # Do not commit real credentials in this repository.
+          client_id: ""
+          client_secret: ""
+          oauth_callback_url: ""
+          authorize_url: ""
+          token_url: ""
+          userdata_url: ""
+          login_service: "Dex"
+          username_claim: preferred_username
+          userdata_params:
+            state: state
+          # Allow any authenticated Dex user by default; tighten with allow_existing_users
+          # or additional authenticator policy in Workspace Configuration if required.
+          allow_all: true
       networkPolicy:
         egress:
           - ports:
@@ -74,9 +57,8 @@ data:
     ingress:
       enabled: true
       annotations:
-        # Do NOT use stripprefixes: JupyterHub expects full path (hub.baseUrl: /jupyter)
+        # Do NOT use stripprefixes: JupyterHub expects full path (hub.baseUrl: /nkp/jupyter)
         traefik.ingress.kubernetes.io/router.tls: "true"
-        traefik.ingress.kubernetes.io/router.middlewares: "${releaseNamespace}-forwardauth@kubernetescrd"
       ingressClassName: kommander-traefik
       pathType: ImplementationSpecific
 ---

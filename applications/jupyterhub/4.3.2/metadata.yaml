@@ -20,7 +20,7 @@ overview: |
   **Key capabilities**
 
   - **Multi-user notebooks** — a central hub spawns and manages a per-user Jupyter notebook server on demand.
-  - **NKP SSO integration** — authenticates users via Traefik Forward Auth and the NKP identity provider (Dex). Users log in with their NKP credentials.
+  - **Dex OIDC integration** — JupyterHub authenticates users directly with Dex using OpenID Connect (OIDC).
   - **Kubernetes-native spawning** — each user server runs as its own pod with its own resources and persistent storage.
 
   **Access**
@@ -30,7 +30,16 @@ overview: |
 
   **Authentication**
 
-  JupyterHub uses NKP SSO by default. Users are authenticated via Traefik Forward Auth before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.
+  JupyterHub uses direct Dex/OIDC authentication. Users are redirected to Dex for login and returned to JupyterHub at `/nkp/jupyter/hub/oauth_callback`.
+
+  Configure these values via **Workspace Configuration**:
+
+  - `hub.config.GenericOAuthenticator.client_id`
+  - `hub.config.GenericOAuthenticator.client_secret`
+  - `hub.config.GenericOAuthenticator.oauth_callback_url`
+  - `hub.config.GenericOAuthenticator.authorize_url`
+  - `hub.config.GenericOAuthenticator.token_url`
+  - `hub.config.GenericOAuthenticator.userdata_url`
 
   To grant admin privileges, add usernames to the `admin_users` list via **Workspace Configuration**:
 
