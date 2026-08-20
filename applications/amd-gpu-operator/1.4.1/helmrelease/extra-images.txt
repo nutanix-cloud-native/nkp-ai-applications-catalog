@@ -1,0 +1,4 @@
+docker.io/rocm/gpu-operator:v1.4.1
+docker.io/rocm/kernel-module-management-operator:v1.0.0
+docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
+registry.k8s.io/nfd/node-feature-discovery:v0.16.1

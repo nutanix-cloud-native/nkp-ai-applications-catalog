@@ -1,0 +1,6 @@
+quay.io/jupyterhub/configurable-http-proxy:5.1.0
+quay.io/jupyterhub/k8s-hub:4.3.2
+quay.io/jupyterhub/k8s-image-awaiter:4.3.2
+quay.io/jupyterhub/k8s-singleuser-sample:4.3.2
+registry.k8s.io/kube-scheduler:v1.30.14
+registry.k8s.io/pause:3.10.1

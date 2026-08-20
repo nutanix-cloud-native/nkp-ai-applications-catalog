@@ -4,6 +4,8 @@ appScreens:
   - ai
 category:
   - model-development-and-training
+certifications:
+  - qualified
 dependencies: []
 # Standalone (platform-agnostic) Pipelines is self-contained: the cache webhook
 # cert is self-signed by the cache-deployer (no cert-manager), and MySQL +

@@ -14,8 +14,6 @@ releases:
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     applications:
-      - name: kagent
-        version: 0.7.13
       - name: kai-scheduler
         version: 0.15.2
       - name: kueue
@@ -43,8 +41,6 @@ releases:
         version: 1.10.0
       - name: ollama
         version: 1.72.0
-      - name: kagent
-        version: 0.7.13
       - name: kai-scheduler
         version: 0.15.2
       - name: kueue

@@ -1,0 +1,2 @@
+ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/operator:v0.15.2

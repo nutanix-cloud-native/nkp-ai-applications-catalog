@@ -1,0 +1,6 @@
+ignore: []
+resources:
+- container_image: registry.k8s.io/kueue/kueue:v0.18.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubernetes-sigs/kueue.git
