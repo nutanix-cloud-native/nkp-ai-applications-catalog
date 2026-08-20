@@ -1,0 +1,58 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: MLflow
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: MLflow provides experiment tracking, model registry, and artifact management for machine learning workflows.
+dependencies: []
+requiredDependencies: []
+icon: https://raw.githubusercontent.com/mlflow/mlflow/master/assets/logo.svg
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  MLflow is an open-source platform for tracking machine learning experiments, comparing runs, managing model versions, and storing run artifacts.
+
+  This catalog entry deploys one independent MLflow instance to every cluster in the selected workspace. Each instance runs in the fixed `mlflow` namespace.
+
+  **Storage and lifecycle**
+
+  - Experiment metadata uses SQLite at `/mlflow/data/mlflow.db`.
+  - Artifacts use proxied local storage at `/mlflow/data/mlartifacts`.
+  - Both stores share a 10Gi PersistentVolumeClaim and survive pod restarts, rescheduling, node drains, and application upgrades.
+  - **Uninstalling the application deletes the `mlflow` namespace, PersistentVolumeClaim, metadata, and all artifacts. Data is not retained after uninstall.**
+  - Deleting experiments does not automatically reclaim artifact storage. Long-lived installations may require MLflow garbage collection.
+
+  **Capacity and scale**
+
+  The default is an evaluation-grade, single-replica deployment. Its `ReadWriteOnce` volume and SQLite backend are not suitable for concurrent multi-user or production workloads. SQLite may report database locking errors under load.
+
+  Production deployments should use user-managed PostgreSQL and S3-compatible storage. Switching stores does not migrate existing local data.
+
+  **Authentication**
+
+  **MLflow is unauthenticated in this version of the catalog entry.** Any client that can reach the endpoint has full read and write access, without an identity check or audit trail. Restrict access at the network perimeter.
+
+  **Access**
+
+  Open MLflow from the cluster **Application Dashboards** tab or at `/nkp/mlflow/` through the NKP Traefik endpoint.
+
+  **Version mapping**
+
+  This catalog entry and Helm chart are version 1.11.4. The chart deploys MLflow application version 3.15.1 from `burakince/mlflow:3.15.1`.
+
+  **Resources**
+
+  [MLflow documentation](https://mlflow.org/docs/latest/) · [MLflow project](https://github.com/mlflow/mlflow) · [Helm chart](https://community-charts.github.io/docs/charts/mlflow/)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://mlflow.org/docs/latest/
+type: nkp-catalog
+---
