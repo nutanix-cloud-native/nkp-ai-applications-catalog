@@ -18,6 +18,7 @@ var enabledApps = []string{
 	"jupyterhub",
 	"slurm-operator",
 	"ollama",
+	"flowise",
 }
 
 // customTestApps deploy via Flux GitRepository + Kustomization instead of a

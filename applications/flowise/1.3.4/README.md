@@ -8,8 +8,8 @@ The Flowise Helm chart is published natively as an OCI artifact.
 
 | Field | Value |
 |-------|-------|
-| Chart OCI URL | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` |
-| Version | `3.1.4` |
+| Chart OCI URL | `oci://ghcr.io/nutanix-cloud-native/charts/flowise:1.3.4` |
+| Version | `1.3.4` |
 
 The catalog entry references this chart in `helmrelease/helmrelease.yaml`.
 
