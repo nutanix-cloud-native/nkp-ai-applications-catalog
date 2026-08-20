@@ -33,6 +33,8 @@ releases:
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     applications:
+      - name: flowise
+          version: 1.3.4
       - name: jupyterhub
         version: 4.3.2
       - name: kubeflow-pipelines
