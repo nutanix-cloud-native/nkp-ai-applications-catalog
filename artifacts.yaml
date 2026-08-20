@@ -62,6 +62,7 @@ applications:
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/flowise:1.3.4
       - docker.io/flowiseai/flowise:3.1.3
+      - docker.io/mesosphere/kubectl:v1.34.1-alpine
   - name: jupyterhub
     version: 4.3.2
     images:

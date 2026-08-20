@@ -9,7 +9,9 @@ k8s_versions:
 strict: true
 
 # types to be skipped (e.g. certmanager.k8s.io/v1, or certmanager.k8s.io/v1/Certificate)
-skip_types: []
+skip_types:
+  # Traefik CRDs are not part of core K8s schema in validator
+  - traefik.io/v1alpha1/Middleware
 
 # load additional CRDs (URLs of CRD yaml files)
 additional_crds: []

@@ -1,16 +1,14 @@
-# ConfigMap for NKP Launch button.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ${releaseName}-ui
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
   labels:
-    kommander.d2iq.io/application: ${releaseName}
+    "kommander.d2iq.io/application": ${releaseName}
   annotations:
     "kustomize.toolkit.fluxcd.io/ssa": "Merge"
 data:
-  name: ${releaseName}
-  dashboardLink: "/nkp/flowise/"
+  name: "Flowise"
   docsLink: "https://docs.flowiseai.com/"
   version: "1.3.4"
 ---

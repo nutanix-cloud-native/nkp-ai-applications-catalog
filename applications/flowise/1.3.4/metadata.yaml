@@ -10,6 +10,7 @@ scope:
   - workspace
 supportLink: https://docs.flowiseai.com/
 type: nkp-catalog
+allowMultipleInstances: false
 licensing:
   - Pro
   - Ultimate

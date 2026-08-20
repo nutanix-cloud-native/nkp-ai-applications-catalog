@@ -5,19 +5,7 @@ metadata:
   namespace: ${releaseNamespace}
 data:
   values.yaml: |
-    # Enable Ingress in Flowise's Helm chart
     ingress:
-      enabled: true
-      className: "kommander-traefik"
-      annotations:
-        # If Flowise doesn't natively support base paths, you may need to strip the prefix
-        traefik.ingress.kubernetes.io/router.middlewares: "${releaseNamespace}-stripprefix@kubernetescrd"
-      hosts:
-        - paths:
-            - path: /nkp/flowise
-              pathType: ImplementationSpecific
-
-    # Change service type from LoadBalancer to ClusterIP since Ingress will handle external access
+      enabled: false
     service:
-      type: ClusterIP
----
+      type: LoadBalancer

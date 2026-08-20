@@ -12,7 +12,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: flowise
+  name: ${releaseName}
   namespace: ${releaseNamespace}
 spec:
   chartRef:
@@ -25,12 +25,12 @@ spec:
     remediation:
       retries: 30
   interval: 15s
-  targetNamespace: ${releaseNamespace}
+  targetNamespace: flowise
   upgrade:
     crds: CreateReplace
     remediation:
       retries: 30
   valuesFrom:
-  - kind: ConfigMap
-    name: ${releaseName}-config-defaults
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-defaults
 ---

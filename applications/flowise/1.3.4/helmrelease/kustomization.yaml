@@ -4,4 +4,6 @@ resources:
   - cm.yaml
   - helmrelease.yaml
   - namespace.yaml
+  - flowise-postinstall-job.yaml
+  - flowise-postinstall-rbac.yaml
   - flowise-ui-dashboard-cm.yaml
