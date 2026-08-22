@@ -1,0 +1,63 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Ray Cluster
+appScreens:
+  - ai
+allowMultipleInstances: true
+category:
+  - model-development-and-training
+description: Deploy and manage Ray cluster workloads using the Ray Cluster Helm chart on NKP.
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Ray Cluster installs workload resources for running Ray head and worker pods on Kubernetes.
+  Use this app after KubeRay Operator is installed to create and tune Ray runtime deployments.
+
+  **Key capabilities**
+
+  - Deploys Ray head/worker runtime components via Helm
+  - Supports configurable image and runtime settings through app overrides
+  - Targets the dedicated `kuberay` namespace for Ray workloads
+
+  **Dependencies**
+
+  This app requires the KubeRay Operator application to be installed first.
+
+  **Profiling prerequisites**
+
+  Ray dashboard CPU profiling and stack trace features require ptrace permissions in Ray pods.
+  Add the following override in App Config Overrides when you need these diagnostics:
+
+  ```yaml
+  head:
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      capabilities:
+        add: ["SYS_PTRACE"]
+  worker:
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      capabilities:
+        add: ["SYS_PTRACE"]
+  ```
+
+  Memory profiling can require debugger tooling (`gdb` or `lldb`) to be present in the Ray image.
+  If memory flamegraph generation fails, use a custom Ray image that includes these tools.
+
+  **Resources**
+
+  [Documentation](https://docs.ray.io/en/latest/cluster/kubernetes/index.html) · [Project](https://github.com/ray-project/kuberay)
+scope:
+  - workspace
+dependencies: []
+requiredDependencies:
+  - kuberay
+supportLink: https://docs.ray.io/en/latest/cluster/kubernetes/index.html
+type: nkp-catalog
+nkpVersionSupport: ">=2.19.0"
+---

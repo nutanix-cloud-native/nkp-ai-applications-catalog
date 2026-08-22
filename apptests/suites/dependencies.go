@@ -28,6 +28,7 @@ var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: 
 var dependencyProvisioners = map[string]func(context.Context) error{
 	"cert-manager": provisionCertManager,
 	"istio-helm":   provisionIstioCRDs,
+	"kuberay":      provisionKubeRay,
 }
 
 // provisionDependencies installs every dependency the app declares in its
@@ -102,6 +103,19 @@ func provisionCertManager(ctx context.Context) error {
 
 func provisionIstioCRDs(ctx context.Context) error {
 	return applyRemoteManifest(ctx, istioCRDsManifestURL)
+}
+
+// provisionKubeRay installs the KubeRay catalog app dependency so downstream
+// apps like ray-cluster can reconcile their CRs in E2E.
+func provisionKubeRay(ctx context.Context) error {
+	if err := harness.Default.InstallApp(ctx, "kuberay", harness.Default.AppVersion()); err != nil {
+		return err
+	}
+	return harness.WaitForCondition(
+		ctx, harness.Default.Client(), helmReleaseGVK,
+		harness.Default.Namespace(), "kuberay", "Ready",
+		helmReleaseReadyTimeout, harness.Default.PollInterval(),
+	)
 }
 
 // applyRemoteManifest fetches a multi-doc YAML manifest and server-side applies
