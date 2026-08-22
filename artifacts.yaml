@@ -162,7 +162,6 @@ applications:
     version: 1.7.0
     images:
       - oci://ghcr.io/deepanshu8196/charts/ray-cluster:1.7.0
-      - rayproject/ray:2.52.0
   - name: slurm-operator
     version: 1.1.1
     images:
