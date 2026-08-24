@@ -33,6 +33,8 @@ releases:
     applications:
       - name: jupyterhub
         version: 4.3.2
+      - name: open-webui
+        version: 16.0.0
       - name: kubeflow-pipelines
         version: 2.15.0
       - name: kubeflow-central-dashboard

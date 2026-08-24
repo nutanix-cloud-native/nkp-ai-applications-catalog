@@ -1,0 +1,55 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Open WebUI
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - data-and-agents
+description: Self-hosted web interface for LLMs with support for Ollama and OpenAI-compatible APIs.
+dependencies:
+  - ollama
+icon: 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
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Open WebUI is an extensible, self-hosted web interface for interacting with large language models. It provides a ChatGPT-like experience on your own infrastructure, with support for Ollama, OpenAI-compatible APIs, RAG, and user management.
+
+  **Key capabilities**
+
+  - **Multi-backend support** — Connect to Ollama or any OpenAI-compatible endpoint; multiple backends can be used side-by-side.
+  - **NKP SSO integration** — authenticates users via Traefik Forward Auth and the NKP identity provider (Dex). Users log in with their NKP credentials.
+  - **RAG** — Built-in Retrieval-Augmented Generation for document-grounded conversations.
+  - **User management** — Role-based access (Admin, User, Pending) and conversation history.
+  - **Extensibility** — Model presets, prompt templates, and a plugin/pipeline system.
+
+  **Access**
+
+  - Open Open WebUI from the cluster **Application Dashboards** tab, or via your NKP Dashboard URL at the path `/nkp/open-webui/`.
+  - In-cluster: `http://open-webui.open-webui.svc.cluster.local:80` (same namespace: `http://open-webui:80`).
+
+  **Authentication**
+
+  Open WebUI uses NKP SSO by default. Users are authenticated via Traefik Forward Auth before reaching Open WebUI. The authenticated username is passed via the `X-Forwarded-User` header.
+
+  The first user to sign in is created automatically. Grant admin privileges in the Open WebUI admin settings after the first login.
+
+  **Dependencies (this catalog)**
+
+  This entry declares a soft dependency on **Ollama**. Install it in the same workspace for a local LLM backend; Open WebUI is pre-configured to discover it:
+
+  | Backend | Default in-cluster URL (override in Helm values if needed) |
+  |---------|-------------------------------------------------------------|
+  | Ollama  | `http://ollama-ollama.ollama.svc.cluster.local:11434`  |
+
+  **Resources**
+
+  [Documentation](https://docs.openwebui.com) · [Project](https://github.com/open-webui/open-webui) · [Helm chart](https://github.com/open-webui/helm-charts) · [Helm values](https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.18.0"
+supportLink: https://docs.openwebui.com
+type: nkp-catalog
+---

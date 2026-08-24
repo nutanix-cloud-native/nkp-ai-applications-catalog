@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    fullnameOverride: open-webui
+    image:
+      tag: "0.11.0"
+    # Use ClusterIP when Ingress is enabled so Helm does not wait for LoadBalancer IP
+    # (LoadBalancer can stay Pending on bare-metal; Ingress provides external access)
+    service:
+      type: ClusterIP
+    # Chart Ingress is hardcoded to path / and would steal NKP dashboard traffic.
+    # Path-based routing is provided by helmrelease/ingress.yaml instead.
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+    # Disable bundled subcharts — use the standalone Ollama catalog app when needed
+    ollama:
+      enabled: false
+    pipelines:
+      enabled: false
+    tika:
+      enabled: false
+    terminals:
+      enabled: false
+    # Point to the catalog Ollama service in the ollama namespace
+    ollamaUrls:
+      - "http://ollama-ollama.ollama.svc.cluster.local:11434"
+    # Do not call api.openai.com by default (airgap-friendly). Override to add
+    # OpenAI-compatible backends such as vLLM.
+    enableOpenaiApi: false
+    # Single-replica default; enable websocket.redis for multi-replica
+    websocket:
+      enabled: false
+    persistence:
+      enabled: true
+      size: 10Gi
+    # NKP SSO via Traefik Forward Auth (X-Forwarded-User), same pattern as JupyterHub
+    sso:
+      enabled: true
+      enableSignup: true
+      trustedHeader:
+        enabled: true
+        emailHeader: X-Forwarded-User
+        nameHeader: X-Forwarded-User
+---

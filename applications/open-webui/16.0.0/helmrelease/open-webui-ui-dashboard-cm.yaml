@@ -1,0 +1,14 @@
+# ConfigMap for NKP Launch button.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${releaseNamespace}
+  labels:
+    kommander.d2iq.io/application: ${releaseName}
+data:
+  name: ${releaseName}
+  dashboardLink: "/nkp/open-webui/"
+  docsLink: "https://docs.openwebui.com"
+  version: "16.0.0"
+---
