@@ -14,11 +14,9 @@ controller/`Profile` CRD for namespace isolation and RBAC.
 1. In the workspace (NKP UI → Workspace Catalog, or a GitOps `AppDeployment`), enable
    **cert-manager**, **istio-helm**, and **Kubeflow Central Dashboard** (plus any
    components you want: Pipelines, Katib).
-2. Set `config.kubeflowIngressHost` in app configuration at enable time (and optionally
-   set `config.kubeflowIngressURL`; if omitted it is derived as `http://<host>`).
-   Do not enable with an empty host on live clusters.
+2. Set `config.kubeflowIngressHost` in Kubeflow Plarform app configuration at enable time. This is the DNS name or IP the app will use. Optionally set `config.kubeflowIngressURL`; if omitted it is derived as `http://<host>`). Do not enable with an empty host on live clusters.
 3. Enable **Kubeflow Platform**.
-4. Open the one URL and log in:
+4. Enable **Kubeflow Central Dashboard* and component apps(**Pipelines, .etc). Then open the one URL and log in:
 
 ```sh
 # The single Kubeflow entry point (dedicated LB Service):

@@ -1,6 +1,8 @@
 # Rendered from github.com/kubeflow/manifests@v1.11.0
 # kustomize build applications/profiles/upstream/overlays/kubeflow
 # Regenerate on version bump; do not hand-edit the upstream objects.
+# Profile CRD stays with kubeflow-platform as this chart owns the Profiles controller, KFAM,
+# admin edit/view RBAC
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:

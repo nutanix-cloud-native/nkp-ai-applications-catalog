@@ -18,6 +18,8 @@ apps:
           - quay.io/argoproj/argoexec:v3.7.3
         patches:
           - applications/kubeflow-pipelines/2.15.0/patches/profile-controller-minio.yaml
+          # CRDs live on kubeflow-platform(enabled first). Do not bake them into the Pipelines template or 
+          # DecoratorController can have race condition with CRD apply.
           - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-compositecontrollers-crd.yaml
           - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-controllerrevisions-crd.yaml
           - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-decoratorcontrollers-crd.yaml

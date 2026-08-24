@@ -5,8 +5,8 @@
 {{/*
 Resolves the integration config once so every consumer sees the same values.
 Per field: .Values.config override -> value persisted from a prior render ->
-derived from the cluster or generated. Offline (lint/template) lookups are empty,
-so callers guard cluster-only assertions on liveness.
+derived (Dex issuer, http://<host> URL) or generated (OIDC secrets).
+kubeflowIngressHost is operator-set and is not looked up from a Service.
 */}}
 {{- define "kubeflow-platform.derived" -}}
 {{- $cfg := .Values.config -}}
