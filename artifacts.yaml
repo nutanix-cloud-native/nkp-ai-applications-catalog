@@ -141,7 +141,7 @@ applications:
   - name: kuberay
     version: 1.7.0
     images:
-      - oci://ghcr.io/deepanshu8196/charts/kuberay-operator:1.7.0
+      - oci://ghcr.io/nutanix-cloud-native/charts/kuberay-operator:1.7.0
       - quay.io/kuberay/operator:v1.7.0
   - name: kueue
     version: 0.18.0
@@ -161,7 +161,7 @@ applications:
   - name: ray-cluster
     version: 1.7.0
     images:
-      - oci://ghcr.io/deepanshu8196/charts/ray-cluster:1.7.0
+      - oci://ghcr.io/nutanix-cloud-native/charts/ray-cluster:1.7.0
   - name: slurm-operator
     version: 1.1.1
     images:
