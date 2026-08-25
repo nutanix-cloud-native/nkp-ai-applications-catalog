@@ -152,6 +152,7 @@ applications:
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/mlflow:1.11.4
       - docker.io/burakince/mlflow:3.15.1
+      - docker.io/library/busybox:1.38.0
   - name: ollama
     version: 1.72.0
     images:

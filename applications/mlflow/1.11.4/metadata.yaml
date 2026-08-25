@@ -33,11 +33,73 @@ overview: |
 
   The default is an evaluation-grade, single-replica deployment. Its `ReadWriteOnce` volume and SQLite backend are not suitable for concurrent multi-user or production workloads. SQLite may report database locking errors under load.
 
-  Production deployments should use user-managed PostgreSQL and S3-compatible storage. Switching stores does not migrate existing local data.
+  **Production configuration**
+
+  Production deployments should use user-managed PostgreSQL for metadata and S3-compatible object storage for artifacts. Neither is created or managed by this application, and uninstalling MLflow does not affect them.
+
+  *Step 1 — provide the infrastructure*
+
+  - A PostgreSQL server reachable from the cluster, with the database already created and a user holding schema-creation rights. MLflow creates its own tables, but not the database.
+  - An existing S3-compatible bucket. MLflow does not create buckets.
+
+  *Step 2 — create credential Secrets in the `mlflow` namespace*
+
+  Because this application creates its own namespace, these Secrets cannot exist before the first install. Install the application first, then create them.
+
+  ```
+  kubectl create secret generic mlflow-db-credentials -n mlflow \
+    --from-literal=username=<db-user> \
+    --from-literal=password=<db-password>
+
+  kubectl create secret generic mlflow-s3-credentials -n mlflow \
+    --from-literal=AWS_ACCESS_KEY_ID=<access-key> \
+    --from-literal=AWS_SECRET_ACCESS_KEY=<secret-key>
+  ```
+
+  *Step 3 — apply the configuration override*
+
+  Paste the following into this application's **cluster** configuration override, replacing the host, database, and bucket values. Either store can be configured independently — omit the `backendStore` block to keep metadata on the local volume, or omit `artifactRoot` to keep artifacts there.
+
+  ```
+  backendStore:
+    databaseMigration: true
+    databaseConnectionCheck: true
+    postgres:
+      enabled: true
+      host: <postgres-hostname>
+      port: 5432
+      database: <database-name>
+    existingDatabaseSecret:
+      name: mlflow-db-credentials
+
+  artifactRoot:
+    proxiedArtifactStorage: true
+    s3:
+      enabled: true
+      bucket: <bucket-name>
+      path: artifacts
+      existingSecret:
+        name: mlflow-s3-credentials
+
+  # Required for non-AWS S3 endpoints
+  # Omit for AWS S3 and set AWS_DEFAULT_REGION instead.
+  extraEnvVars:
+    MLFLOW_S3_ENDPOINT_URL: <https://your-s3-endpoint>
+  ```
+
+  **Use the cluster configuration override, not the workspace override.** A workspace-level value applies to every cluster in the workspace, which would point multiple independent MLflow instances at the same database and bucket, running concurrent schema migrations against the same schema.
+
+  *Notes*
+
+  - Switching stores does not migrate existing local data. Experiments created before the change remain on the local volume and will not appear.
+  - Clearing the override returns the instance to local storage.
+  - With both stores external, the PersistentVolumeClaim is still provisioned but unused.
 
   **Authentication**
 
-  **MLflow is unauthenticated in this version of the catalog entry.** Any client that can reach the endpoint has full read and write access, without an identity check or audit trail. Restrict access at the network perimeter.
+  **MLflow is unauthenticated in this version of the catalog entry.** 
+
+  NKP SSO is not enabled. Browser-based single sign-on prevents scripts and automated training jobs from reaching the MLflow API, which is the application's primary interface.
 
   **Access**
 
@@ -55,4 +117,3 @@ scope:
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://mlflow.org/docs/latest/
 type: nkp-catalog
----

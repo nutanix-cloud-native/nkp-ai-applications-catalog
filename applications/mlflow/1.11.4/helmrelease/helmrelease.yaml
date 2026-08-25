@@ -33,4 +33,30 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: ${releaseName}-${appVersion}-defaults
+  # Chart 1.11.4 hardcodes liveness/readiness to /health and exposes only probe
+  # timings in values. extraArgs.staticPrefix remounts every route, including
+  # /health, under /nkp/mlflow (mlflow/mlflow#19691). Keep this path in sync
+  # with extraArgs.staticPrefix and ingress.hosts[].paths[].path in cm.yaml.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: mlflow
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: mlflow
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: mlflow
+                        livenessProbe:
+                          httpGet:
+                            path: /nkp/mlflow/health
+                        readinessProbe:
+                          httpGet:
+                            path: /nkp/mlflow/health
 ---
