@@ -9,16 +9,20 @@ apps:
       - version: "2.15.0"
         ref: v1.11.0
         overlays:
-          # CRDs (argo Workflow*, kubeflow ScheduledWorkflow/Viewer) + the kubeflow
-          # Namespace; platform-agnostic's argo install is namespace-scoped and
-          # assumes these exist (KFP's documented two-step standalone install).
-          - applications/pipeline/upstream/cluster-scoped-resources
-          - applications/pipeline/upstream/env/platform-agnostic
+          - applications/pipeline/upstream/env/platform-agnostic-multi-user
         airgapImages:
           - ghcr.io/containerd/busybox
           - ghcr.io/kubeflow/kfp-driver:2.15.0
+          - ghcr.io/kubeflow/kfp-frontend
           - ghcr.io/kubeflow/kfp-launcher:2.15.0
           - quay.io/argoproj/argoexec:v3.7.3
+        patches:
+          - applications/kubeflow-pipelines/2.15.0/patches/profile-controller-minio.yaml
+          # CRDs live on kubeflow-platform(enabled first). Do not bake them into the Pipelines template or
+          # DecoratorController can have race condition with CRD apply.
+          - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-compositecontrollers-crd.yaml
+          - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-controllerrevisions-crd.yaml
+          - applications/kubeflow-pipelines/2.15.0/patches/remove-metacontroller-decoratorcontrollers-crd.yaml
         chart:
           version: "2.15.0"
           appVersion: "2.15.0"
@@ -38,6 +42,60 @@ apps:
               kind: Deployment
             - name: mysql
               kind: Deployment
+            - name: seaweedfs
+              kind: Deployment
+          # Keep auth path consistent: app VirtualServices route through oauth2-proxy,
+          # which injects kubeflow-userid before forwarding to component backends.
+          overlay:
+            injections:
+              - find: "host: metadata-envoy-service.kubeflow.svc.cluster.local"
+                replace: "host: oauth2-proxy.kubeflow.svc.cluster.local"
+              - find: |-
+                  host: oauth2-proxy.kubeflow.svc.cluster.local
+                              port:
+                                number: 9090
+                replace: |-
+                  host: oauth2-proxy.kubeflow.svc.cluster.local
+                              port:
+                                number: 80
+              - find: "host: ml-pipeline-ui.kubeflow.svc.cluster.local"
+                replace: "host: oauth2-proxy.kubeflow.svc.cluster.local"
+              - find: |-
+                  host: oauth2-proxy.kubeflow.svc.cluster.local
+                    trafficPolicy:
+                replace: |-
+                  host: ml-pipeline-ui.kubeflow.svc.cluster.local
+                    trafficPolicy:
+              - find: "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+                replace: "cluster.local/ns/kubeflow/sa/oauth2-proxy"
+              # Pipelines APIs and backing services are accessed through oauth2-proxy,
+              # so allow its service account identity in Istio auth policies.
+              - find: "              - cluster.local/ns/kubeflow/sa/kubeflow-pipelines-cache"
+                replace: "              - cluster.local/ns/kubeflow/sa/kubeflow-pipelines-cache\n              - cluster.local/ns/kubeflow/sa/oauth2-proxy"
+              # Upstream renders an inverted userid predicate (notValues '*') that
+              # denies authenticated requests. Flip it to values '*' in both policy
+              # blocks (ml-pipeline and ml-pipeline-ui) during bake.
+              - find: "        - key: request.headers[kubeflow-userid]\n          notValues:\n            - '*'"
+                replace: "        - key: request.headers[kubeflow-userid]\n          values:\n            - '*'"
+              # Cookie oauth2-proxy only sets kubeflow-userid. Drop the extra
+              # Authorization check that official UI policy expects from ext_authz.
+              - find: "        - key: request.headers[authorization]\n          values:\n            - '*'\n        - key: request.headers[kubeflow-userid]\n          values:\n            - '*'"
+                replace: "        - key: request.headers[kubeflow-userid]\n          values:\n            - '*'"
+              # V2 drivers turn sidecars off, so cache gRPC on :8887 has no
+              # identity. Allow that port only; HTTP :8888 stays gated.
+              - find: "        - key: request.headers[kubeflow-userid]\n          values:\n            - '*'\n  selector:\n    matchLabels:\n      app: ml-pipeline\n"
+                replace: "        - key: request.headers[kubeflow-userid]\n          values:\n            - '*'\n    - to:\n        - operation:\n            ports:\n              - \"8887\"\n  selector:\n    matchLabels:\n      app: ml-pipeline\n"
+              - find: "              - cluster.local/ns/kubeflow/sa/metadata-grpc-server"
+                replace: "              - cluster.local/ns/kubeflow/sa/metadata-grpc-server\n              - cluster.local/ns/kubeflow/sa/oauth2-proxy"
+              # Keep PVCs across Helm uninstall, and size them from values so a later
+              # expand is a configOverrides change instead of a live vs chart fight.
+              # Quoted \n so `spec:` is not parsed as a sibling YAML key.
+              # After bake, re-add storage.mysql / storage.seaweedfs to values.yaml
+              # (bake regenerates values from the workload list only).
+              - find: "  name: mysql-pv-claim\n  namespace: kubeflow\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 20Gi"
+                replace: "  name: mysql-pv-claim\n  namespace: kubeflow\n  annotations:\n    helm.sh/resource-policy: keep\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: {{ (index ((index .Values \"storage\") | default (dict)) \"mysql\") | default \"20Gi\" }}"
+              - find: "  name: seaweedfs-pvc\n  namespace: kubeflow\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 20Gi"
+                replace: "  name: seaweedfs-pvc\n  namespace: kubeflow\n  annotations:\n    helm.sh/resource-policy: keep\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: {{ (index ((index .Values \"storage\") | default (dict)) \"seaweedfs\") | default \"10Gi\" }}"
 
   kubeflow-central-dashboard:
     repo: https://github.com/kubeflow/manifests
@@ -81,3 +139,16 @@ apps:
                       configmap.reloader.stakater.com/reload: centraldashboard-config
                     labels:
                       app: centraldashboard
+              - find: 'CD_REGISTRATION_FLOW: "false"'
+                replace: 'CD_REGISTRATION_FLOW: "true"'
+              - find: 'value: "false"'
+                replace: 'value: "true"'
+              # Keep dashboard path on unified auth entry point.
+              - find: "host: centraldashboard.kubeflow.svc.cluster.local"
+                replace: "host: oauth2-proxy.kubeflow.svc.cluster.local"
+              - find: "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+                replace: "cluster.local/ns/kubeflow/sa/oauth2-proxy\n              - cluster.local/ns/istio-helm-gateway-ns/sa/istio-helm-ingressgateway\n              - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+              - find: "    - kubeflow-gateway"
+                replace: "    - kubeflow/kubeflow-gateway"
+              - find: "sidecar.istio.io/inject: \"true\""
+                replace: "sidecar.istio.io/inject: \"true\"\n        istio.io/rev: istio-helm"

@@ -50,3 +50,12 @@ workloads:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+  seaweedfs:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 32m
+        memory: 128Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
