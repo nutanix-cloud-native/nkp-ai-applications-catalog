@@ -135,14 +135,14 @@ Clearing the override reverts cleanly to SQLite.
 
 ## Authentication
 
-**Unauthenticated.** Anyone who can reach the Traefik endpoint has full read/write. 
+**Unauthenticated.** Anyone who can reach the Traefik endpoint has full read/write.
 
-**Why SSO isn't enabled:** NKP forward-auth is one annotation and works for browsers — it was implemented and verified. It's not enabled because it breaks programmatic access, which is MLflow's primary interface. 
+**Why SSO isn't enabled:** NKP forward-auth is one annotation and works for browsers — it was implemented and verified. It's not enabled because it breaks programmatic access, which is MLflow's primary interface.
 
 
 ## Uninstall
 
-Deletes the `mlflow` namespace and everything in it, including the PVC and all data. External stores are untouched. 
+Deletes the `mlflow` namespace and everything in it, including the PVC and all data. External stores are untouched.
 
 
 ## Known limitations
@@ -150,4 +150,3 @@ Deletes the `mlflow` namespace and everything in it, including the PVC and all d
 **Probe paths are patched, not configured.** The chart hardcodes both probes to `/health` and exposes no path value. With `--static-prefix`, that path 404s and the pod never becomes Ready.
 The `postRenderers` patch sets `/nkp/mlflow/health` — **if the ingress path changes, this must change with it.** Same shape as
 [gitlab#6090](https://gitlab.com/gitlab-org/charts/gitlab/-/issues/6090).
-

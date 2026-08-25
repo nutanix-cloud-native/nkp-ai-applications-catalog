@@ -97,7 +97,7 @@ overview: |
 
   **Authentication**
 
-  **MLflow is unauthenticated in this version of the catalog entry.** 
+  **MLflow is unauthenticated in this version of the catalog entry.**
 
   NKP SSO is not enabled. Browser-based single sign-on prevents scripts and automated training jobs from reaching the MLflow API, which is the application's primary interface.
 
