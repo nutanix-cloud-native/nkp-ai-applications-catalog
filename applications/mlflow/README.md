@@ -7,7 +7,7 @@ Workspace-scoped NKP catalog app. Catalog/chart version `1.11.4`, image
 
 One instance per cluster, always in namespace `mlflow`. `allowMultipleInstances: false`.
 
-Default install: ClusterIP behind Traefik at `/nkp/mlflow`, SQLite metadata and proxied artifacts on one 10Gi PVC, **unauthenticated**. External PostgreSQL and S3 supported via config override.
+Default install: ClusterIP behind Traefik at `/nkp/mlflow`, SQLite metadata and proxied artifacts on one 10Gi PVC, **unauthenticated** by default. Basic auth available via config override. External PostgreSQL and S3 supported via config override.
 
 ## Layout
 
@@ -155,7 +155,7 @@ auth:
   sqliteFullPath: /mlflow/data/
 ```
 
-**Why SSO isn't enabled:** NKP Forward Auth on the Ingress blocks programmatic access, which is MLflow's primary interface. See [the design doc](https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing) for more information.
+**Why SSO isn't enabled:** See [the design doc](https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing) for more information.
 
 
 ## Uninstall
