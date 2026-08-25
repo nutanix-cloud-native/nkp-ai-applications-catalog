@@ -119,6 +119,7 @@ applications:
     version: 2.15.0
     images:
       - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-pipelines:2.15.0
+      - docker.io/alpine/k8s:1.32.3
       - docker.io/chrislusf/seaweedfs:4.00
       - docker.io/library/mysql:8.4
       - gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
@@ -136,6 +137,7 @@ applications:
       - ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.15.0
       - ghcr.io/kubeflow/kfp-viewer-crd-controller:2.15.0
       - ghcr.io/kubeflow/kfp-visualization-server:2.15.0
+      - ghcr.io/metacontroller/metacontroller:v4.11.22
       - quay.io/argoproj/argoexec:v3.7.3
       - quay.io/argoproj/workflow-controller:v3.7.3
   - name: kubeflow-platform
