@@ -42,21 +42,9 @@ overview: |
   - A PostgreSQL server reachable from the cluster, with the database already created and a user holding schema-creation rights. MLflow creates its own tables, but not the database.
   - An existing S3-compatible bucket. MLflow does not create buckets.
 
-  *Step 2 — create credential Secrets in the `mlflow` namespace*
+  
 
-  Because this application creates its own namespace, these Secrets cannot exist before the first install. Install the application first, then create them.
-
-  ```
-  kubectl create secret generic mlflow-db-credentials -n mlflow \
-    --from-literal=username=<db-user> \
-    --from-literal=password=<db-password>
-
-  kubectl create secret generic mlflow-s3-credentials -n mlflow \
-    --from-literal=AWS_ACCESS_KEY_ID=<access-key> \
-    --from-literal=AWS_SECRET_ACCESS_KEY=<secret-key>
-  ```
-
-  *Step 3 — apply the configuration override*
+  *Step 2 — apply the configuration override*
 
   Paste the following into this application's **cluster** configuration override, replacing the host, database, and bucket values. Either store can be configured independently — omit the `backendStore` block to keep metadata on the local volume, or omit `artifactRoot` to keep artifacts there.
 
@@ -87,7 +75,23 @@ overview: |
     MLFLOW_S3_ENDPOINT_URL: <https://your-s3-endpoint>
   ```
 
-  **Use the cluster configuration override, not the workspace override.** A workspace-level value applies to every cluster in the workspace, which would point multiple independent MLflow instances at the same database and bucket, running concurrent schema migrations against the same schema.
+  Do not configure external stores at the workspace level. Each cluster runs an independent MLflow instance, so a workspace-level override points every instance at the same database and bucket — concurrent schema migrations against one schema, and runs from all clusters mixed together. Not supported.
+
+  Configure external stores at the cluster level instead, one database and bucket per cluster.
+
+  *Step 3 — create credential Secrets in the `mlflow` namespace*
+
+  Because this application creates its own namespace, these Secrets cannot exist before the first install. Install the application first, then create them.
+
+  ```
+  kubectl create secret generic mlflow-db-credentials -n mlflow \
+    --from-literal=username=<db-user> \
+    --from-literal=password=<db-password>
+
+  kubectl create secret generic mlflow-s3-credentials -n mlflow \
+    --from-literal=AWS_ACCESS_KEY_ID=<access-key> \
+    --from-literal=AWS_SECRET_ACCESS_KEY=<secret-key>
+  ```
 
   *Notes*
 
@@ -99,11 +103,15 @@ overview: |
 
   **MLflow is unauthenticated in this version of the catalog entry.**
 
-  NKP SSO is not enabled. Browser-based single sign-on prevents scripts and automated training jobs from reaching the MLflow API, which is the application's primary interface.
+  NKP SSO is not enabled. Browser-based single sign-on on the Ingress blocks scripts and training jobs from the MLflow API, which is the application's primary interface.
 
   **Access**
 
   Open MLflow from the cluster **Application Dashboards** tab or at `/nkp/mlflow/` through the NKP Traefik endpoint.
+
+  ```
+  mlflow.set_tracking_uri("https://<traefik-ip>/nkp/mlflow")
+  ```
 
   **Version mapping**
 

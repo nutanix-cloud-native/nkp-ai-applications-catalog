@@ -1,5 +1,7 @@
 # MLflow catalog integration
 
+Doc: https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing
+
 Workspace-scoped NKP catalog app. Catalog/chart version `1.11.4`, image
 `burakince/mlflow:3.15.1` (MLflow 3.15.1 — the chart version and the app version differ).
 
@@ -27,7 +29,7 @@ just mirror-chart-from-repo https://community-charts.github.io/helm-charts mlflo
 
 Consumed as `oci://ghcr.io/nutanix-cloud-native/charts/mlflow:1.11.4`.
 
-Images: `burakince/mlflow:3.15.1` always; `library/busybox:1.38.0` (×2) only with external database or chart auth. The busybox images don't render by default, so image discovery misses them — they must be listed in `helmrelease/extra-images.txt`.
+Images: `burakince/mlflow:3.15.1` always. `busybox:1.38.0` renders only in configurations the default install doesn't use — the dbchecker init container with an external database, and ini-file-initializer with chart auth. Image discovery renders catalog defaults, so it misses it; the image is listed explicitly in `helmrelease/extra-images.txt` as `docker.io/library/busybox:1.38.0`.
 
 ## Catalog manifests
 
@@ -79,28 +81,23 @@ Traefik Ingress at `/nkp/mlflow`, class `kommander-traefik`, no host restriction
 
 Three values must agree: the ingress path, `extraArgs.staticPrefix`, and the probe path in the `postRenderers` patch.
 
+```python
+mlflow.set_tracking_uri("https://<traefik-ip>/nkp/mlflow")
+```
+
 ## Configuration overrides
 
 Catalog defaults are in `cm.yaml`. Users don't edit catalog files — NKP appends a second `valuesFrom` at install time.
 
-> **Use the cluster override for external stores.** A workspace value fans out to every cluster,
-> pointing multiple MLflow instances at one database — concurrent schema migrations against one
-> schema, and runs silently mixed across clusters.
+Do not configure external stores at the workspace level. Each cluster runs an independent MLflow instance, so a workspace-level override points every instance at the same database and bucket — concurrent schema migrations against one schema, and runs from all clusters mixed together. Not supported.
+
+Configure external stores at the cluster level instead, one database and bucket per cluster.
 
 ## Production configuration
 
 PostgreSQL for metadata, S3-compatible storage for artifacts. Neither is created or managed by this entry, and uninstall doesn't touch them. Artifacts can't go in PostgreSQL. MLflow has no such option.
 
-**Prerequisites:** a reachable PostgreSQL with the database already created and a user holding DDL rights (MLflow creates its schema, not the database); an existing S3 bucket; and two Secrets
-in the `mlflow` namespace:
 
-```bash
-kubectl create secret generic mlflow-db-credentials -n mlflow \
-  --from-literal=username=<user> --from-literal=password=<password>
-
-kubectl create secret generic mlflow-s3-credentials -n mlflow \
-  --from-literal=AWS_ACCESS_KEY_ID=<key> --from-literal=AWS_SECRET_ACCESS_KEY=<secret>
-```
 
 Modify accordingly and paste into the **cluster** override editor:
 
@@ -133,11 +130,24 @@ extraEnvVars:
 Either store can be configured independently. Note that **switching stores does not migrate data** — the UI will appear empty afterwards, and the PVC remains provisioned but unused.
 Clearing the override reverts cleanly to SQLite.
 
+**Prerequisites:** a reachable PostgreSQL with the database already created and a user holding DDL rights (MLflow creates its schema, not the database); an existing S3 bucket; and two Secrets
+in the `mlflow` namespace:
+
+```bash
+kubectl create secret generic mlflow-db-credentials -n mlflow \
+  --from-literal=username=<user> --from-literal=password=<password>
+
+kubectl create secret generic mlflow-s3-credentials -n mlflow \
+  --from-literal=AWS_ACCESS_KEY_ID=<key> --from-literal=AWS_SECRET_ACCESS_KEY=<secret>
+```
+
+Secrets are to be created after installation as namespace has to exist first.
+
 ## Authentication
 
 **Unauthenticated.** Anyone who can reach the Traefik endpoint has full read/write.
 
-**Why SSO isn't enabled:** NKP forward-auth is one annotation and works for browsers — it was implemented and verified. It's not enabled because it breaks programmatic access, which is MLflow's primary interface.
+**Why SSO isn't enabled:** NKP Forward Auth on the Ingress blocks programmatic access, which is MLflow's primary interface. See https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing for more information
 
 
 ## Uninstall
