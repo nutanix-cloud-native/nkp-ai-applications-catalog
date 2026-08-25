@@ -3,14 +3,25 @@
 Open WebUI is an extensible, self-hosted web interface for interacting with
 large language models.
 
-## Authentication
+## Dashboard (Launch button)
 
-Open WebUI uses NKP SSO by default. Users authenticate via Traefik Forward Auth
-and Dex before reaching Open WebUI. The authenticated username is passed via the
-`X-Forwarded-User` header and mapped with trusted-header SSO.
+Open WebUI does **not** support a URL prefix. In production the UI calls
+`/api/config` on the page origin (see `WEBUI_BASE_URL` in upstream). Serving it
+under `/nkp/open-webui/` makes that request hit the NKP dashboard host instead
+of Open WebUI, which shows **Open WebUI Backend Required**.
 
-The first user to sign in is created automatically (`sso.enableSignup: true`).
-Grant admin access in the Open WebUI admin settings after the first login.
+The app is exposed as a **LoadBalancer** (`service.type: LoadBalancer`):
+
+- **Launch URL:** A post-install Job discovers the **open-webui** LoadBalancer
+  in the `open-webui` namespace and patches the `${releaseName}-ui` ConfigMap
+  with `dashboardLink` (for example `http://<lb-ip>:80/`).
+- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
+  `http://open-webui.open-webui.svc.cluster.local:80` or
+  `kubectl port-forward -n open-webui svc/open-webui 8080:80` and open
+  http://localhost:8080.
+
+NKP path-based SSO (Traefik Forward Auth on the shared dashboard host) is not
+used for the same reason. Open WebUI's own login is used instead.
 
 ## Chart Source
 

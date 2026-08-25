@@ -1,4 +1,4 @@
-# Create open-webui namespace before Ingress/Middleware and HelmRelease.
+# Create open-webui namespace before RBAC (Role in open-webui ns) and HelmRelease.
 # Ensures namespace exists when Kustomization applies; HelmRelease also has createNamespace: true.
 apiVersion: v1
 kind: Namespace

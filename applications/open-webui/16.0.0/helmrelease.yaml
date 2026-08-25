@@ -11,12 +11,13 @@ spec:
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
+      appVersion: "16.0.0"
   prune: true
   retryInterval: 1m0s
   sourceRef:
     kind: OCIRepository
     name: ${releaseName}-source
     namespace: ${releaseNamespace}
-  timeout: 1m0s
+  timeout: 10m0s
   wait: true
 ---

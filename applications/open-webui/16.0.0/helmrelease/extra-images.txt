@@ -1,1 +1,2 @@
 ghcr.io/open-webui/open-webui:0.11.0
+docker.io/mesosphere/kubectl:v1.35.2-alpine

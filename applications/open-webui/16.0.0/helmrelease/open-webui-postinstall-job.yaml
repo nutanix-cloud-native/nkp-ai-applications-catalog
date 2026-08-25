@@ -1,0 +1,78 @@
+# Post-install Job: discovers the open-webui LoadBalancer in the open-webui
+# namespace and patches ${releaseName}-ui with dashboardLink so the NKP Launch
+# button opens Open WebUI at / (required: /api/config is origin-root).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${releaseName}-postinstall-${appVersion}
+  namespace: ${releaseNamespace}
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 300
+  activeDeadlineSeconds: 600
+  template:
+    spec:
+      serviceAccountName: ${releaseName}-postinstall
+      restartPolicy: OnFailure
+      containers:
+        - name: patch-dashboard-link
+          image: docker.io/mesosphere/kubectl:v1.35.2-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: UI_NAMESPACE
+              value: ${releaseNamespace}
+            - name: UI_CONFIGMAP
+              value: ${releaseName}-ui
+            - name: APP_NAMESPACE
+              value: open-webui
+            - name: APP_SERVICE
+              value: open-webui
+            - name: APP_PORT
+              value: "80"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting post-install (ui=$UI_CONFIGMAP in $UI_NAMESPACE, app=$APP_SERVICE in $APP_NAMESPACE)"
+              sleep 15
+              echo "Waiting for $UI_CONFIGMAP ConfigMap..."
+              for i in $(seq 1 60); do
+                if kubectl get configmap "$UI_CONFIGMAP" -n "$UI_NAMESPACE" >/dev/null 2>&1; then
+                  echo "ConfigMap $UI_CONFIGMAP found."
+                  break
+                fi
+                echo "Waiting for ConfigMap... ($i/60)"; sleep 5
+              done
+              if ! kubectl get configmap "$UI_CONFIGMAP" -n "$UI_NAMESPACE" >/dev/null 2>&1; then
+                echo "ERROR: $UI_CONFIGMAP ConfigMap not found after 5min"; exit 1
+              fi
+
+              echo "Waiting for $APP_SERVICE LoadBalancer in $APP_NAMESPACE..."
+              IP=""
+              HOSTNAME=""
+              for i in $(seq 1 60); do
+                IP=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+                HOSTNAME=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                  break
+                fi
+                echo "Waiting... ($i/60)"; sleep 5
+              done
+
+              if [ -z "$IP" ] && [ -z "$HOSTNAME" ]; then
+                echo "ERROR: $APP_SERVICE LoadBalancer not found"
+                kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o yaml 2>/dev/null || true
+                exit 1
+              fi
+
+              if [ -n "$IP" ]; then
+                ENDPOINT="http://$IP:$APP_PORT/"
+              else
+                ENDPOINT="http://$HOSTNAME:$APP_PORT/"
+              fi
+
+              PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")
+              kubectl patch configmap "$UI_CONFIGMAP" -n "$UI_NAMESPACE" --type=merge -p "$PAYLOAD"
+              echo "Dashboard link updated: $ENDPOINT"
+---

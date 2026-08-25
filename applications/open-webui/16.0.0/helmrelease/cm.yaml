@@ -9,12 +9,13 @@ data:
     fullnameOverride: open-webui
     image:
       tag: "0.11.0"
-    # Use ClusterIP when Ingress is enabled so Helm does not wait for LoadBalancer IP
-    # (LoadBalancer can stay Pending on bare-metal; Ingress provides external access)
+    # Open WebUI does not support a URL prefix. API calls are hardcoded to /api
+    # on the origin, so /nkp/open-webui/ cannot work (backend-required error).
+    # Expose the UI on a LoadBalancer at /. disableWait avoids hanging if the
+    # LB IP is slow. Do not enable the chart Ingress: it is hardcoded to path /
+    # and would take over the NKP dashboard host.
     service:
-      type: ClusterIP
-    # Chart Ingress is hardcoded to path / and would steal NKP dashboard traffic.
-    # Path-based routing is provided by helmrelease/ingress.yaml instead.
+      type: LoadBalancer
     ingress:
       enabled: false
     route:
@@ -40,12 +41,4 @@ data:
     persistence:
       enabled: true
       size: 10Gi
-    # NKP SSO via Traefik Forward Auth (X-Forwarded-User), same pattern as JupyterHub
-    sso:
-      enabled: true
-      enableSignup: true
-      trustedHeader:
-        enabled: true
-        emailHeader: X-Forwarded-User
-        nameHeader: X-Forwarded-User
 ---
