@@ -1,0 +1,73 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Kubeflow Platform (Unified Multi-User)
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+description: One authenticated, multi-user home for your Kubeflow apps - reuses NKP login (Dex) and provisions dedicated kubeflow gateway pods with a dedicated LoadBalancer. You must set config.kubeflowIngressHost(DNS name or IP) in app config when enabling.
+dependencies:
+  - kubeflow-central-dashboard
+  - kubeflow-pipelines
+requiredDependencies:
+  - istio-helm
+  - dex
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **What it is** — Enable your Kubeflow apps (Central Dashboard, Pipelines,
+  Katib, ...) individually and each is its own island with its own sign-in.
+  Kubeflow Platform is the "glue" that joins them into **one website with one
+  login and per-user workspaces** - the experience people expect from Kubeflow.
+
+  **What you get**
+  - **One URL, one login.** A single entry point that authenticates every user
+    against **your existing NKP login (Dex)** - no second identity system, no
+    extra passwords.
+  - **Dedicated Kubeflow ingress address.** The app provisions a separate
+    LoadBalancer Service for Kubeflow traffic, avoiding route overlap with other
+    platform apps on shared ingress IPs.
+  - **Per-user workspaces.** Each user gets their own isolated namespace with the
+    right permissions, so teammates don't see or touch each other's work.
+  - **Everything wired together.** The dashboard, Pipelines and Katib all appear
+    under the same URL and already trust each other.
+
+  **Operator action required** — On enable it provisions dedicated Kubeflow
+  gateway pods + a dedicated ingress Service and generates OAuth2 secrets
+  automatically, but you must set
+  `config.kubeflowIngressHost` (and optionally `config.kubeflowIngressURL`) in
+  app config before or when enabling. Do not enable with an empty host.
+
+  Set this in the app configuration(Kommander UI - Configuration , or `configOverrides`):
+
+  ```yaml
+  config:
+    # DNS name or IP the browser will open(no http://). Required
+    kubeflowIngressHost: "10.22.203.228"
+    # optional; defailts to `http:<kubeflowIngressHost>/`.
+    kubeflowIngressURL: ""
+  ```
+
+  Use a hostname (for example `kubeflow.example.com`) if you have one. After the LoadBalancer exists,
+  point that DNS at the service.
+
+
+  **Onboard users from the UI** — Add a user by listing them under `profiles` in
+  this app's configuration (their NKP login email). Each entry creates that
+  user's private workspace. No `kubectl` required.
+
+  **Before you enable**
+  - Set `config.kubeflowIngressHost` (required) and optional `config.kubeflowIngressURL`.
+  - **istio-helm** (required) - provides the Istio control plane/revision used by this app's gateway pods.
+  - **Kubeflow Central Dashboard** (recommended) - the home page this makes
+    multi-user.
+  - Enable your component apps too (Pipelines, Katib, ...) to see them in the menu.
+
+  **Resources** — [Kubeflow Profiles](https://www.kubeflow.org/docs/components/central-dash/profiles/) |
+  [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)
+scope:
+  - workspace
+supportLink: https://www.kubeflow.org/docs/components/central-dash/
+nkpVersionSupport: ">=2.18.0"
+type: nkp-catalog
+---

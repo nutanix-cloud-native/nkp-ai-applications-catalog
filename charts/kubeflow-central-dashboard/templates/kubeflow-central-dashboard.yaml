@@ -120,7 +120,7 @@ apiVersion: v1
 data:
   CD_CLUSTER_DOMAIN: cluster.local
   CD_COLLECT_METRICS: "true"
-  CD_REGISTRATION_FLOW: "false"
+  CD_REGISTRATION_FLOW: "true"
   CD_USERID_HEADER: kubeflow-userid
   CD_USERID_PREFIX: ""
 kind: ConfigMap
@@ -186,6 +186,7 @@ spec:
         app.kubernetes.io/name: centraldashboard
         kustomize.component: centraldashboard
         sidecar.istio.io/inject: "true"
+        istio.io/rev: istio-helm
     spec:
       containers:
         - env:
@@ -198,7 +199,7 @@ spec:
             - name: PROFILES_KFAM_SERVICE_HOST
               value: profiles-kfam.kubeflow
             - name: REGISTRATION_FLOW
-              value: "false"
+              value: "true"
             - name: DASHBOARD_CONFIGMAP
               value: centraldashboard-config
             - name: POD_NAMESPACE
@@ -259,7 +260,7 @@ metadata:
   namespace: kubeflow-central-dashboard
 spec:
   gateways:
-    - kubeflow-gateway
+    - kubeflow/kubeflow-gateway
   hosts:
     - '*'
   http:
@@ -270,7 +271,7 @@ spec:
         uri: /
       route:
         - destination:
-            host: centraldashboard.kubeflow.svc.cluster.local
+            host: oauth2-proxy.kubeflow.svc.cluster.local
             port:
               number: 80
 ---
@@ -290,6 +291,8 @@ spec:
     - from:
         - source:
             principals:
+              - cluster.local/ns/kubeflow/sa/oauth2-proxy
+              - cluster.local/ns/istio-helm-gateway-ns/sa/istio-helm-ingressgateway
               - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
   selector:
     matchLabels:

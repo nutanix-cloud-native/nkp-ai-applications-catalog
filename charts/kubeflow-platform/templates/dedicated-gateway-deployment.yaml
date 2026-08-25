@@ -1,0 +1,72 @@
+{{- if .Values.dedicatedIngress.enabled }}
+{{- $gw := .Values.dedicatedIngress }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $gw.serviceName }}
+  namespace: kubeflow
+  labels:
+    app.kubernetes.io/name: kubeflow-platform
+    istio: {{ $gw.gatewayLabel }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $gw.serviceName }}
+  namespace: kubeflow
+  labels:
+    app.kubernetes.io/name: kubeflow-platform
+    istio: {{ $gw.gatewayLabel }}
+spec:
+  replicas: {{ $gw.replicas | default 2 }}
+  selector:
+    matchLabels:
+      istio: {{ $gw.gatewayLabel }}
+  template:
+    metadata:
+      labels:
+        istio: {{ $gw.gatewayLabel }}
+        sidecar.istio.io/inject: "true"
+        istio.io/rev: {{ $gw.istioRevision }}
+      annotations:
+        inject.istio.io/templates: gateway
+    spec:
+      serviceAccountName: {{ $gw.serviceName }}
+      containers:
+        - name: istio-proxy
+          image: {{ $gw.proxyImage | quote }}
+          securityContext:
+            runAsUser: 1337
+            runAsGroup: 1337
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - containerPort: 15021
+            - containerPort: 8080
+            - containerPort: 8443
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 15021
+          {{- with $gw.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with $gw.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $gw.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $gw.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

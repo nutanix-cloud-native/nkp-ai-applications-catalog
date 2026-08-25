@@ -4,6 +4,13 @@
 push-baked-chart app oci-registry=OCI_REGISTRY:
     #!/usr/bin/env bash
     set -euo pipefail
+    case "{{ app }}" in
+      kubeflow-pipelines|kubeflow-central-dashboard) ;;
+      *)
+        echo "push-baked-chart only accepts kubeflow-pipelines or kubeflow-central-dashboard" >&2
+        exit 1
+        ;;
+    esac
     [ -f "charts/{{ app }}/Chart.yaml" ] || { echo "No chart at charts/{{ app }}; run 'just bake {{ app }}' first" >&2; exit 1; }
     workdir=$(mktemp -d)
     trap 'rm -rf "$workdir"' EXIT
