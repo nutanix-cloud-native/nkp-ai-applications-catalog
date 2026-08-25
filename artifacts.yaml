@@ -146,6 +146,7 @@ applications:
       - ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
       - quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
       - docker.io/alpine/k8s:1.31.2
+      - docker.io/istio/proxyv2:1.29.0
   - name: kueue
     version: 0.18.0
     images:

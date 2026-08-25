@@ -34,7 +34,7 @@ spec:
       serviceAccountName: {{ $gw.serviceName }}
       containers:
         - name: istio-proxy
-          image: auto
+          image: {{ $gw.proxyImage | quote }}
           securityContext:
             runAsUser: 1337
             runAsGroup: 1337

@@ -6757,6 +6757,10 @@ spec:
         - key: request.headers[kubeflow-userid]
           values:
             - '*'
+    - to:
+        - operation:
+            ports:
+              - "8887"
   selector:
     matchLabels:
       app: ml-pipeline
@@ -6777,9 +6781,6 @@ spec:
             principals:
               - cluster.local/ns/kubeflow/sa/oauth2-proxy
     - when:
-        - key: request.headers[authorization]
-          values:
-            - '*'
         - key: request.headers[kubeflow-userid]
           values:
             - '*'

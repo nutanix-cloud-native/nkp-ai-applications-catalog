@@ -56,7 +56,7 @@ stringData:
     injectRequestHeaders:
       - name: kubeflow-userid
         values:
-          - claim: email
+          - claim: {{ default "email" .Values.config.userIDClaim }}
       - name: kubeflow-groups
         values:
           - claim: groups
@@ -70,7 +70,7 @@ stringData:
           issuerURL: "{{ $c.dexIssuerURL }}"
           emailClaim: email
           groupsClaim: groups
-          userIDClaim: email
+          userIDClaim: {{ default "email" .Values.config.userIDClaim | quote }}
           audienceClaims: ["aud"]
           insecureAllowUnverifiedEmail: true
 ---

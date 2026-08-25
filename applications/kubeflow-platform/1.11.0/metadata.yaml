@@ -50,7 +50,8 @@ overview: |
 
   Use a hostname (for example `kubeflow.example.com`) if you have one. After the LoadBalancer exists,
   point that DNS at the service.
-  
+
+
   **Onboard users from the UI** — Add a user by listing them under `profiles` in
   this app's configuration (their NKP login email). Each entry creates that
   user's private workspace. No `kubectl` required.

@@ -232,6 +232,10 @@ spec:
           name: namespace-labels-data-4df5t8mdgf
         name: namespace-labels
 ---
+# /kfam/ stays on kubeflow-gateway but must land on oauth2-proxy, not KFAM.
+# Direct routing makes the caller the ingressgateway SA, which this policy
+# cannot allow without letting clients spoof kubeflow-userid (we do not
+# enable Istio ext_authz on istiod).
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -256,9 +260,9 @@ spec:
       uri: /kfam/
     route:
     - destination:
-        host: profiles-kfam.kubeflow.svc.cluster.local
+        host: oauth2-proxy.kubeflow.svc.cluster.local
         port:
-          number: 8081
+          number: 80
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -277,12 +281,13 @@ spec:
         - cluster.local/ns/kubeflow/sa/centraldashboard
         - cluster.local/ns/kubeflow/sa/ml-pipeline
         - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+        - cluster.local/ns/kubeflow/sa/oauth2-proxy
   selector:
     matchLabels:
       kustomize.component: profiles
 {{- range .Values.profiles }}
 ---
-# User workspace from .Values.profiles (owner MUST equal the Dex email claim).
+# User workspace from .Values.profiles (owner MUST equal kubeflow-userid).
 apiVersion: kubeflow.org/v1
 kind: Profile
 metadata:

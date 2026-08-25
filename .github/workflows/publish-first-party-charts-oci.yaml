@@ -1,0 +1,90 @@
+# Copyright 2026 Nutanix. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish First-Party Charts to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: "Chart directory under charts/ to publish (no bake)."
+        type: string
+        default: kubeflow-platform
+        required: true
+
+jobs:
+  publish-first-party-chart:
+    name: Lint and publish ${{ inputs.chart }}
+    runs-on:
+      - self-hosted-nutanix-medium
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Nix on self-hosted ARC runners
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          skip-nix-installation: true
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint and publish chart
+        shell: bash
+        env:
+          CHART: ${{ inputs.chart }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$CHART" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+            echo "::error::Invalid chart name: ${CHART}"
+            exit 1
+          fi
+
+          chart_path="charts/${CHART}/Chart.yaml"
+
+          if [[ ! -f "$chart_path" ]]; then
+            echo "::error::No chart found at ${chart_path}"
+            exit 1
+          fi
+
+          if ! grep -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
+            echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage"
+            exit 1
+          fi
+
+          name="$(awk -F': *' '/^name:/{print $2; exit}' "$chart_path")"
+          version="$(awk -F': *' '/^version:/{print $2; exit}' "$chart_path")"
+          tgz="${RUNNER_TEMP}/${name}-${version}.tgz"
+
+          echo "==> Linting ${CHART}"
+          devbox run -- helm lint "charts/${CHART}"
+
+          echo "==> Publishing ${CHART}"
+          devbox run -- helm package "charts/${CHART}" -d "${RUNNER_TEMP}"
+          if [[ ! -f "$tgz" ]]; then
+            echo "::error::Expected package not found at ${tgz}"
+            exit 1
+          fi
+          devbox run -- helm push "$tgz" oci://ghcr.io/nutanix-cloud-native/charts
+          {
+            echo "## Published first-party chart"
+            echo ""
+            echo "| Chart | Version |"
+            echo "|---|---|"
+            echo "| ${CHART} | ${version} |"
+            echo ""
+            echo "> This workflow only publishes packages. If a package is not public, update visibility in GHCR package settings."
+          } >> "$GITHUB_STEP_SUMMARY"

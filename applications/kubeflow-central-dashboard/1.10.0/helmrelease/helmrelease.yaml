@@ -24,9 +24,8 @@ spec:
     remediation:
       retries: 30
   interval: 15s
-  # Baked manifests hardcode this namespace (kustomize namespace transform at bake
-  # time), and RBAC subjects/menu links are already resolved for it.
-  targetNamespace: kubeflow
+  # Baked manifests live in this namespace; createNamespace must match or Helm fails.
+  targetNamespace: kubeflow-central-dashboard
   upgrade:
     remediation:
       retries: 30
