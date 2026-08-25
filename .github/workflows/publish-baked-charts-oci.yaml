@@ -76,6 +76,8 @@ jobs:
             selection_source="changed_charts"
           fi
 
+          apps_list="$(printf '%s\n' "$apps_list" | grep -E '^(kubeflow-pipelines|kubeflow-central-dashboard)$' || true)"
+
           if [[ -z "$apps_list" ]]; then
             apps_count=0
           else
