@@ -81,7 +81,7 @@ overview: |
 
   *Step 3 — create credential Secrets in the `mlflow` namespace*
 
-  Because this application creates its own namespace, these Secrets cannot exist before the first install. Install the application first, then create them.
+  These Secrets must be created after the application is installed, because the application creates the mlflow namespace.
 
   ```
   kubectl create secret generic mlflow-db-credentials -n mlflow \
