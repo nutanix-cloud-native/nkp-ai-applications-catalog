@@ -42,8 +42,6 @@ overview: |
   - A PostgreSQL server reachable from the cluster, with the database already created and a user holding schema-creation rights. MLflow creates its own tables, but not the database.
   - An existing S3-compatible bucket. MLflow does not create buckets.
 
-  
-
   *Step 2 — apply the configuration override*
 
   Paste the following into this application's **cluster** configuration override, replacing the host, database, and bucket values. Either store can be configured independently — omit the `backendStore` block to keep metadata on the local volume, or omit `artifactRoot` to keep artifacts there.
@@ -101,7 +99,15 @@ overview: |
 
   **Authentication**
 
-  **MLflow is unauthenticated in this version of the catalog entry.**
+  MLflow is unauthenticated by default. Enable basic authentication via the **cluster** configuration override:
+
+  ```yaml
+  auth:
+    enabled: true
+    adminUsername: <username>
+    adminPassword: <password>
+    sqliteFullPath: /mlflow/data/
+  ```
 
   NKP SSO is not enabled. Browser-based single sign-on on the Ingress blocks scripts and training jobs from the MLflow API, which is the application's primary interface.
 
@@ -109,7 +115,7 @@ overview: |
 
   Open MLflow from the cluster **Application Dashboards** tab or at `/nkp/mlflow/` through the NKP Traefik endpoint.
 
-  ```
+  ```python
   mlflow.set_tracking_uri("https://<traefik-ip>/nkp/mlflow")
   ```
 
@@ -125,3 +131,4 @@ scope:
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://mlflow.org/docs/latest/
 type: nkp-catalog
+---

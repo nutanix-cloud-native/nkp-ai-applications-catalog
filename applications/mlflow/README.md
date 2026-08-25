@@ -145,9 +145,17 @@ Secrets are to be created after installation as namespace has to exist first.
 
 ## Authentication
 
-**Unauthenticated.** Anyone who can reach the Traefik endpoint has full read/write.
+MLflow is unauthenticated by default. Enable basic authentication via the **cluster** configuration override:
 
-**Why SSO isn't enabled:** NKP Forward Auth on the Ingress blocks programmatic access, which is MLflow's primary interface. See https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing for more information
+```yaml
+auth:
+  enabled: true
+  adminUsername: <username>
+  adminPassword: <password>
+  sqliteFullPath: /mlflow/data/
+```
+
+**Why SSO isn't enabled:** NKP Forward Auth on the Ingress blocks programmatic access, which is MLflow's primary interface. See [the design doc](https://docs.google.com/document/d/1nevcjBDVX4geEX7kj8_71CL4lgw2r0MwJQroXARBBPc/edit?usp=sharing) for more information.
 
 
 ## Uninstall
