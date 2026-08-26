@@ -7,38 +7,32 @@ data:
   values.yaml: |
     ---
     fullnameOverride: open-webui
-    image:
-      tag: "0.11.0"
-    # Open WebUI does not support a URL prefix. API calls are hardcoded to /api
-    # on the origin, so /nkp/open-webui/ cannot work (backend-required error).
-    # Expose the UI on a LoadBalancer at /. disableWait avoids hanging if the
-    # LB IP is slow. Do not enable the chart Ingress: it is hardcoded to path /
-    # and would take over the NKP dashboard host.
-    service:
-      type: LoadBalancer
-    ingress:
-      enabled: false
-    route:
-      enabled: false
-    # Disable bundled subcharts — use the standalone Ollama catalog app when needed
     ollama:
       enabled: false
-    pipelines:
-      enabled: false
-    tika:
-      enabled: false
-    terminals:
-      enabled: false
-    # Point to the catalog Ollama service in the ollama namespace
     ollamaUrls:
       - "http://ollama-ollama.ollama.svc.cluster.local:11434"
-    # Do not call api.openai.com by default (airgap-friendly). Override to add
-    # OpenAI-compatible backends such as vLLM.
-    enableOpenaiApi: false
-    # Single-replica default; enable websocket.redis for multi-replica
+    pipelines:
+      enabled: false
     websocket:
       enabled: false
-    persistence:
+    enableOpenaiApi: false
+    service:
+      type: ClusterIP
+    ingress:
       enabled: true
-      size: 10Gi
+      class: kommander-traefik
+      # Override this in Kommander (Enable Application → Helm values) with an
+      # FQDN that resolves to this cluster's kommander-traefik LoadBalancer.
+      host: open-webui.${clusterName}
+      tls: false
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.middlewares: "${releaseNamespace}-forwardauth@kubernetescrd"
+    sso:
+      enabled: true
+      enableSignup: true
+      trustedHeader:
+        enabled: true
+        emailHeader: X-Forwarded-User
+        nameHeader: X-Forwarded-User
 ---

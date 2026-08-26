@@ -1,11 +1,10 @@
-# Post-install Job: discovers the open-webui LoadBalancer in the open-webui
-# namespace and patches ${releaseName}-ui with dashboardLink so the NKP Launch
-# button opens Open WebUI at / (required: /api/config is origin-root).
+# Post-install Job: copies the Open WebUI Ingress host into the Launch
+# ConfigMap as https://<host>/ (Open WebUI cannot use a URL prefix).
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: ${releaseName}-postinstall-${appVersion}
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
 spec:
   backoffLimit: 5
   ttlSecondsAfterFinished: 300
@@ -20,22 +19,21 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: UI_NAMESPACE
-              value: ${releaseNamespace}
+              value: ${workspaceNamespace}
             - name: UI_CONFIGMAP
               value: ${releaseName}-ui
             - name: APP_NAMESPACE
               value: open-webui
-            - name: APP_SERVICE
+            - name: APP_INGRESS
               value: open-webui
-            - name: APP_PORT
-              value: "80"
           command:
             - /bin/sh
             - -c
             - |
               set -e
-              echo "Starting post-install (ui=$UI_CONFIGMAP in $UI_NAMESPACE, app=$APP_SERVICE in $APP_NAMESPACE)"
+              echo "Starting post-install (ui=$UI_CONFIGMAP in $UI_NAMESPACE, ingress=$APP_INGRESS in $APP_NAMESPACE)"
               sleep 15
+
               echo "Waiting for $UI_CONFIGMAP ConfigMap..."
               for i in $(seq 1 60); do
                 if kubectl get configmap "$UI_CONFIGMAP" -n "$UI_NAMESPACE" >/dev/null 2>&1; then
@@ -48,30 +46,23 @@ spec:
                 echo "ERROR: $UI_CONFIGMAP ConfigMap not found after 5min"; exit 1
               fi
 
-              echo "Waiting for $APP_SERVICE LoadBalancer in $APP_NAMESPACE..."
-              IP=""
-              HOSTNAME=""
+              echo "Waiting for Ingress $APP_INGRESS host in $APP_NAMESPACE..."
+              HOST=""
               for i in $(seq 1 60); do
-                IP=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-                HOSTNAME=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-                if [ -n "$IP" ] || [ -n "$HOSTNAME" ]; then
+                HOST=$(kubectl get ingress -n "$APP_NAMESPACE" "$APP_INGRESS" -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || true)
+                if [ -n "$HOST" ]; then
                   break
                 fi
                 echo "Waiting... ($i/60)"; sleep 5
               done
 
-              if [ -z "$IP" ] && [ -z "$HOSTNAME" ]; then
-                echo "ERROR: $APP_SERVICE LoadBalancer not found"
-                kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o yaml 2>/dev/null || true
+              if [ -z "$HOST" ]; then
+                echo "ERROR: Ingress host not found"
+                kubectl get ingress -n "$APP_NAMESPACE" "$APP_INGRESS" -o yaml 2>/dev/null || true
                 exit 1
               fi
 
-              if [ -n "$IP" ]; then
-                ENDPOINT="http://$IP:$APP_PORT/"
-              else
-                ENDPOINT="http://$HOSTNAME:$APP_PORT/"
-              fi
-
+              ENDPOINT="https://$HOST/"
               PAYLOAD=$(printf '{"data": {"dashboardLink": "%s"}}' "$ENDPOINT")
               kubectl patch configmap "$UI_CONFIGMAP" -n "$UI_NAMESPACE" --type=merge -p "$PAYLOAD"
               echo "Dashboard link updated: $ENDPOINT"

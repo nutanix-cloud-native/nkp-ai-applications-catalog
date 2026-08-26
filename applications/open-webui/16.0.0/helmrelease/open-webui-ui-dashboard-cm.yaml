@@ -1,17 +1,16 @@
-# ConfigMap for NKP Launch button.
-# dashboardLink is patched by the postinstall Job with the LoadBalancer URL.
-# SSA Merge keeps the patched key from being overwritten on reconcile.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ${releaseName}-ui
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
   labels:
-    kommander.d2iq.io/application: ${releaseName}
+    "kommander.d2iq.io/application": ${releaseName}
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: Merge
+    "kustomize.toolkit.fluxcd.io/ssa": "Merge"
 data:
-  name: ${releaseName}
-  docsLink: "https://docs.openwebui.com"
+  name: "Open WebUI"
+  docsLink: "https://docs.openwebui.com/"
   version: "16.0.0"
+  # dashboardLink is patched by the postinstall Job to https://<ingress.host>/
 ---
+

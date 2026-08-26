@@ -5,14 +5,14 @@ metadata:
   namespace: ${releaseNamespace}
 spec:
   interval: 6h0m0s
+  url: oci://ghcr.io/nutanix-cloud-native/charts/open-webui
   ref:
     tag: 16.0.0
-  url: oci://ghcr.io/nutanix-cloud-native/charts/open-webui
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: open-webui
+  name: ${releaseName}
   namespace: ${releaseNamespace}
 spec:
   chartRef:
@@ -22,7 +22,6 @@ spec:
   install:
     crds: CreateReplace
     createNamespace: true
-    disableWait: true
     remediation:
       retries: 30
     timeout: 10m
@@ -30,11 +29,13 @@ spec:
   targetNamespace: open-webui
   upgrade:
     crds: CreateReplace
-    disableWait: true
     remediation:
       retries: 30
     timeout: 10m
   valuesFrom:
     - kind: ConfigMap
       name: ${releaseName}-${appVersion}-defaults
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-overrides
+      optional: true
 ---

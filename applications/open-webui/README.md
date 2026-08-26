@@ -3,25 +3,27 @@
 Open WebUI is an extensible, self-hosted web interface for interacting with
 large language models.
 
-## Dashboard (Launch button)
+## Authentication (NKP SSO)
 
 Open WebUI does **not** support a URL prefix. In production the UI calls
-`/api/config` on the page origin (see `WEBUI_BASE_URL` in upstream). Serving it
-under `/nkp/open-webui/` makes that request hit the NKP dashboard host instead
-of Open WebUI, which shows **Open WebUI Backend Required**.
+`/api/config` on the page origin, so `/nkp/open-webui/` cannot work.
 
-The app is exposed as a **LoadBalancer** (`service.type: LoadBalancer`):
+NKP SSO uses **host-based** Traefik Forward Auth:
 
-- **Launch URL:** A post-install Job discovers the **open-webui** LoadBalancer
-  in the `open-webui` namespace and patches the `${releaseName}-ui` ConfigMap
-  with `dashboardLink` (for example `http://<lb-ip>:80/`).
-- **In-cluster (no LoadBalancer):** If you override to ClusterIP, use
-  `http://open-webui.open-webui.svc.cluster.local:80` or
-  `kubectl port-forward -n open-webui svc/open-webui 8080:80` and open
-  http://localhost:8080.
+- Service type **ClusterIP**
+- Chart Ingress at path `/` with `kommander-traefik`
+- Middleware: `${releaseNamespace}-forwardauth` only (no stripPrefix)
+- Open WebUI trusted-header SSO on `X-Forwarded-User`
 
-NKP path-based SSO (Traefik Forward Auth on the shared dashboard host) is not
-used for the same reason. Open WebUI's own login is used instead.
+Set Helm value `ingress.host` to an FQDN that resolves to this cluster's
+`kommander-traefik` LoadBalancer. A post-install Job copies that host into
+the Launch ConfigMap as `https://<host>/`.
+
+Users authenticate with Dex before reaching Open WebUI. The first account is
+created automatically (`sso.enableSignup: true`). Grant admin in Open WebUI
+settings after the first login.
+
+Direct ClusterIP or port-forward access skips Forward Auth.
 
 ## Chart Source
 

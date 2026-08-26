@@ -1,15 +1,14 @@
-# RBAC for post-install Job: patch ${releaseName}-ui ConfigMap and read LoadBalancer service.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ${releaseName}-postinstall
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: ${releaseName}-postinstall
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
@@ -20,7 +19,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: ${releaseName}-postinstall
-  namespace: ${releaseNamespace}
+  namespace: ${workspaceNamespace}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -28,30 +27,29 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: ${releaseName}-postinstall
-    namespace: ${releaseNamespace}
+    namespace: ${workspaceNamespace}
 ---
-# Role + RoleBinding in open-webui ns so Job can read the LoadBalancer service.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: ${releaseName}-postinstall-app-svc
+  name: ${releaseName}-postinstall-ingress
   namespace: open-webui
 rules:
-  - apiGroups: [""]
-    resources: ["services"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
     verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: ${releaseName}-postinstall-app-svc
+  name: ${releaseName}-postinstall-ingress
   namespace: open-webui
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ${releaseName}-postinstall-app-svc
+  name: ${releaseName}-postinstall-ingress
 subjects:
   - kind: ServiceAccount
     name: ${releaseName}-postinstall
-    namespace: ${releaseNamespace}
+    namespace: ${workspaceNamespace}
 ---

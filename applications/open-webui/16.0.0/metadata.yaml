@@ -19,23 +19,34 @@ overview: |
   **Key capabilities**
 
   - **Multi-backend support** — Connect to Ollama or any OpenAI-compatible endpoint; multiple backends can be used side-by-side.
+  - **NKP SSO integration** — authenticates users via Traefik Forward Auth and the NKP identity provider (Dex) on a dedicated hostname (not a URL prefix).
   - **RAG** — Built-in Retrieval-Augmented Generation for document-grounded conversations.
   - **User management** — Role-based access (Admin, User, Pending) and conversation history.
   - **Extensibility** — Model presets, prompt templates, and a plugin/pipeline system.
 
+  **Prerequisites**
+
+  Open WebUI cannot be served under a URL prefix (the UI always calls `/api/config` at `/`). Enable it with a **dedicated hostname** on this cluster's Traefik, not a path on the NKP dashboard URL.
+
+  Before or while enabling the app, set Helm value `ingress.host` to an FQDN that resolves to the cluster Traefik LoadBalancer (`kommander-traefik`). Example:
+
+  ```yaml
+  ingress:
+    host: open-webui.mycompany.example
+  ```
+
+  Create a DNS record (or `/etc/hosts` entry) for that name pointing at the same address you already use for this cluster's NKP UI. Do not put a raw IP in `ingress.host` — Kubernetes Ingress hosts must be DNS names.
+
   **Access**
 
-  Open WebUI does not support a URL prefix (`/api/config` is always requested from `/`). It is exposed as a LoadBalancer. A post-install Job writes that address into the Launch ConfigMap.
-
-  - Open Open WebUI from the cluster **Application Dashboards** tab. Launch uses the LoadBalancer URL (for example `http://<lb-ip>:80/`).
-  - If the LoadBalancer stays Pending, port-forward: `kubectl port-forward -n open-webui svc/open-webui 8080:80`.
-  - In-cluster: `http://open-webui.open-webui.svc.cluster.local:80` (same namespace: `http://open-webui:80`).
+  - Open Open WebUI from the cluster **Application Dashboards** tab. Launch is `https://<ingress.host>/`.
+  - In-cluster: `http://open-webui.open-webui.svc.cluster.local:80` (same namespace: `http://open-webui:80`). Direct ClusterIP access skips NKP SSO.
 
   **Authentication**
 
-  Open WebUI uses its own login. The first account created becomes the admin. Grant additional users in Open WebUI admin settings.
+  Open WebUI uses NKP SSO. Users authenticate via Traefik Forward Auth (Dex) before reaching Open WebUI. The authenticated username is passed via the `X-Forwarded-User` header.
 
-  NKP path-based SSO (`/nkp/open-webui/`) is not used: Open WebUI has no subpath support, so Traefik Forward Auth on the dashboard host cannot reach `/api/config`.
+  The first user to sign in is created automatically. Grant admin privileges in the Open WebUI admin settings after the first login.
 
   **Dependencies (this catalog)**
 
