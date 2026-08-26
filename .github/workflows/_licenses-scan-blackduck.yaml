@@ -45,7 +45,7 @@ on:
       cli_image:
         description: 'dkp-licenses-cli container image'
         type: string
-        default: 'docker.io/mesosphere/dkp-licenses-cli:kjoshi-black-duck-cache-validation'
+        default: 'docker.io/mesosphere/dkp-licenses-cli:licenses-v0.0.17-dev'
       scanner_image:
         description: 'dkp-licenses-scanner container image'
         type: string
