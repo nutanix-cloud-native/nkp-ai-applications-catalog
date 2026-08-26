@@ -1,0 +1,53 @@
+# TFA authorizes /nkp/jupyter via ClusterRole nonResourceURLs.
+# Labels fold these rules into workspace-view/edit/admin so Workspace View
+# users can use JupyterHub without cluster-admin.
+# View includes POST/DELETE because spawn/stop notebook APIs are not GET-only.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dkp-jupyterhub-view
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+  - nonResourceURLs:
+      - /nkp/jupyter
+      - /nkp/jupyter/*
+    verbs:
+      - get
+      - head
+      - post
+      - put
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dkp-jupyterhub-edit
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+  - nonResourceURLs:
+      - /nkp/jupyter
+      - /nkp/jupyter/*
+    verbs:
+      - get
+      - head
+      - post
+      - put
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dkp-jupyterhub-admin
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - nonResourceURLs:
+      - /nkp/jupyter
+      - /nkp/jupyter/*
+    verbs:
+      - "*"
+---

@@ -2,6 +2,24 @@
 
 JupyterHub brings the power of notebooks to groups of users. It gives users access to computational environments and resources without burdening the users with installation and maintenance tasks.
 
+## Access for non-admin users
+
+JupyterHub is a workspace catalog app. Enabling it ships aggregating ClusterRoles so
+anyone bound to **Workspace View** (or Edit / Admin) can open `/nkp/jupyter`
+without `cluster-admin`.
+
+In the NKP UI:
+
+1. Map the IdP group (for example `oidc:nkp-users`) to an NKP Group.
+2. Bind that group to **Workspace View** on the workspace.
+3. Enable JupyterHub.
+
+Do not apply a one-off ClusterRoleBinding on the workload kubeconfig. That was
+the previous workaround; it is replaced by this catalog RBAC.
+
+Design notes (problem, workaround, alternatives, implementation):
+[ACCESS.md](ACCESS.md).
+
 ## Authentication
 
 JupyterHub uses NKP SSO by default. Users authenticate via Traefik Forward Auth and Dex before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.

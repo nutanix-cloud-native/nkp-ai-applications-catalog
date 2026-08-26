@@ -4,5 +4,6 @@ resources:
   - namespace.yaml
   - cm.yaml
   - jupyterhub-ui-dashboard-cm.yaml
+  - rbac.yaml
   - helmrelease.yaml
 ---
