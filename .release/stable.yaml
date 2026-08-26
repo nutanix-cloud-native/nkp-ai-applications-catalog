@@ -39,8 +39,6 @@ releases:
         version: 2.15.0
       - name: kubeflow-central-dashboard
         version: 1.10.0
-      - name: ollama
-        version: 1.72.0
       - name: kai-scheduler
         version: 0.15.2
       - name: kueue

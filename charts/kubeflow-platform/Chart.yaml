@@ -1,0 +1,8 @@
+apiVersion: v2
+name: kubeflow-platform
+description: Unified multi-user glue for the Kubeflow catalog apps (Dex OIDC + Istio ingress + Profiles). Hand-authored (no upstream to bake); self-configures on install.
+type: application
+version: 1.11.0
+appVersion: "1.11.0"
+sources:
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
