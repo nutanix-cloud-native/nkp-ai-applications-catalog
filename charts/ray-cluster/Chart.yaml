@@ -1,7 +1,0 @@
-apiVersion: v2
-description: A Helm chart for deploying the RayCluster with the kuberay operator.
-home: https://github.com/ray-project/kuberay
-icon: https://github.com/ray-project/ray/raw/master/doc/source/images/ray_header_logo.png
-name: ray-cluster
-type: application
-version: 1.7.0
