@@ -1,6 +1,7 @@
 schema: "catalog.nkp.nutanix.com/v1/application-metadata"
 displayName: AMD Network Operator
 appScreens:
+  - general
   - ai
 description: The AMD Network Operator simplifies deployment and management of AMD AI NICs (AINICs) in Kubernetes and works with the AMD GPU Operator for high-performance networking in AI/ML and HPC workloads.
 category:
