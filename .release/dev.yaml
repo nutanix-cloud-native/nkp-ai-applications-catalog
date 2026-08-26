@@ -1,5 +1,11 @@
 schema: catalog.nkp.nutanix.com/v1/catalog-release-spec
 releases:
+  - tagName: 2.20-dev
+    fileName: nkp-ai-applications-catalog-2.20-dev.tar
+    collectionAnnotations:
+      org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
+    constraints:
+      nkpVersion: "2.20"
   - tagName: 2.19-dev
     fileName: nkp-ai-applications-catalog-2.19-dev.tar
     collectionAnnotations:

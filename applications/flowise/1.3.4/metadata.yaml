@@ -5,7 +5,7 @@ appScreens:
 description: Drag-and-drop UI to build and deploy LLM workflows and agents with LangChain.
 category:
   - model-development-and-training
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.20.0"
 scope:
   - workspace
 supportLink: https://docs.flowiseai.com/
