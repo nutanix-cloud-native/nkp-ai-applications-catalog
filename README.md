@@ -332,6 +332,15 @@ to `oci://ghcr.io/nutanix-cloud-native/charts`.
 - The workflow only pushes packages; if visibility is not public, update package
   visibility in GHCR package settings manually.
 
+### Manual CI publish for first-party charts
+
+Use `Publish First-Party Charts to GHCR` for hand-authored charts such as
+`kubeflow-platform` (no bake step).
+
+- Trigger it manually and set `chart` (default `kubeflow-platform`).
+- The workflow runs `helm lint`, then `helm package` / `helm push`.
+- Local equivalent: `just login && helm package charts/kubeflow-platform && helm push kubeflow-platform-*.tgz oci://ghcr.io/nutanix-cloud-native/charts`.
+
 ## Sample Apps (Demo)
 
 | Application | Version | Description |
@@ -379,7 +388,9 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just bake <app> [version]` | Render a Kustomize-only app into an air-gappable manifest + chart (see [tools/bake](tools/bake/README.md)) |
 | `just bake-check` | Re-bake all apps; fail if committed artifacts drifted |
+| `just push-baked-chart <app>` | Package and push `kubeflow-pipelines` or `kubeflow-central-dashboard` |
 | `Publish Baked Charts to GHCR` (GitHub Actions) | Manual CI workflow to bake and push changed baked charts to GHCR using CI credentials |
+| `Publish First-Party Charts to GHCR` (GitHub Actions) | Manual CI workflow to lint and push hand-authored charts (for example `kubeflow-platform`) |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |
