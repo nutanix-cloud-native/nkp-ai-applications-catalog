@@ -18,16 +18,10 @@ data:
     enableOpenaiApi: false
     service:
       type: ClusterIP
+    # Chart Ingress is unused: a host-based / rule never matches Traefik's IP
+    # (Forward Auth redirects sslip.io there). Routing is helmrelease/ingress.yaml.
     ingress:
-      enabled: true
-      class: kommander-traefik
-      # Override this in Kommander (Enable Application → Helm values) with an
-      # FQDN that resolves to this cluster's kommander-traefik LoadBalancer.
-      host: open-webui.${clusterName}
-      tls: false
-      annotations:
-        traefik.ingress.kubernetes.io/router.tls: "true"
-        traefik.ingress.kubernetes.io/router.middlewares: "${releaseNamespace}-forwardauth@kubernetescrd"
+      enabled: false
     sso:
       enabled: true
       enableSignup: true

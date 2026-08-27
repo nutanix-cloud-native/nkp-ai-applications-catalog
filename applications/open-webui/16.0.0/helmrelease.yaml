@@ -12,7 +12,6 @@ spec:
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
       appVersion: "16.0.0"
-      clusterName: ${clusterName}
   prune: true
   retryInterval: 1m0s
   sourceRef:

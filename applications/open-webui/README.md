@@ -8,20 +8,20 @@ large language models.
 Open WebUI does **not** support a URL prefix. In production the UI calls
 `/api/config` on the page origin, so `/nkp/open-webui/` cannot work.
 
-NKP SSO uses **host-based** Traefik Forward Auth:
+NKP SSO uses Traefik Forward Auth on the **same origin** as the NKP UI.
+A Flux Ingress (`spec.defaultBackend`) is Traefik's catch-all for unmatched
+paths on that origin, with `${releaseNamespace}-forwardauth`. Launch is `/`.
 
-- Service type **ClusterIP**
-- Chart Ingress at path `/` with `kommander-traefik`
-- Middleware: `${releaseNamespace}-forwardauth` only (no stripPrefix)
-- Open WebUI trusted-header SSO on `X-Forwarded-User`
-
-Set Helm value `ingress.host` to an FQDN that resolves to this cluster's
-`kommander-traefik` LoadBalancer. A post-install Job copies that host into
-the Launch ConfigMap as `https://<host>/`.
+A second hostname (sslip.io or `/etc/hosts`) cannot work: Forward Auth's
+`authHost` is the Traefik address, so the browser is sent there and `/`
+404s unless Open WebUI is the default backend on that origin.
 
 Users authenticate with Dex before reaching Open WebUI. The first account is
 created automatically (`sso.enableSignup: true`). Grant admin in Open WebUI
 settings after the first login.
+
+The NKP dashboard remains at `/dkp/kommander/dashboard`. Visiting the cluster
+root `/` is Open WebUI.
 
 Direct ClusterIP or port-forward access skips Forward Auth.
 

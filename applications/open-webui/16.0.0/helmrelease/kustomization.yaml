@@ -4,7 +4,6 @@ resources:
   - namespace.yaml
   - cm.yaml
   - open-webui-ui-dashboard-cm.yaml
-  - open-webui-postinstall-rbac.yaml
-  - open-webui-postinstall-job.yaml
+  - ingress.yaml
   - helmrelease.yaml
 ---
