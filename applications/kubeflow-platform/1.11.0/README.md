@@ -1,22 +1,30 @@
 # Kubeflow Platform (Unified, Multi-User)
 
 **Kubeflow Platform** is the glue layer that turns separate Kubeflow apps into
-one multi-user experience: one URL, one login, and per-user workspaces. It
-reuses NKP Dex for identity and runs its own dedicated gateway pods in
-`kubeflow` behind a dedicated Kubeflow LoadBalancer Service. The core pieces are
-`kubeflow-gateway`, `oauth2-proxy` for SSO/header injection, and the Profiles
-controller/`Profile` CRD for namespace isolation and RBAC.
+one multi-user experience: one URL, one login, and per-user workspaces. Auth is
+Istio + NKP Dex + oauth2-proxy (not Traefik). Dedicated Istio gateway pods in
+`kubeflow` sit behind LoadBalancer Service `kubeflow-ingressgateway`. The other
+core pieces are `oauth2-proxy` (SSO / `kubeflow-userid` injection) and the
+Profiles controller/`Profile` CRD for namespace isolation and RBAC.
 
 ---
 
 ## Install it (the whole flow)
 
-1. In the workspace (NKP UI → Workspace Catalog, or a GitOps `AppDeployment`), enable
-   **cert-manager**, **istio-helm**, and **Kubeflow Central Dashboard** (plus any
-   components you want: Pipelines, Katib).
-2. Set `config.kubeflowIngressHost` in Kubeflow Plarform app configuration at enable time. This is the DNS name or IP the app will use. Optionally set `config.kubeflowIngressURL`; if omitted it is derived as `http://<host>`). Do not enable with an empty host on live clusters.
+Auth is **Istio + NKP Dex + oauth2-proxy** (inline reverse-proxy, not Traefik
+and not Istio `ext_authz`). Dashboard and Pipelines charts route their
+VirtualServices at `oauth2-proxy`, so enable **Platform first**.
+
+1. In the workspace (NKP UI → Workspace Catalog, or a GitOps `AppDeployment`),
+   enable **cert-manager** and **istio-helm**. Dex is already on the management
+   plane; this app requires it.
+2. Set `config.kubeflowIngressHost` in Kubeflow Platform app configuration at
+   enable time. This is the DNS name or IP the browser will open. Optionally set
+   `config.kubeflowIngressURL`; if omitted it is derived as `http://<host>`.
+   Do not enable with an empty host on live clusters.
 3. Enable **Kubeflow Platform**.
-4. Enable **Kubeflow Central Dashboard* and component apps(**Pipelines, .etc). Then open the one URL and log in:
+4. Enable **Kubeflow Central Dashboard** and **Kubeflow Pipelines**. Then open
+   the one URL and log in:
 
 ```sh
 # The single Kubeflow entry point (dedicated LB Service):
@@ -28,7 +36,11 @@ kubectl -n kubeflow get svc kubeflow-ingressgateway \
 You'll see a **"Sign in with Dex"** page → the **NKP Dex** login (the same
 account you use for the NKP/Kommander console) → then the **Central Dashboard**.
 Component UIs live under the same URL by path: `…/` (dashboard),
-`…/pipeline/` (Pipelines), `…/katib/` (Katib).
+`…/pipeline/` (Pipelines). Other header-auth UIs (for example `/katib/`) can
+be added later; they are not catalog apps today.
+
+Do not use `kubectl port-forward` to the component UIs for login. Identity
+headers come from oauth2-proxy on the dedicated ingress URL.
 
 > Your browser may warn about Dex's self-signed certificate on a test cluster -
 > accept it. For production, trust the NKP CA bundle instead.
@@ -59,6 +71,10 @@ config:
   kubeflowIngressHost: "<external-ip-or-dns>"
   # optional; defaults to http://<kubeflowIngressHost> when empty
   kubeflowIngressURL: ""
+  # Dex claim copied into kubeflow-userid. Profile.owner must match this value.
+  # Default email. Username-only Dex (no email claim) can set preferred_username.
+  # Changing this after Profiles exist orphans those workspaces.
+  userIDClaim: email
 ```
 
 Other fields continue to auto-derive/generate:
@@ -67,6 +83,7 @@ Other fields continue to auto-derive/generate:
 | --- | --- | --- |
 | Dex issuer URL | Derived from `kommander-vars.ingressAddress` (`https://<addr>/dex`) | `config.dexIssuerURL` |
 | Ingress URL / host | `kubeflowIngressHost` is operator-set, `kubeflowIngressURL` defaults to `http://<host>` | `config.kubeflowIngressURL`, `config.kubeflowIngressHost` |
+| User id claim | `email` → `kubeflow-userid`; Profile.owner must equal that value | `config.userIDClaim` |
 | OIDC client & cookie secrets | Generated once, then preserved across upgrades | `config.oauth2ClientSecret`, `config.oauth2CookieSecret` |
 
 To override anything, set it under `config` in the app's configuration
@@ -77,14 +94,14 @@ To override anything, set it under `config` in the app's configuration
 
 ## Add users (from the UI, no kubectl)
 
-A "user" is whoever **NKP Dex** authenticates, identified by their login
-**email**. Give someone a private workspace by listing them under `profiles` in
-this app's configuration:
+A "user" is whoever **NKP Dex** authenticates, identified by the claim in
+`config.userIDClaim` (default **email**). Give someone a private workspace by
+listing them under `profiles` in this app's configuration:
 
 ```yaml
 profiles:
   - name: alice          # becomes the namespace name
-    owner: alice@example.com   # MUST equal the user's Dex login email
+    owner: alice@example.com   # MUST equal kubeflow-userid (config.userIDClaim)
   - name: bob
     owner: bob@example.com
 ```
