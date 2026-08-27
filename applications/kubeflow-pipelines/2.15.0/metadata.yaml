@@ -20,21 +20,36 @@ licensing:
   - Pro
   - Ultimate
 overview: |
-  **What it is** — Kubeflow Pipelines runs end-to-end ML pipelines (train, tune, serve) with experiments and recurring runs. Kubernetes-native; deploys via Flux from self-contained manifests rehosted from kubeflow/manifests (multi-user `platform-agnostic-multi-user` deployment). Lets you build and run portable, scalable ML pipelines on Kubernetes with a full UI and API.
+  **What it is** — Kubeflow Pipelines runs end-to-end ML pipelines (train, tune,
+  serve) with experiments and recurring runs. Kubernetes-native; deploys via
+  Flux from a Helm chart baked from kubeflow/manifests (multi-user
+  `platform-agnostic-multi-user`). For the supported browser UI, enable
+  **Kubeflow Platform** first so traffic goes through oauth2-proxy and the
+  dedicated Kubeflow gateway (Istio + Dex, not Traefik).
 
   **Highlights**
   - End-to-end pipelines (data → train → tune → serve)
   - Experiments, recurring runs, and artifact tracking
-  - Part of the Kubeflow ecosystem; works with Katib, KServe, Training Operator
   - Tunable resources/replicas/scheduling via `configOverrides` (Helm-chart backed)
 
   **Prerequisites**
-  - **Namespace** — Deploys into the `kubeflow` namespace, baked into the manifests (upstream Pipelines hardcodes this namespace). Deploys via a Helm chart generated from the pinned upstream `kubeflow/manifests` (baked for air-gap; see the bake pipeline).
+  - **Kubeflow Platform** (required) — enable it with `config.kubeflowIngressHost`
+    before this app. Baked VirtualServices route `/pipeline/` through
+    `oauth2-proxy`; without Platform there is no login path.
+  - **istio-helm** (required) — multi-user manifests include VirtualService,
+    DestinationRule, and AuthorizationPolicy.
+  - **Namespace** — Deploys into the shared `kubeflow` namespace (upstream
+    Pipelines hardcodes it). Platform also uses that namespace.
 
   **How to use**
 
-  - **UI** — Access Pipelines via the [Kubeflow Central Dashboard](https://www.kubeflow.org/docs/components/central-dash/access/) (install that component for the main entry point). Or port-forward to the Pipelines UI: `kubectl port-forward svc/ml-pipeline-ui -n kubeflow 8080:80` then open `http://localhost:8080`.
-  - **API/SDK** — For programmatic use, the Pipelines SDK connects to the API service. In-cluster: `http://ml-pipeline.kubeflow.svc.cluster.local:8888`. See [Connect the Pipelines SDK](https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/).
+  - **UI** — Open the Platform LoadBalancer URL at `/pipeline/` (same host as
+    Central Dashboard at `/`). Do not port-forward `ml-pipeline-ui`: that
+    skips oauth2-proxy, so the UI is missing `kubeflow-userid`.
+  - **API/SDK** — In-cluster HTTP API is `http://ml-pipeline.kubeflow.svc.cluster.local:8888`
+    and is Istio-gated. Call it from a Profile namespace / authenticated
+    workload, not from a raw port-forward. See
+    [Connect the Pipelines SDK](https://www.kubeflow.org/docs/components/pipelines/user-guides/core-functions/connect-api/).
 
   **Documentation:** [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:
