@@ -11,6 +11,7 @@ spec:
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
+      appVersion: "1.7.0"
   prune: true
   retryInterval: 1m0s
   sourceRef:

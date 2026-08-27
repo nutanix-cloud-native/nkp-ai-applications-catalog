@@ -1,15 +1,8 @@
 k8s_versions:
   - 1.35.0
-
-strict: true
-
-skip_types: []
+  - 1.36.0
 
 additional_crds:
   - https://raw.githubusercontent.com/ray-project/kuberay/v1.7.0/ray-operator/config/crd/bases/ray.io_rayclusters.yaml
   - https://raw.githubusercontent.com/ray-project/kuberay/v1.7.0/ray-operator/config/crd/bases/ray.io_rayjobs.yaml
   - https://raw.githubusercontent.com/ray-project/kuberay/v1.7.0/ray-operator/config/crd/bases/ray.io_rayservices.yaml
-
-substitution_vars:
-  releaseNamespace: kommander
-  workspaceNamespace: workspace
