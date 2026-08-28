@@ -44,7 +44,7 @@ overview: |
   [Documentation](https://ollama.com) · [Project](https://github.com/ollama/ollama) · [Helm chart](https://github.com/otwld/ollama-helm)
 scope:
   - workspace
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.20.0"
 supportLink: https://ollama.com
 type: nkp-catalog
 ---

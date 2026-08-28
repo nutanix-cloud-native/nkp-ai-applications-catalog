@@ -4,6 +4,9 @@ releases:
     fileName: stable-nkp-ai-applications-catalog-2.20.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
+    applications:
+      - name: ollama
+        version: 1.72.0
     constraints:
       nkpVersion: 2.20
   - tagName: 2.19
