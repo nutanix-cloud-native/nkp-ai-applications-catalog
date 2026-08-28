@@ -28,7 +28,4 @@ spec:
   upgrade:
     remediation:
       retries: 30
-  valuesFrom:
-  - kind: ConfigMap
-    name: ${releaseName}-config-defaults
 ---
