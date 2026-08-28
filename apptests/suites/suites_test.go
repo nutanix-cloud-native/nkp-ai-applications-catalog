@@ -18,6 +18,8 @@ var enabledApps = []string{
 	"slurm-operator",
 	"ollama",
 	"flowise",
+	"kuberay",
+	"ray-cluster",
 }
 
 // customTestApps deploy via Flux GitRepository + Kustomization instead of a
