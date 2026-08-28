@@ -5,7 +5,7 @@ releases:
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
     constraints:
-      nkpVersion: 2.20
+      nkpVersion: "2.20"
   - tagName: 2.19
     fileName: stable-nkp-ai-applications-catalog-2.19.tar
     collectionAnnotations:
