@@ -8,7 +8,7 @@ releases:
       - name: ollama
         version: 1.72.0
     constraints:
-      nkpVersion: 2.20
+      nkpVersion: "2.20"
   - tagName: 2.19
     fileName: stable-nkp-ai-applications-catalog-2.19.tar
     collectionAnnotations:

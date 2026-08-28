@@ -1,0 +1,63 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Ray Cluster
+appScreens:
+  - ai
+allowMultipleInstances: true
+category:
+  - model-development-and-training
+description: Deploy and manage Ray cluster workloads using the Ray Cluster Helm chart on NKP.
+icon: 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
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Ray Cluster installs workload resources for running Ray head and worker pods on Kubernetes.
+  Use this app after KubeRay Operator is installed to create and tune Ray runtime deployments.
+
+  **Key capabilities**
+
+  - Deploys Ray head/worker runtime components via Helm
+  - Supports configurable image and runtime settings through app overrides
+  - Targets the dedicated `kuberay` namespace for Ray workloads
+
+  **Dependencies**
+
+  This app requires the KubeRay Operator application to be installed first.
+
+  **Profiling prerequisites**
+
+  Ray dashboard CPU profiling and stack trace features require ptrace permissions in Ray pods.
+  Add the following override in App Config Overrides when you need these diagnostics:
+
+  ```yaml
+  head:
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      capabilities:
+        add: ["SYS_PTRACE"]
+  worker:
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      capabilities:
+        add: ["SYS_PTRACE"]
+  ```
+
+  Memory profiling can require debugger tooling (`gdb` or `lldb`) to be present in the Ray image.
+  If memory flamegraph generation fails, use a custom Ray image that includes these tools.
+
+  **Resources**
+
+  [Documentation](https://docs.ray.io/en/latest/cluster/kubernetes/index.html) · [Project](https://github.com/ray-project/kuberay)
+scope:
+  - workspace
+dependencies: []
+requiredDependencies:
+  - kuberay
+supportLink: https://docs.ray.io/en/latest/cluster/kubernetes/index.html
+type: nkp-catalog
+nkpVersionSupport: ">=2.19.0"
+---
