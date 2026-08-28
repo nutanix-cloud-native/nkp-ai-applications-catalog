@@ -211,20 +211,20 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 2. **Validate manifests first**
    - Run: `nkp validate catalog-repository --repo-dir=.`
 
-3. **Create the airgapped bundle** (renders `.release/airgapped.yaml.tmpl` with `includeApplicationImages: true`)
-   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-airgapped.tar`:
+3. **Create the airgapped bundle** (renders `.release/full.yaml.tmpl` with `includeApplicationImages: true`)
+   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-full.tar`:
      - `just create-application-airgapped-bundle <app> <version>`
      - Example: `just create-application-airgapped-bundle kai-scheduler 0.15.2`
-   - Full collection → writes `nkp-ai-applications-catalog-<tag>-airgapped.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
+   - Full collection → writes `nkp-ai-applications-catalog-<tag>-full.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
      - `just create-collection-airgapped-bundle <collection-tag>`
      - Example: `just create-collection-airgapped-bundle 2.19-dev`
 
 4. **Push the bundle to an OCI registry**
    - Authenticate to your registry first.
    - Push:
-     - `nkp push bundle --bundle ./<bundle>-airgapped.tar --to-registry <registry>`
+     - `nkp push bundle --bundle ./<bundle>-full.tar --to-registry <registry>`
      - Example:
-       - `nkp push bundle --bundle ./kai-scheduler-0.15.2-airgapped.tar --to-registry oci://ghcr.io/<org-or-user>`
+       - `nkp push bundle --bundle ./kai-scheduler-0.15.2-full.tar --to-registry oci://ghcr.io/<org-or-user>`
 
 5. **Deploy and validate on cluster**
    - Create/update collection:
