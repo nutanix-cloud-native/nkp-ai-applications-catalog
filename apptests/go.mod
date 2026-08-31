@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.3
-	github.com/mesosphere/kommander-applications/apptests v0.0.0-20260707061836-9b8e30976ef5
+	github.com/nutanix-cloud-native/nkp-catalog-tests v0.0.0-20260831163817-a3a55c6a2432
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
 	gopkg.in/yaml.v3 v3.0.1
@@ -36,9 +36,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v28.4.0+incompatible // indirect
 	github.com/docker/docker v27.1.1+incompatible // indirect
-	github.com/docker/docker-credential-helpers v0.9.3 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/drone/envsubst v1.0.3 // indirect

@@ -7,10 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"testing"
 	"time"
 
-	"github.com/mesosphere/kommander-applications/apptests/catalog"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -19,8 +17,9 @@ import (
 
 const disableChartDigestTracking = "--feature-gates=DisableChartDigestTracking=true"
 
-// sharedBackend adapts the shared NKP apptests harness (currently provided by
-// the kommander-applications module) to the Backend interface.
+// sharedBackend adapts nkp-catalog-tests environment/kind/flux to the Backend
+// interface. Suite lifecycle lives in this package; nkp-catalog-tests (release-2.18
+// extract) has no catalog facade.
 type sharedBackend struct{}
 
 //nolint:gochecknoinits // wires the default backend before tests run
@@ -30,18 +29,18 @@ func init() {
 
 func (b *sharedBackend) SetupCluster(ctx context.Context) error {
 	// Force destroy existing cluster to avoid node conflicts during setup.
-	if !catalog.UseExistingCluster && catalog.Env != nil && catalog.Env.Cluster != nil {
-		_ = catalog.Env.Destroy(ctx)
-		catalog.Env.SetCluster(nil)
+	if !useExistingCluster && env != nil && env.Cluster != nil {
+		_ = env.Destroy(ctx)
+		env.SetCluster(nil)
 	}
 
-	if err := catalog.SetupKindCluster(); err != nil {
+	if err := setupKindCluster(); err != nil {
 		return err
 	}
-	if err := catalog.Env.InstallLatestFlux(ctx); err != nil {
+	if err := env.InstallLatestFlux(ctx); err != nil {
 		return err
 	}
-	if err := catalog.WaitForFluxCRDs(); err != nil {
+	if err := waitForFluxCRDs(); err != nil {
 		return err
 	}
 	return applyKommanderFluxSettings(ctx)
@@ -53,7 +52,7 @@ func (b *sharedBackend) SetupCluster(ctx context.Context) error {
 func applyKommanderFluxSettings(ctx context.Context) error {
 	key := types.NamespacedName{Namespace: "kommander-flux", Name: "helm-controller"}
 	deploy := &appsv1.Deployment{}
-	if err := catalog.K8sClient.Get(ctx, key, deploy); err != nil {
+	if err := k8sClient.Get(ctx, key, deploy); err != nil {
 		return fmt.Errorf("getting helm-controller: %w", err)
 	}
 
@@ -62,7 +61,7 @@ func applyKommanderFluxSettings(ctx context.Context) error {
 		return nil
 	}
 	container.Args = append(container.Args, disableChartDigestTracking)
-	if err := catalog.K8sClient.Update(ctx, deploy); err != nil {
+	if err := k8sClient.Update(ctx, deploy); err != nil {
 		return fmt.Errorf("enabling DisableChartDigestTracking on helm-controller: %w", err)
 	}
 	return waitForRollout(ctx, key)
@@ -72,7 +71,7 @@ func waitForRollout(ctx context.Context, key types.NamespacedName) error {
 	return wait.PollUntilContextTimeout(ctx, 2*time.Second, 2*time.Minute, true,
 		func(ctx context.Context) (bool, error) {
 			deploy := &appsv1.Deployment{}
-			if err := catalog.K8sClient.Get(ctx, key, deploy); err != nil {
+			if err := k8sClient.Get(ctx, key, deploy); err != nil {
 				return false, err
 			}
 			desired := int32(1)
@@ -86,35 +85,35 @@ func waitForRollout(ctx context.Context, key types.NamespacedName) error {
 }
 
 func (b *sharedBackend) TeardownCluster(context.Context) error {
-	return catalog.TeardownCluster()
+	return teardownCluster()
 }
 
-func (b *sharedBackend) Client() ctrlClient.Client { return catalog.K8sClient }
+func (b *sharedBackend) Client() ctrlClient.Client { return k8sClient }
 
 func (b *sharedBackend) Context() context.Context {
-	if catalog.Ctx != nil {
-		return catalog.Ctx
+	if ctx != nil {
+		return ctx
 	}
 	return context.Background()
 }
 
-func (b *sharedBackend) Namespace() string { return catalog.DefaultNamespace }
+func (b *sharedBackend) Namespace() string { return defaultNamespace }
 
 func (b *sharedBackend) AppVersion() string {
-	if catalog.AppVersion == nil {
+	if appVersion == nil {
 		return ""
 	}
-	return *catalog.AppVersion
+	return *appVersion
 }
 
-func (b *sharedBackend) PollInterval() time.Duration { return catalog.PollInterval }
+func (b *sharedBackend) PollInterval() time.Duration { return pollInterval }
 
 func (b *sharedBackend) ApplyYAML(ctx context.Context, data []byte) error {
-	return catalog.Env.ApplyYAMLFileRaw(ctx, data, nil)
+	return env.ApplyYAMLFileRaw(ctx, data, nil)
 }
 
 func (b *sharedBackend) InstallApp(ctx context.Context, name, version string) error {
-	return catalog.NewAppScenario(name, version).Install(ctx, catalog.Env)
+	return newAppScenario(name, version).Install(ctx, env)
 }
 
 func (b *sharedBackend) HasPreviousVersion(name string) bool {
@@ -127,15 +126,11 @@ func (b *sharedBackend) InstallPreviousVersion(ctx context.Context, name string)
 	if err != nil {
 		return err
 	}
-	return catalog.NewAppScenario(name, prev).Install(ctx, catalog.Env)
+	return newAppScenario(name, prev).Install(ctx, env)
 }
 
 func (b *sharedBackend) UpgradeApp(ctx context.Context, name string) error {
-	return b.app(name).Upgrade(ctx, catalog.Env)
-}
-
-func (b *sharedBackend) app(name string) *catalog.App {
-	return catalog.NewAppScenario(name, b.AppVersion()).(*catalog.App)
+	return newAppScenario(name, b.AppVersion()).Upgrade(ctx, env)
 }
 
 // Gets the version just before 'current' (or the second-to-latest) for upgrade tests.
@@ -191,11 +186,4 @@ func appDir(name string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(appsDir, name), nil
-}
-
-func InitSuite() { catalog.InitSuite() }
-
-func RunSuite(t *testing.T) {
-	t.Helper()
-	catalog.RunSuite(t)
 }

@@ -6,7 +6,7 @@ repos:
     hooks:
       - id: go-list-modules
         name: go list modules apptests
-        entry: sh -c 'cd apptests && go list -m -json all'
+        entry: sh -c 'cd apptests && GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests go list -m -json all'
         language: system
         stages: [pre-commit]
   - repo: https://github.com/tekwizely/pre-commit-golang

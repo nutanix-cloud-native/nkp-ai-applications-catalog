@@ -64,7 +64,13 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}
 
+      - name: Allow Go to fetch private nkp-catalog-tests
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/nutanix-cloud-native/nkp-catalog-tests".insteadOf "https://github.com/nutanix-cloud-native/nkp-catalog-tests"
+          go env -w GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests
+
       - name: Run pre-commit
         run: devbox run -- just pre-commit
         env:
           SKIP: no-commit-to-branch,actionlint-system,git-dirty
+          GOPRIVATE: github.com/nutanix-cloud-native/nkp-catalog-tests

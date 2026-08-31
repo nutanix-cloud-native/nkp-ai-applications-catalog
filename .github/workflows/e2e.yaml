@@ -124,6 +124,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Allow Go to fetch private nkp-catalog-tests
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/nutanix-cloud-native/nkp-catalog-tests".insteadOf "https://github.com/nutanix-cloud-native/nkp-catalog-tests"
+          go env -w GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests
+
       - uses: cachix/install-nix-action@v31
 
       - uses: jetify-com/devbox-install-action@v0.15.0
@@ -141,6 +146,7 @@ jobs:
       - name: Run E2E tests
         env:
           SKIP_CLUSTER_TEARDOWN: "true"
+          GOPRIVATE: github.com/nutanix-cloud-native/nkp-catalog-tests
         run: devbox run -- just e2e-test "${{ matrix.app }}" "${{ matrix.version }}"
 
       # Only airgap-bundlable apps (matrix.airgapped=true) build a bundle.
