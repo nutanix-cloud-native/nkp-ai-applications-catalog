@@ -299,3 +299,203 @@ stays the same.
 - **Per-user PVCs.** Still created by KubeSpawner per authenticated username.
 - **Kommander core default WorkspaceRoles.** JupyterHub remains catalog-scoped.
 - **JupyterHub `admin_users`.** Path access ≠ Hub administrator.
+
+## Scalable profile mapping for admin and dev groups
+
+The RBAC work in this document solves **access to `/nkp/jupyter`** via Workspace
+View. It does not define which JupyterHub spawn profile a user can pick.
+
+If you need two or more profiles by group (for example `oidc:nkp-admins`,
+`oidc:nkp-users`, and future groups), there are two viable designs.
+
+### Design A: keep ForwardAuth + RemoteUser, derive groups from headers
+
+This is the least disruptive option for the current catalog setup. The JupyterHub
+ingress already uses Traefik ForwardAuth and forwards identity headers. In Kommander,
+the `forwardauth` middleware can pass `Impersonate-Group` headers in addition to
+`X-Forwarded-User`.
+
+**How it works**
+
+1. TFA authenticates with Dex and authorizes URL access.
+2. TFA forwards identity headers to JupyterHub.
+3. A custom JupyterHub authenticator reads `X-Forwarded-User` plus group headers.
+4. `auth_state` stores groups for the user.
+5. A `profile_list` callable filters profiles by group membership.
+
+**Pros**
+
+- Reuses current architecture, no Dex client changes for JupyterHub.
+- Fastest path from hardcoded emails to scalable groups.
+
+**Cons**
+
+- More custom Python logic to maintain.
+- Depends on header contracts between Traefik/TFA and Hub.
+
+### Design B: direct OIDC in JupyterHub (recommended long-term)
+
+This aligns with upstream JupyterHub/OAuthenticator group semantics.
+
+**How it works**
+
+1. JupyterHub authenticates users directly against Dex OIDC endpoints.
+2. Dex returns group claims (`nkp-admins`, `nkp-users`, etc.).
+3. OAuthenticator maps those claims into JupyterHub groups.
+4. `profile_list` callable filters profiles by those groups.
+
+**Pros**
+
+- Native group-aware auth flow.
+- Cleaner separation and easier to scale to many groups.
+
+**Cons**
+
+- Requires OIDC client settings and migration off current `remoteuser` default.
+- Must avoid accidental dual-gate redirect loops during migration.
+
+### Chosen sequence
+
+For this catalog, a pragmatic rollout is:
+
+1. Keep current TFA + RemoteUser for access control.
+2. Implement Design A to remove hardcoded `admin_users` dependence for profiles.
+3. Later migrate to Design B when you want full direct OIDC ownership in Hub.
+
+This minimizes disruption while making profile assignment scalable now.
+
+Status: step 2 is implemented in `4.3.2/helmrelease/cm.yaml` as the default
+behavior for this catalog entry.
+
+## Example: group-based profile selection (Design A)
+
+Use Workspace Configuration overrides to add an extra config block that:
+
+- parses group headers into `auth_state`,
+- marks hub-admin from groups (not by fixed emails), and
+- filters spawn profiles by group.
+
+```yaml
+hub:
+  extraConfig:
+    20-group-aware-remoteuser.py: |
+      from jupyterhub.handlers import BaseHandler
+      from jupyterhub.auth import Authenticator
+      from tornado import web
+      from traitlets import Unicode
+
+      def _parse_groups(values):
+          groups = []
+          for raw in values:
+              for token in raw.split(","):
+                  t = token.strip()
+                  if t:
+                      groups.append(t)
+          return sorted(set(groups))
+
+      class RemoteUserLoginHandler(BaseHandler):
+          async def get(self):
+              auth = self.authenticator
+              username = self.request.headers.get(auth.header_name, "").strip()
+              if not username:
+                  raise web.HTTPError(401)
+
+              group_headers = self.request.headers.get_list(auth.groups_header_name)
+              groups = _parse_groups(group_headers)
+
+              auth_model = {
+                  "name": username,
+                  "auth_state": {"upstream_groups": groups},
+                  "groups": groups,
+                  "admin": auth.admin_group in groups,
+              }
+              user = await self.login_user(auth_model)
+              self.redirect(self.get_next_url(user))
+
+      class GroupAwareRemoteUserAuthenticator(Authenticator):
+          header_name = Unicode("X-Forwarded-User", config=True)
+          groups_header_name = Unicode("Impersonate-Group", config=True)
+          admin_group = Unicode("oidc:nkp-admins", config=True)
+
+          def get_handlers(self, app):
+              return [(r"/login", RemoteUserLoginHandler)]
+
+      c.Authenticator.manage_groups = True
+      c.JupyterHub.authenticator_class = GroupAwareRemoteUserAuthenticator
+
+      DEV_PROFILE = {
+          "display_name": "Dev Environment",
+          "slug": "dev",
+          "default": True,
+          "kubespawner_override": {
+              "cpu_limit": 1,
+              "mem_limit": "2G",
+          },
+      }
+      ADMIN_PROFILE = {
+          "display_name": "Admin Environment",
+          "slug": "admin",
+          "kubespawner_override": {
+              "cpu_limit": 4,
+              "mem_limit": "8G",
+          },
+      }
+
+      def profile_by_groups(spawner):
+          groups = {g.name for g in spawner.user.groups}
+          if "oidc:nkp-admins" in groups:
+              return [DEV_PROFILE, ADMIN_PROFILE]
+          if "oidc:nkp-users" in groups:
+              return [DEV_PROFILE]
+          return [DEV_PROFILE]
+
+      c.KubeSpawner.profile_list = profile_by_groups
+```
+
+Notes:
+
+- Keep `oidc:` prefix consistency with your NKP group mappings.
+- Use stable profile slugs; changing slugs creates different user option state.
+- If you keep `hub.config.Authenticator.admin_users`, treat it as emergency fallback.
+
+## Example: group-based profile selection (Design B)
+
+If/when you migrate to direct OIDC, keep the same profile filter concept but source
+groups from OIDC claims instead of headers.
+
+```yaml
+hub:
+  config:
+    JupyterHub:
+      authenticator_class: generic-oauth
+    GenericOAuthenticator:
+      login_service: "Dex"
+      username_claim: email
+      manage_groups: true
+      auth_state_groups_key: groups
+      admin_groups:
+        - nkp-admins
+      scope:
+        - openid
+        - profile
+        - email
+        - groups
+  extraConfig:
+    30-profile-by-oidc-groups.py: |
+      DEV_PROFILE = {"display_name": "Dev Environment", "slug": "dev", "default": True}
+      ADMIN_PROFILE = {"display_name": "Admin Environment", "slug": "admin"}
+
+      async def profile_by_groups(spawner):
+          auth_state = await spawner.user.get_auth_state()
+          groups = set((auth_state or {}).get("groups", []))
+          if "nkp-admins" in groups:
+              return [DEV_PROFILE, ADMIN_PROFILE]
+          if "nkp-users" in groups:
+              return [DEV_PROFILE]
+          return [DEV_PROFILE]
+
+      c.KubeSpawner.profile_list = profile_by_groups
+```
+
+For Dex/Auth0 setups, ensure group claims are preserved end-to-end (`claimMapping.groups`
+if your provider uses namespaced claims).

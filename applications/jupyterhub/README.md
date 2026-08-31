@@ -20,13 +20,34 @@ the previous workaround; it is replaced by this catalog RBAC.
 Design notes (problem, workaround, alternatives, implementation):
 [ACCESS.md](ACCESS.md).
 
+Scalable profile-mapping guidance (group-based admin/dev/future groups):
+[ACCESS.md#scalable-profile-mapping-for-admin-and-dev-groups](ACCESS.md#scalable-profile-mapping-for-admin-and-dev-groups).
+
 ## Authentication
 
 JupyterHub uses NKP SSO by default. Users authenticate via Traefik Forward Auth and Dex before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.
 
-### Admin Users
+### Default group-based profile behavior
 
-By default, no users have admin privileges. To grant admin access, add usernames to the `admin_users` list via **Workspace Configuration**:
+This catalog entry now includes a group-aware RemoteUser authenticator in
+`4.3.2/helmrelease/cm.yaml`:
+
+- reads user identity from `X-Forwarded-User`
+- reads groups from `Impersonate-Group`
+- grants JupyterHub admin to `oidc:nkp-admins`
+- shows profiles by group:
+  - `oidc:nkp-admins`: **Dev Environment** + **Admin Environment**
+  - `oidc:nkp-users`: **Dev Environment**
+  - others: **Dev Environment** (safe default)
+
+To change group names or profile resources, override `hub.extraConfig` in
+Workspace Configuration.
+
+### Optional admin_users override
+
+Group-based admin assignment is enabled by default (`oidc:nkp-admins`). If you
+need an emergency per-user override, add usernames to `admin_users` via
+**Workspace Configuration**:
 
 ```yaml
 hub:

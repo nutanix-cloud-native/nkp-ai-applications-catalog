@@ -10,38 +10,67 @@ data:
     hub:
       baseUrl: /nkp/jupyter
       config:
-        JupyterHub:
-          authenticator_class: remoteuser
         Authenticator:
           auto_login: true
-          admin_users:
-            - admin
       extraConfig:
-        # Inline RemoteUserAuthenticator - reads username from X-Forwarded-User header
-        # set by Traefik Forward Auth after NKP SSO authentication.
-        # Based on https://github.com/cwaldbieser/jhub_remote_user_authenticator
-        remoteuser.py: |
+        # Group-aware RemoteUserAuthenticator:
+        # - reads identity from X-Forwarded-User (set by Traefik ForwardAuth)
+        # - reads groups from Impersonate-Group headers
+        # - marks Hub admins from oidc:nkp-admins
+        # - exposes admin/dev profile choices by group
+        remoteuser_groups_profiles.py: |
           from jupyterhub.handlers import BaseHandler
           from jupyterhub.auth import Authenticator
           from tornado import web
           from traitlets import Unicode
 
+          ADMIN_GROUP = "oidc:nkp-admins"
+          DEV_GROUP = "oidc:nkp-users"
+
+
+          def parse_groups(values):
+              groups = []
+              for raw in values:
+                  for token in raw.split(","):
+                      group = token.strip()
+                      if group:
+                          groups.append(group)
+              return sorted(set(groups))
+
+
           class RemoteUserLoginHandler(BaseHandler):
-              def get(self):
-                  header_name = self.authenticator.header_name
-                  remote_user = self.request.headers.get(header_name, "")
-                  if remote_user == "":
+              async def get(self):
+                  auth = self.authenticator
+                  remote_user = self.request.headers.get(auth.header_name, "").strip()
+                  if not remote_user:
                       raise web.HTTPError(401)
-                  user = self.user_from_username(remote_user)
-                  self.set_login_cookie(user)
-                  next_url = self.get_next_url(user)
-                  self.redirect(next_url)
+
+                  group_headers = self.request.headers.get_list(auth.groups_header_name)
+                  groups = parse_groups(group_headers)
+
+                  auth_model = {
+                      "name": remote_user,
+                      "groups": groups,
+                      "auth_state": {"upstream_groups": groups},
+                      "admin": auth.admin_group in groups,
+                  }
+                  user = await self.login_user(auth_model)
+                  self.redirect(self.get_next_url(user))
+
 
           class RemoteUserAuthenticator(Authenticator):
               header_name = Unicode(
                   default_value='X-Forwarded-User',
                   config=True,
                   help="HTTP header to inspect for the authenticated username.")
+              groups_header_name = Unicode(
+                  default_value='Impersonate-Group',
+                  config=True,
+                  help="HTTP header containing authenticated group values.")
+              admin_group = Unicode(
+                  default_value=ADMIN_GROUP,
+                  config=True,
+                  help="Group that should be granted JupyterHub admin access.")
 
               def get_handlers(self, app):
                   return [(r'/login', RemoteUserLoginHandler)]
@@ -49,7 +78,41 @@ data:
               async def authenticate(self, *args):
                   raise NotImplementedError()
 
+          DEV_PROFILE = {
+              "display_name": "Dev Environment",
+              "description": "Standard notebook profile for development users.",
+              "slug": "dev",
+              "default": True,
+              "kubespawner_override": {
+                  "cpu_limit": 1,
+                  "mem_limit": "2G",
+                  "environment": {"JUPYTER_PROFILE": "dev"},
+              },
+          }
+
+          ADMIN_PROFILE = {
+              "display_name": "Admin Environment",
+              "description": "Higher-resource profile for platform administrators.",
+              "slug": "admin",
+              "kubespawner_override": {
+                  "cpu_limit": 4,
+                  "mem_limit": "8G",
+                  "environment": {"JUPYTER_PROFILE": "admin"},
+              },
+          }
+
+
+          def profile_by_groups(spawner):
+              group_names = {group.name for group in spawner.user.groups}
+              if ADMIN_GROUP in group_names:
+                  return [DEV_PROFILE, ADMIN_PROFILE]
+              if DEV_GROUP in group_names:
+                  return [DEV_PROFILE]
+              return [DEV_PROFILE]
+
+          c.Authenticator.manage_groups = True
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
+          c.KubeSpawner.profile_list = profile_by_groups
       networkPolicy:
         egress:
           - ports:
