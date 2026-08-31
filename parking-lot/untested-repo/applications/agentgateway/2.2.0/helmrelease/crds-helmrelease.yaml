@@ -4,7 +4,7 @@ metadata:
   name: ${releaseName}-crds-chart
   namespace: ${releaseNamespace}
 spec:
-  interval: 6h0m0s
+  interval: 24h
   ref:
     tag: v2.2.0
   url: oci://cr.agentgateway.dev/charts/agentgateway-crds
