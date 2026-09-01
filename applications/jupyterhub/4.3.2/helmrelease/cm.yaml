@@ -39,22 +39,13 @@ data:
 
 
           class RemoteUserLoginHandler(BaseHandler):
+              # login_user() invokes Authenticator.authenticate(handler, data).
+              # Do not build an auth_model here and pass it to login_user — that
+              # still calls authenticate(), which previously raised NotImplementedError.
               async def get(self):
-                  auth = self.authenticator
-                  remote_user = self.request.headers.get(auth.header_name, "").strip()
-                  if not remote_user:
+                  user = await self.login_user({})
+                  if user is None:
                       raise web.HTTPError(401)
-
-                  group_headers = self.request.headers.get_list(auth.groups_header_name)
-                  groups = parse_groups(group_headers)
-
-                  auth_model = {
-                      "name": remote_user,
-                      "groups": groups,
-                      "auth_state": {"upstream_groups": groups},
-                      "admin": auth.admin_group in groups,
-                  }
-                  user = await self.login_user(auth_model)
                   self.redirect(self.get_next_url(user))
 
 
@@ -75,8 +66,20 @@ data:
               def get_handlers(self, app):
                   return [(r'/login', RemoteUserLoginHandler)]
 
-              async def authenticate(self, *args):
-                  raise NotImplementedError()
+              async def authenticate(self, handler, data):
+                  remote_user = handler.request.headers.get(self.header_name, "").strip()
+                  if not remote_user:
+                      return None
+
+                  group_headers = handler.request.headers.get_list(self.groups_header_name)
+                  groups = parse_groups(group_headers)
+
+                  return {
+                      "name": remote_user,
+                      "groups": groups,
+                      "auth_state": {"upstream_groups": groups},
+                      "admin": self.admin_group in groups,
+                  }
 
           LIGHT_PROFILE = {
               "display_name": "Light Environment",
@@ -121,7 +124,10 @@ data:
                   return [LIGHT_PROFILE, MEDIUM_PROFILE]
               return [LIGHT_PROFILE]
 
+          # TFA already gates who can reach Hub; allow any authenticated remote user.
+          c.Authenticator.allow_all = True
           c.Authenticator.manage_groups = True
+          c.Authenticator.enable_auth_state = True
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
           c.KubeSpawner.profile_list = profile_by_groups
       networkPolicy:

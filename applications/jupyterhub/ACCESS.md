@@ -395,21 +395,10 @@ hub:
 
       class RemoteUserLoginHandler(BaseHandler):
           async def get(self):
-              auth = self.authenticator
-              username = self.request.headers.get(auth.header_name, "").strip()
-              if not username:
+              # login_user() calls Authenticator.authenticate(handler, data)
+              user = await self.login_user({})
+              if user is None:
                   raise web.HTTPError(401)
-
-              group_headers = self.request.headers.get_list(auth.groups_header_name)
-              groups = _parse_groups(group_headers)
-
-              auth_model = {
-                  "name": username,
-                  "auth_state": {"upstream_groups": groups},
-                  "groups": groups,
-                  "admin": auth.admin_group in groups,
-              }
-              user = await self.login_user(auth_model)
               self.redirect(self.get_next_url(user))
 
       class GroupAwareRemoteUserAuthenticator(Authenticator):
@@ -420,21 +409,44 @@ hub:
           def get_handlers(self, app):
               return [(r"/login", RemoteUserLoginHandler)]
 
+          async def authenticate(self, handler, data):
+              username = handler.request.headers.get(self.header_name, "").strip()
+              if not username:
+                  return None
+              group_headers = handler.request.headers.get_list(self.groups_header_name)
+              groups = _parse_groups(group_headers)
+              return {
+                  "name": username,
+                  "groups": groups,
+                  "auth_state": {"upstream_groups": groups},
+                  "admin": self.admin_group in groups,
+              }
+
+      c.Authenticator.allow_all = True
       c.Authenticator.manage_groups = True
+      c.Authenticator.enable_auth_state = True
       c.JupyterHub.authenticator_class = GroupAwareRemoteUserAuthenticator
 
-      DEV_PROFILE = {
-          "display_name": "Dev Environment",
-          "slug": "dev",
+      LIGHT_PROFILE = {
+          "display_name": "Light Environment",
+          "slug": "light",
           "default": True,
           "kubespawner_override": {
               "cpu_limit": 1,
               "mem_limit": "2G",
           },
       }
-      ADMIN_PROFILE = {
-          "display_name": "Admin Environment",
-          "slug": "admin",
+      MEDIUM_PROFILE = {
+          "display_name": "Medium Environment",
+          "slug": "medium",
+          "kubespawner_override": {
+              "cpu_limit": 2,
+              "mem_limit": "4G",
+          },
+      }
+      HEAVY_PROFILE = {
+          "display_name": "Heavy Environment",
+          "slug": "heavy",
           "kubespawner_override": {
               "cpu_limit": 4,
               "mem_limit": "8G",
@@ -444,10 +456,10 @@ hub:
       def profile_by_groups(spawner):
           groups = {g.name for g in spawner.user.groups}
           if "oidc:nkp-admins" in groups:
-              return [DEV_PROFILE, ADMIN_PROFILE]
+              return [LIGHT_PROFILE, MEDIUM_PROFILE, HEAVY_PROFILE]
           if "oidc:nkp-users" in groups:
-              return [DEV_PROFILE]
-          return [DEV_PROFILE]
+              return [LIGHT_PROFILE, MEDIUM_PROFILE]
+          return [LIGHT_PROFILE]
 
       c.KubeSpawner.profile_list = profile_by_groups
 ```
@@ -457,6 +469,8 @@ Notes:
 - Keep `oidc:` prefix consistency with your NKP group mappings.
 - Use stable profile slugs; changing slugs creates different user option state.
 - If you keep `hub.config.Authenticator.admin_users`, treat it as emergency fallback.
+- `login_user()` always invokes `authenticate()`; implement that method instead of
+  raising `NotImplementedError`.
 
 ## Example: group-based profile selection (Design B)
 
