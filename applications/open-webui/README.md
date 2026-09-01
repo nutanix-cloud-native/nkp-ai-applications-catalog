@@ -5,14 +5,23 @@ large language models.
 
 ## Access
 
-Open WebUI does **not** support a URL prefix. In production the UI calls
-`/api/config` on the page origin, so `/nkp/open-webui/` cannot work. It is
-therefore **not** placed on NKP Traefik (that would take over `/` on the
-dashboard host).
+Open WebUI cannot use NKP SSO because it has no URL prefix: the production UI
+hard-codes `WEBUI_BASE_URL` to empty, so the browser always calls `/api/config`
+(and other assets) at the page origin root. NKP SSO is Traefik Forward Auth on
+the **same origin** as the NKP dashboard (often a raw Traefik IP). A path such
+as `/nkp/open-webui/` therefore cannot work: after login the SPA still requests
+`/api/config` on the NKP host, which is not Open WebUI. A second hostname
+(sslip.io or `/etc/hosts`) also fails, because Forward Auth’s `authHost` is the
+Traefik address and the browser is sent there, where `/` is not Open WebUI.
+Serving Open WebUI as Traefik’s catch-all at `/` on that origin *would* make
+SSO work, but it would take over the NKP UI’s root. nginx rewrite or
+`sub_filter` cannot fix this either: production JS still issues root-relative
+fetches.
 
-The Service is a **LoadBalancer**. After the address is assigned, a post-install
-Job writes it to the Launch ConfigMap (`http://<lb-ip>:80/`). Helm
-`disableWait` is set so install does not hang if the LB IP is slow.
+Open WebUI is therefore exposed on its **own** LoadBalancer at `/`. After the
+address is assigned, a post-install Job writes it to the Launch ConfigMap
+(`http://<lb-ip>:80/`). Helm `disableWait` is set so install does not hang if
+the LB IP is slow.
 
 If the LoadBalancer stays Pending:
 
@@ -28,8 +37,8 @@ catalog Ollama Service).
 
 ## Authentication
 
-Open WebUI uses **its own login**. NKP SSO (Traefik Forward Auth / Dex) is not
-wired. The first account created in the UI is admin.
+Open WebUI uses **its own login** rather than Dex / Traefik Forward Auth (see
+Access). The first account created in the UI is admin.
 
 ## Chart Source
 
