@@ -78,26 +78,37 @@ data:
               async def authenticate(self, *args):
                   raise NotImplementedError()
 
-          DEV_PROFILE = {
-              "display_name": "Dev Environment",
-              "description": "Standard notebook profile for development users.",
-              "slug": "dev",
+          LIGHT_PROFILE = {
+              "display_name": "Light Environment",
+              "description": "Small footprint notebook server for everyday development.",
+              "slug": "light",
               "default": True,
               "kubespawner_override": {
                   "cpu_limit": 1,
                   "mem_limit": "2G",
-                  "environment": {"JUPYTER_PROFILE": "dev"},
+                  "environment": {"JUPYTER_PROFILE": "light"},
               },
           }
 
-          ADMIN_PROFILE = {
-              "display_name": "Admin Environment",
-              "description": "Higher-resource profile for platform administrators.",
-              "slug": "admin",
+          MEDIUM_PROFILE = {
+              "display_name": "Medium Environment",
+              "description": "Balanced profile for larger notebooks and moderate parallel work.",
+              "slug": "medium",
+              "kubespawner_override": {
+                  "cpu_limit": 2,
+                  "mem_limit": "4G",
+                  "environment": {"JUPYTER_PROFILE": "medium"},
+              },
+          }
+
+          HEAVY_PROFILE = {
+              "display_name": "Heavy Environment",
+              "description": "High-resource profile intended for admin users.",
+              "slug": "heavy",
               "kubespawner_override": {
                   "cpu_limit": 4,
                   "mem_limit": "8G",
-                  "environment": {"JUPYTER_PROFILE": "admin"},
+                  "environment": {"JUPYTER_PROFILE": "heavy"},
               },
           }
 
@@ -105,10 +116,10 @@ data:
           def profile_by_groups(spawner):
               group_names = {group.name for group in spawner.user.groups}
               if ADMIN_GROUP in group_names:
-                  return [DEV_PROFILE, ADMIN_PROFILE]
+                  return [LIGHT_PROFILE, MEDIUM_PROFILE, HEAVY_PROFILE]
               if DEV_GROUP in group_names:
-                  return [DEV_PROFILE]
-              return [DEV_PROFILE]
+                  return [LIGHT_PROFILE, MEDIUM_PROFILE]
+              return [LIGHT_PROFILE]
 
           c.Authenticator.manage_groups = True
           c.JupyterHub.authenticator_class = RemoteUserAuthenticator
