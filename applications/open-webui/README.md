@@ -3,27 +3,33 @@
 Open WebUI is an extensible, self-hosted web interface for interacting with
 large language models.
 
-## Authentication (NKP SSO)
+## Access
 
 Open WebUI does **not** support a URL prefix. In production the UI calls
-`/api/config` on the page origin, so `/nkp/open-webui/` cannot work.
+`/api/config` on the page origin, so `/nkp/open-webui/` cannot work. It is
+therefore **not** placed on NKP Traefik (that would take over `/` on the
+dashboard host).
 
-NKP SSO uses Traefik Forward Auth on the **same origin** as the NKP UI.
-A Flux Ingress (`spec.defaultBackend`) is Traefik's catch-all for unmatched
-paths on that origin, with `${releaseNamespace}-forwardauth`. Launch is `/`.
+The Service is a **LoadBalancer**. After the address is assigned, a post-install
+Job writes it to the Launch ConfigMap (`http://<lb-ip>:80/`). Helm
+`disableWait` is set so install does not hang if the LB IP is slow.
 
-A second hostname (sslip.io or `/etc/hosts`) cannot work: Forward Auth's
-`authHost` is the Traefik address, so the browser is sent there and `/`
-404s unless Open WebUI is the default backend on that origin.
+If the LoadBalancer stays Pending:
 
-Users authenticate with Dex before reaching Open WebUI. The first account is
-created automatically (`sso.enableSignup: true`). Grant admin in Open WebUI
-settings after the first login.
+```bash
+kubectl -n open-webui port-forward svc/open-webui 8080:80
+```
 
-The NKP dashboard remains at `/dkp/kommander/dashboard`. Visiting the cluster
-root `/` is Open WebUI.
+Then open `http://127.0.0.1:8080/`.
 
-Direct ClusterIP or port-forward access skips Forward Auth.
+Open WebUI does **not** declare a catalog dependency on Ollama. Install Ollama
+separately if you want a local LLM backend (default values already point at the
+catalog Ollama Service).
+
+## Authentication
+
+Open WebUI uses **its own login**. NKP SSO (Traefik Forward Auth / Dex) is not
+wired. The first account created in the UI is admin.
 
 ## Chart Source
 

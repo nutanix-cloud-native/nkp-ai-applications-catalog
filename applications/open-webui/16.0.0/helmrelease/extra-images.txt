@@ -1,0 +1,1 @@
+docker.io/mesosphere/kubectl:v1.35.2-alpine

@@ -16,17 +16,13 @@ data:
     websocket:
       enabled: false
     enableOpenaiApi: false
+    # Open WebUI does not support a URL prefix, so it cannot share Traefik with
+    # the NKP UI. LoadBalancer gives it / on its own address. disableWait on the
+    # HelmRelease avoids hanging if the LB IP is slow (then use port-forward).
     service:
-      type: ClusterIP
-    # Chart Ingress is unused: a host-based / rule never matches Traefik's IP
-    # (Forward Auth redirects sslip.io there). Routing is helmrelease/ingress.yaml.
+      type: LoadBalancer
     ingress:
       enabled: false
-    sso:
-      enabled: true
-      enableSignup: true
-      trustedHeader:
-        enabled: true
-        emailHeader: X-Forwarded-User
-        nameHeader: X-Forwarded-User
+    route:
+      enabled: false
 ---
