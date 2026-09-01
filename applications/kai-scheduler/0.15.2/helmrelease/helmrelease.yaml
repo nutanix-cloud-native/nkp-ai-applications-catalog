@@ -4,7 +4,7 @@ metadata:
   name: ${releaseName}-chart
   namespace: ${releaseNamespace}
 spec:
-  interval: 6h0m0s
+  interval: 24h
   ref:
     tag: v0.15.2
   url: oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler

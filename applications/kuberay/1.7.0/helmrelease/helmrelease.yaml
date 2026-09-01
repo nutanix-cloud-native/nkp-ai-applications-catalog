@@ -4,7 +4,7 @@ metadata:
   name: ${releaseName}-${appVersion}-chart
   namespace: ${releaseNamespace}
 spec:
-  interval: 6h0m0s
+  interval: 24h
   ref:
     tag: 1.7.0
   url: oci://ghcr.io/nutanix-cloud-native/charts/kuberay-operator
