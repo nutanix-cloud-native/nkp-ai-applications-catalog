@@ -9,3 +9,4 @@ self-hosted-runner:
     - self-hosted-nutanix-docker-medium
     - self-hosted-nutanix-docker-large
     - self-hosted-ncn-docker-large
+    - self-hosted-deny-internal-small
