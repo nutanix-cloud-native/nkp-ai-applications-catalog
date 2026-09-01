@@ -124,9 +124,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Allow Go to fetch private nkp-catalog-tests
+      - name: Create token for private repository access
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.GHA_CHECKOUT_APP_ID }}
+          private-key: ${{ secrets.GHA_CHECKOUT_APP_PRIVATE_KEY }}
+          owner: nutanix-cloud-native
+          repositories: nkp-catalog-tests
+
+      - name: Configure git for private repository access
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/nutanix-cloud-native/nkp-catalog-tests".insteadOf "https://github.com/nutanix-cloud-native/nkp-catalog-tests"
+          git config --global url."https://oauth2:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - uses: cachix/install-nix-action@v31
 
