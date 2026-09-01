@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.3
-	github.com/nutanix-cloud-native/nkp-catalog-tests v0.0.0-20260831163817-a3a55c6a2432
+	github.com/nutanix-cloud-native/nkp-catalog-tests v0.0.0-20260901202034-073e916cdadf
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
 	gopkg.in/yaml.v3 v3.0.1
@@ -177,6 +177,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-// Temporary: catalog/ is not published on nkp-catalog-tests yet.
-replace github.com/nutanix-cloud-native/nkp-catalog-tests => ../../nkp-catalog-tests
