@@ -245,19 +245,104 @@ dropdowns. Kernel choices come from packages in the selected image.
 
 ## 7) Verify pod resources match profile
 
+### Do not use `psutil` for Kubernetes limits
+
+Inside a notebook, code like this often reports the **node**, not the profile:
+
+```python
+import psutil
+print(psutil.cpu_count(logical=False))
+print(psutil.virtual_memory().total / (1024**3))
+```
+
+Example misleading output on both light and heavy pods:
+
+```text
+Physical CPU Cores: 8
+Total RAM: 31.02 GB
+```
+
+That matches the worker node (for example 8 CPUs / ~31 GiB), not the KubeSpawner
+`cpu_limit` / `mem_limit`. Profiles can still be applied correctly while `psutil`
+looks identical.
+
+### Authoritative check: pod resource specs
+
 ```bash
 kubectl --kubeconfig=workload.conf -n jupyterhub get pods | rg '^jupyter-'
+
+kubectl --kubeconfig=workload.conf -n jupyterhub get pod \
+  jupyter-admin-example-com---258d8dc9 \
+  jupyter-dev-example-com---eb2b6c0d \
+  -o custom-columns=\
+NAME:.metadata.name,\
+CPU_LIM:.spec.containers[0].resources.limits.cpu,\
+MEM_LIM:.spec.containers[0].resources.limits.memory
+```
+
+Example when profiles are working:
+
+| Pod | CPU limit | Memory limit |
+| --- | --- | --- |
+| admin (heavy) | `4` | `8Gi` |
+| dev (light) | `1` | `2Gi` |
+
+Or per pod:
+
+```bash
 kubectl --kubeconfig=workload.conf -n jupyterhub get pod <user-pod> \
   -o jsonpath='{.metadata.name}{"\n"}{.spec.containers[0].resources}{"\n"}'
 ```
 
-Expected limits:
+Expected limits from `kubespawner_override`:
 
 | Profile | CPU | Memory | Who sees it |
 | --- | --- | --- | --- |
 | light | 1 | 2Gi | everyone (default) |
 | medium | 2 | 4Gi | `oidc:nkp-users` and `oidc:nkp-admins` |
 | heavy | 4 | 8Gi | `oidc:nkp-admins` only |
+
+### Optional: read cgroup quotas from inside the notebook
+
+```python
+from pathlib import Path
+
+def read_cgroup(path):
+    p = Path(path)
+    return p.read_text().strip() if p.exists() else None
+
+# cgroup v2 (common on modern clusters)
+print("memory.max:", read_cgroup("/sys/fs/cgroup/memory.max"))
+print("cpu.max:", read_cgroup("/sys/fs/cgroup/cpu.max"))
+```
+
+Interpretation:
+
+- `memory.max` like `8589934592` ≈ 8Gi; `2147483648` ≈ 2Gi; `max` means unlimited.
+- `cpu.max` like `400000 100000` ≈ 4 CPUs; `100000 100000` ≈ 1 CPU.
+
+### What limits mean at runtime
+
+- **Memory:** the cgroup enforces the cap; exceeding it can OOMKill the container.
+  You do not get the full node RAM.
+- **CPU:** CFS throttling applies under load. On an idle node, light and heavy can
+  feel similar until you burn CPU.
+
+Quick stress comparison (optional):
+
+```python
+import time
+import multiprocessing as mp
+
+def burn(_):
+    t = time.time()
+    while time.time() - t < 20:
+        _ = hash(str(t))
+
+# 8 workers: light (1 CPU) throttles harder than heavy (4 CPUs)
+with mp.Pool(8) as p:
+    p.map(burn, range(8))
+```
 
 ---
 
@@ -296,6 +381,7 @@ kubectl --kubeconfig=workload.conf patch pv <pv-name> \
 | 500 on `/hub/login` + `NotImplementedError` | Old authenticator stub | Re-apply fixed `cm.yaml` (step 4) + restart (step 5) |
 | Login works but wrong / missing profiles | Groups not reaching Hub | Check Dex claimMapping, Auth0 Action, `Impersonate-Group` in Hub logs |
 | Profiles correct, spawn times out / FailedAttachVolume | Stale Nutanix PVC | Step 8 |
+| Light and heavy notebooks both show ~8 CPUs / ~31 GiB via `psutil` | `psutil` reads node capacity, not pod limits | Check pod `.spec.containers[0].resources` or cgroup (step 7) |
 | `kubectl apply -f cm.yaml` namespace placeholder error | Applied Flux template raw | Use `sed` substitution (step 4) |
 | Binding NotFound in workspace A after creating in workspace B | Binding is per workspace namespace | Recreate VirtualGroupWorkspaceRoleBinding in the current workspace ns |
 
