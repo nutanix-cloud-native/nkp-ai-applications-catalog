@@ -24,10 +24,10 @@ create-application-airgapped-bundle application-name application-version output-
   output_file="{{output-file}}"
 
   if [ -z "$output_file" ]; then
-    output_file="{{application-name}}-{{application-version}}-airgapped.tar"
+    output_file="{{application-name}}-{{application-version}}-full.tar"
   fi
 
-  cp "{{ REPO_ROOT }}/.release/airgapped.yaml.tmpl" "$tmpfile"
+  cp "{{ REPO_ROOT }}/.release/full.yaml.tmpl" "$tmpfile"
 
   OUTPUT_FILE="$output_file" APP_NAME="{{application-name}}" APP_VERSION="{{application-version}}" yq -i \
     '.releases[0].fileName = strenv(OUTPUT_FILE) |
@@ -46,7 +46,7 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
   tag_name="{{collection-tag}}"
 
   if [ -z "$output_file" ]; then
-    output_file="nkp-ai-applications-catalog-{{collection-tag}}-airgapped.tar"
+    output_file="nkp-ai-applications-catalog-{{collection-tag}}-full.tar"
   fi
 
   if [ -z "$(yq '.releases[] | select(.tagName == "'"$tag_name"'")' {{release-spec}})" ]; then
@@ -56,7 +56,7 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
 
   tmpfile=$(mktemp)
   trap "rm -f $tmpfile" EXIT
-  cp "{{ REPO_ROOT }}/.release/airgapped.yaml.tmpl" "$tmpfile"
+  cp "{{ REPO_ROOT }}/.release/full.yaml.tmpl" "$tmpfile"
 
   OUTPUT_FILE="$output_file" TAG_NAME="$tag_name" yq -i \
     '(load("{{release-spec}}") | .releases[] | select(.tagName == strenv(TAG_NAME))) as $src |
@@ -77,7 +77,7 @@ create-collection-airgapped-bundle collection-tag output-file="" release-spec=".
 build-airgapped-bundles release-spec output-dir: nkp-cli
   mkdir -p "{{ output-dir }}"
   for tag in $(yq '.releases[] | .tagName' {{ release-spec }}); do
-    bundle="{{ output-dir }}/nkp-ai-applications-catalog-airgapped-${tag}.tar"
+    bundle="{{ output-dir }}/nkp-ai-applications-catalog-full-${tag}.tar"
     echo "Building airgapped bundle for $tag..."
     just create-collection-airgapped-bundle "$tag" "$bundle" {{ release-spec }}
   done
