@@ -23,6 +23,9 @@ Design notes (problem, workaround, alternatives, implementation):
 Scalable profile-mapping guidance (group-based admin/dev/future groups):
 [ACCESS.md#scalable-profile-mapping-for-admin-and-dev-groups](ACCESS.md#scalable-profile-mapping-for-admin-and-dev-groups).
 
+Zero-to-end validation commands (RBAC, ConfigMap apply, Hub restart, UI checks):
+[TESTING.md](TESTING.md).
+
 ## Authentication
 
 JupyterHub uses NKP SSO by default. Users authenticate via Traefik Forward Auth and Dex before reaching JupyterHub. The authenticated username is passed via the `X-Forwarded-User` header.
@@ -35,10 +38,12 @@ This catalog entry now includes a group-aware RemoteUser authenticator in
 - reads user identity from `X-Forwarded-User`
 - reads groups from `Impersonate-Group`
 - grants JupyterHub admin to `oidc:nkp-admins`
-- shows profiles by group:
-  - `oidc:nkp-admins`: **Dev Environment** + **Admin Environment**
-  - `oidc:nkp-users`: **Dev Environment**
-  - others: **Dev Environment** (safe default)
+- shows spawn profiles by group:
+  - `oidc:nkp-admins`: **Light** + **Medium** + **Heavy**
+  - `oidc:nkp-users`: **Light** + **Medium**
+  - others: **Light** (safe default)
+
+These are server resource profiles (CPU/memory), not JupyterLab kernels.
 
 To change group names or profile resources, override `hub.extraConfig` in
 Workspace Configuration.
