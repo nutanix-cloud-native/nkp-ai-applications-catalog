@@ -215,17 +215,19 @@ Observed install outcome:
   - `default-parent-queue`
   - `default-queue`
 
-### Smoke test manifests used
+### Smoke test procedures
 
-Create test namespace:
+#### 1. Create test namespace
 
 ```bash
 kubectl create namespace kai-test --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-CPU smoke pod:
+#### 2. Single CPU pod
 
 ```bash
+kubectl delete pod kai-cpu-smoke -n kai-test --ignore-not-found
+
 kubectl apply -n kai-test -f - <<'EOF'
 apiVersion: v1
 kind: Pod
@@ -249,9 +251,187 @@ spec:
 EOF
 ```
 
-GPU smoke pod:
+Validate:
 
 ```bash
+kubectl get pod kai-cpu-smoke -n kai-test -o wide
+kubectl describe pod kai-cpu-smoke -n kai-test
+```
+
+Expected:
+
+- Status: `Running`
+- Events show `Scheduled` and `Bound` from `kai-scheduler`
+
+#### 3. Parallel multi-pod workload
+
+This validates that KAI schedules the pods created by one Kubernetes Job. Multi-pod / batch-style scheduling is one of KAI's supported workload patterns.
+
+```bash
+kubectl delete job kai-parallel-cpu -n kai-test --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kai-parallel-cpu
+spec:
+  parallelism: 3
+  completions: 3
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        kai.scheduler/queue: default-queue
+    spec:
+      schedulerName: kai-scheduler
+      restartPolicy: Never
+      containers:
+      - name: worker
+        image: registry.k8s.io/pause:3.10
+        resources:
+          requests:
+            cpu: 250m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+EOF
+```
+
+Validate:
+
+```bash
+kubectl get pods -n kai-test \
+  -l job-name=kai-parallel-cpu -o wide
+
+kubectl get events -n kai-test --sort-by=.lastTimestamp \
+  | grep kai-parallel-cpu
+
+kubectl get podgroups -A
+```
+
+Expected:
+
+- Three pods are created.
+- All three are `Running`.
+- Events show `Scheduled` and `Bound` from `kai-scheduler`.
+- A PodGroup is created for the Job.
+
+Note: because `pause` never exits, the Job stays active. Delete it after validation:
+
+```bash
+kubectl delete job kai-parallel-cpu -n kai-test
+```
+
+#### 4. Scheduler coexistence
+
+This verifies that KAI handles only workloads that explicitly select it. KAI is designed to run alongside the default scheduler.
+
+```bash
+kubectl delete pod kai-targeted kai-default -n kai-test \
+  --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-targeted
+  labels:
+    kai.scheduler/queue: default-queue
+spec:
+  schedulerName: kai-scheduler
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-default
+spec:
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+EOF
+```
+
+Validate:
+
+```bash
+kubectl describe pod kai-targeted -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
+kubectl describe pod kai-default -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
+```
+
+Expected:
+
+- `kai-targeted`: scheduled by `kai-scheduler`
+- `kai-default`: scheduled by `default-scheduler`
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-targeted kai-default -n kai-test
+```
+
+#### 5. Invalid queue test
+
+This validates failure behavior when a workload references a queue that does not exist.
+
+```bash
+kubectl delete pod kai-invalid-queue -n kai-test --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-invalid-queue
+  labels:
+    kai.scheduler/queue: queue-does-not-exist
+spec:
+  schedulerName: kai-scheduler
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+EOF
+```
+
+Validate:
+
+```bash
+kubectl get pod kai-invalid-queue -n kai-test
+kubectl describe pod kai-invalid-queue -n kai-test
+kubectl get events -n kai-test --sort-by=.lastTimestamp
+```
+
+Expected:
+
+- The pod remains `Pending`.
+- Events identify the invalid or unavailable queue.
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-invalid-queue -n kai-test
+```
+
+#### 6. GPU smoke pod
+
+Requires cluster nodes that expose allocatable GPU capacity (for example, `nvidia.com/gpu`).
+
+```bash
+kubectl delete pod kai-gpu-smoke -n kai-test --ignore-not-found
+
 kubectl apply -n kai-test -f - <<'EOF'
 apiVersion: v1
 kind: Pod
@@ -270,6 +450,20 @@ spec:
         nvidia.com/gpu: "1"
 EOF
 ```
+
+Validate:
+
+```bash
+kubectl get pod kai-gpu-smoke -n kai-test -o wide
+kubectl describe pod kai-gpu-smoke -n kai-test
+```
+
+Expected (when GPUs are available):
+
+- Status: `Running` (or `Succeeded` if the sample exits)
+- Events show scheduling by `kai-scheduler`
+
+If no GPU capacity is present, the pod stays `Pending` with a scheduler message about missing GPU resources.
 
 ### Cluster test results
 
