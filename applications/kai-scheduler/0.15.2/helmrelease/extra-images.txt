@@ -1,2 +1,8 @@
+ghcr.io/kai-scheduler/kai-scheduler/admission:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/binder:v0.15.2
 ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.15.2
 ghcr.io/kai-scheduler/kai-scheduler/operator:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/podgroupcontroller:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/podgrouper:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/queuecontroller:v0.15.2
+ghcr.io/kai-scheduler/kai-scheduler/scheduler:v0.15.2
