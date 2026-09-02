@@ -217,6 +217,8 @@ Observed install outcome:
 
 ### Smoke test procedures
 
+Each numbered workload test below follows the same flow: apply → validate → expected → cleanup.
+
 #### 1. Create test namespace
 
 ```bash
@@ -224,6 +226,8 @@ kubectl create namespace kai-test --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 #### 2. Single CPU pod
+
+Validates that a basic CPU pod is scheduled by KAI when it selects `kai-scheduler` and a valid queue.
 
 ```bash
 kubectl delete pod kai-cpu-smoke -n kai-test --ignore-not-found
@@ -262,6 +266,12 @@ Expected:
 
 - Status: `Running`
 - Events show `Scheduled` and `Bound` from `kai-scheduler`
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-cpu-smoke -n kai-test
+```
 
 #### 3. Parallel multi-pod workload
 
@@ -318,7 +328,9 @@ Expected:
 - Events show `Scheduled` and `Bound` from `kai-scheduler`.
 - A PodGroup is created for the Job.
 
-Note: because `pause` never exits, the Job stays active. Delete it after validation:
+Note: because `pause` never exits, the Job stays active until cleaned up.
+
+Cleanup:
 
 ```bash
 kubectl delete job kai-parallel-cpu -n kai-test
@@ -361,6 +373,7 @@ EOF
 Validate:
 
 ```bash
+kubectl get pods -n kai-test kai-targeted kai-default -o wide
 kubectl describe pod kai-targeted -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
 kubectl describe pod kai-default -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
 ```
@@ -464,6 +477,20 @@ Expected (when GPUs are available):
 - Events show scheduling by `kai-scheduler`
 
 If no GPU capacity is present, the pod stays `Pending` with a scheduler message about missing GPU resources.
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-gpu-smoke -n kai-test
+```
+
+#### 7. Cleanup test namespace
+
+After all tests:
+
+```bash
+kubectl delete namespace kai-test
+```
 
 ### Cluster test results
 
