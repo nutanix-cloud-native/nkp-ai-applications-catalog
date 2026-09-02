@@ -38,6 +38,6 @@ spec:
     - kind: ConfigMap
       name: ${releaseName}-${appVersion}-defaults
     - kind: ConfigMap
-      name: ${releaseName}-${appVersion}-overrides
+      name: ${releaseName}-cluster-overrides
       optional: true
 ---
