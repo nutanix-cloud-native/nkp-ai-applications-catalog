@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    fullnameOverride: mlflow
+
+    strategy:
+      type: Recreate
+
+    extraVolumes:
+      - name: mlflow-data
+        persistentVolumeClaim:
+          claimName: mlflow-data
+
+    extraVolumeMounts:
+      - name: mlflow-data
+        mountPath: /mlflow/data
+
+    backendStore:
+      defaultSqlitePath: /mlflow/data/mlflow.db
+
+    artifactRoot:
+      proxiedArtifactStorage: true
+      defaultArtifactsDestination: /mlflow/data/mlartifacts
+
+    extraArgs:
+      staticPrefix: /nkp/mlflow
+
+    ingress:
+      enabled: true
+      className: kommander-traefik
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+      hosts:
+        - host: ""
+          paths:
+            - path: /nkp/mlflow
+              pathType: ImplementationSpecific
+
+    postgresql:
+      enabled: false
+
+    mysql:
+      enabled: false
+
+    minio:
+      enabled: false
+---

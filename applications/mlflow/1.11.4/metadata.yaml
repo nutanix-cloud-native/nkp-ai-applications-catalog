@@ -1,0 +1,134 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: MLflow
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: MLflow provides experiment tracking, model registry, and artifact management for machine learning workflows.
+dependencies: []
+requiredDependencies: []
+icon: PHN2ZyB3aWR0aD0iMTA5IiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTA5IDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMCAzMS4wMzE2VjE1LjUwMjRIMy41NDI1OFYxNy40Njk5QzQuNDM2MzYgMTUuODc1NiA2LjM4Mjc4IDE1LjA0NSA4LjEzNTg5IDE1LjA0NUMxMC4xNzggMTUuMDQ1IDExLjk2MzYgMTUuOTcxMyAxMi43OTQzIDE3Ljc4OTVDMTQuMDA5NiAxNS43NDc0IDE1LjgyNzggMTUuMDQ1IDE3LjgzNzMgMTUuMDQ1QzIwLjY0NjkgMTUuMDQ1IDIzLjMyNjMgMTYuODMyNSAyMy4zMjYzIDIwLjk0OTNWMzEuMDMxNkgxOS43NTMxVjIxLjU1NDFDMTkuNzUzMSAxOS43MzU5IDE4LjgyNjggMTguMzYzNiAxNi43NTIyIDE4LjM2MzZDMTQuODA1NyAxOC4zNjM2IDEzLjUyOTIgMTkuODk0NyAxMy41MjkyIDIxLjgwODZWMzEuMDI5N0g5Ljg5MjgyVjIxLjU1NDFDOS44OTI4MiAxOS43Njg0IDguOTk1MjIgMTguMzczMiA2Ljg4OTk1IDE4LjM3MzJDNC45MTI5MiAxOC4zNzMyIDMuNjY2OTkgMTkuODQxMiAzLjY2Njk5IDIxLjgxODJWMzEuMDM5MloiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZD0iTTI3Ljg1NDYgMzEuMDMxNlY3LjkyOTE3SDMxLjU1NzlWMzEuMDMxNloiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZD0iTTMwLjA3MDggMzkuNDg3MUMzMC45MDMzIDM5LjcxODcgMzEuNjUxNyAzOS44Njk5IDMzLjI0MDIgMzkuODY5OUMzNi4xOTMzIDM5Ljg2OTkgMzkuNjc2NSAzOC4yMDQ4IDQwLjU5MzMgMzMuNTMxMUw0NC4zNzg5IDE0Ljc5MjNINTAuMDA3Nkw1MC42OTQ3IDExLjY3NDZINDUuMDA4Nkw0NS43NzQxIDcuOTUwMjNDNDYuMzU5OCA1LjA1ODM3IDQ3Ljk1OTggMy41OTIzNCA1MC41MjgyIDMuNTkyMzRDNTEuMTk2MiAzLjU5MjM0IDUxLjAwODYgMy42NDk3NSA1MS42MDM4IDMuNzYyNjdMNTIuNDI2OCAwLjU3MDMyN0M1MS42MzQ0IDAuMzMzMDA2IDUwLjkyNDQgMC4xOTEzNzkgNDkuMzc4IDAuMTkxMzc5QzQ3Ljc0NTQgMC4xNjY4MzEgNDYuMTUxNCAwLjY4ODkzNCA0NC44NDk3IDEuNjc0NjNDNDMuNDA4NiAyLjc4ODUxIDQyLjQ1NzQgNC40MjQ4NyA0Mi4wMjMgNi41Mzc3OUw0MC45NTY5IDExLjY3NDZIMzUuOTIzNEwzNS41MTE5IDE0Ljc5NDNINDAuMzM0OUwzNi44NTkzIDMyLjEyMDZDMzYuNDc2NSAzNC4wODYxIDM1LjM1ODggMzYuNDM2NCAzMi4xNTEyIDM2LjQzNjRDMzEuNDIzOSAzNi40MzY0IDMxLjY4OCAzNi4zODA5IDMxLjAyOTcgMzYuMjczN1oiIGZpbGw9IiMwMTk0RTIiLz4KPHBhdGggZD0iTTUzLjM0MTYgMzAuOTA1M0g0OS42NDAyTDU0LjcxMzkgNy41OTYxNkg1OC40MTUzWiIgZmlsbD0iIzAxOTRFMiIvPgo8cGF0aCBkPSJNNzEuODA2NyAxNi40NzY2QzY4LjU3NjIgMTQuMjE2MSA2NC4xNzc4IDE0LjY2MDYgNjEuNDY0OSAxNy41MjE2QzU4Ljc1MTkgMjAuMzgyNiA1OC41NDE2IDI0Ljc5ODQgNjAuOTcwMyAyNy45MDQzTDYzLjM5NTIgMjYuMTI0NEM2Mi4xOTE1IDI0LjYzMTIgNjEuOTQ3MSAyMi41ODE1IDYyLjc2NTggMjAuODQ3MUM2My41ODQ1IDE5LjExMjcgNjUuMzIyNCAxNy45OTg3IDY3LjI0MDIgMTcuOTc5VjE5Ljg3MzdaIiBmaWxsPSIjNDNDOUVEIi8+CjxwYXRoIGQ9Ik02Mi42MTc5IDI5LjQ3MTdDNjUuODQ4NCAzMS43MzIyIDcwLjI0NjggMzEuMjg3NyA3Mi45NTk3IDI4LjQyNjdDNzUuNjcyNyAyNS41NjU3IDc1Ljg4MyAyMS4xNDk5IDczLjQ1NDMgMTguMDQ0TDcxLjAyOTQgMTkuODIzOUM3Mi4yMzMxIDIxLjMxNzEgNzIuNDc3NSAyMy4zNjY4IDcxLjY1ODggMjUuMTAxMkM3MC44NDAxIDI2LjgzNTYgNjkuMTAyMiAyNy45NDk2IDY3LjE4NDQgMjcuOTY5M1YyNi4wNzQ2WiIgZmlsbD0iIzAxOTRFMiIvPgo8cGF0aCBkPSJNNzguMDkxOSAxNS40OTI4SDgyLjEzNTlMODIuOTU4OCAyNi4xMDUzTDg4LjcxNzcgMTUuNDkyOEw5Mi41NTY5IDE1LjU0ODNMOTQuMDY1MSAyNi4xMDUzTDk5LjEzODcgMTUuNDkyOEwxMDIuODQgMTUuNTQ4M0w5NS4xNjE3IDMxLjA0MTJIOTEuNDYwM0w4OS42NzY1IDE5LjkzNDlMODMuNzgxOCAzMS4wNDEySDc5Ljk0MjZaIiBmaWxsPSIjMDE5NEUyIi8+CjxwYXRoIGQ9Ik0xMDUuMDcyIDE1Ljc2ODRIMTA0LjMwNlYxNS41MDI0SDEwNi4xNTFWMTUuNzc0MUgxMDUuMzg2VjE4LjAxNzJIMTA1LjA3MloiIGZpbGw9IiMwMTk0RTIiLz4KPHBhdGggZD0iTTEwNi42MTQgMTUuNTAyNEgxMDYuOTk3TDEwNy40NzkgMTYuODQyMUMxMDcuNTQxIDE3LjAxNDMgMTA3LjU5OCAxNy4xOTA0IDEwNy42NTcgMTcuMzY2NUgxMDcuNjc1QzEwNy43MzQgMTcuMTkwNCAxMDcuNzg4IDE3LjAxNDMgMTA3Ljg0NyAxNi44NDIxTDEwOC4zMjUgMTUuNTAyNEgxMDguNzA4VjE4LjAxNzJIMTA4LjQxVjE2LjYyOTdDMTA4LjQxIDE2LjQwOTYgMTA4LjQzNCAxNi4xMDcyIDEwOC40NSAxNS44ODMySDEwOC40MzRMMTA4LjI0MyAxNi40NTc0TDEwNy43NjggMTcuNzYwOEgxMDcuNTZMMTA3LjA3OSAxNi40NTkzTDEwNi44ODggMTUuODg1MkgxMDYuODczQzEwNi44OSAxNi4xMDkxIDEwNi45MTUgMTYuNDExNSAxMDYuOTE1IDE2LjYzMTZWMTguMDE5MUgxMDYuNjI0WiIgZmlsbD0iIzAxOTRFMiIvPgo8L3N2Zz4K
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  MLflow is an open-source platform for tracking machine learning experiments, comparing runs, managing model versions, and storing run artifacts.
+
+  This catalog entry deploys one independent MLflow instance to every cluster in the selected workspace. Each instance runs in the fixed `mlflow` namespace.
+
+  **Storage and lifecycle**
+
+  - Experiment metadata uses SQLite at `/mlflow/data/mlflow.db`.
+  - Artifacts use proxied local storage at `/mlflow/data/mlartifacts`.
+  - Both stores share a 10Gi PersistentVolumeClaim and survive pod restarts, rescheduling, node drains, and application upgrades.
+  - **Uninstalling the application deletes the `mlflow` namespace, PersistentVolumeClaim, metadata, and all artifacts. Data is not retained after uninstall.**
+  - Deleting experiments does not automatically reclaim artifact storage. Long-lived installations may require MLflow garbage collection.
+
+  **Capacity and scale**
+
+  The default is an evaluation-grade, single-replica deployment. Its `ReadWriteOnce` volume and SQLite backend are not suitable for concurrent multi-user or production workloads. SQLite may report database locking errors under load.
+
+  **Production configuration**
+
+  Production deployments should use user-managed PostgreSQL for metadata and S3-compatible object storage for artifacts. Neither is created or managed by this application, and uninstalling MLflow does not affect them.
+
+  *Step 1 — provide the infrastructure*
+
+  - A PostgreSQL server reachable from the cluster, with the database already created and a user holding schema-creation rights. MLflow creates its own tables, but not the database.
+  - An existing S3-compatible bucket. MLflow does not create buckets.
+
+  *Step 2 — apply the configuration override*
+
+  Paste the following into this application's **cluster** configuration override, replacing the host, database, and bucket values. Either store can be configured independently — omit the `backendStore` block to keep metadata on the local volume, or omit `artifactRoot` to keep artifacts there.
+
+  ```
+  backendStore:
+    databaseMigration: true
+    databaseConnectionCheck: true
+    postgres:
+      enabled: true
+      host: <postgres-hostname>
+      port: 5432
+      database: <database-name>
+    existingDatabaseSecret:
+      name: mlflow-db-credentials
+
+  artifactRoot:
+    proxiedArtifactStorage: true
+    s3:
+      enabled: true
+      bucket: <bucket-name>
+      path: artifacts
+      existingSecret:
+        name: mlflow-s3-credentials
+
+  # Required for non-AWS S3 endpoints
+  # Omit for AWS S3 and set AWS_DEFAULT_REGION instead.
+  extraEnvVars:
+    MLFLOW_S3_ENDPOINT_URL: <https://your-s3-endpoint>
+  ```
+
+  Do not configure external stores at the workspace level. Each cluster runs an independent MLflow instance, so a workspace-level override points every instance at the same database and bucket — concurrent schema migrations against one schema, and runs from all clusters mixed together. Not supported.
+
+  Configure external stores at the cluster level instead, one database and bucket per cluster.
+
+  *Step 3 — create credential Secrets in the `mlflow` namespace*
+
+  These Secrets must be created after the application is installed, because the application creates the mlflow namespace.
+
+  ```
+  kubectl create secret generic mlflow-db-credentials -n mlflow \
+    --from-literal=username=<db-user> \
+    --from-literal=password=<db-password>
+
+  kubectl create secret generic mlflow-s3-credentials -n mlflow \
+    --from-literal=AWS_ACCESS_KEY_ID=<access-key> \
+    --from-literal=AWS_SECRET_ACCESS_KEY=<secret-key>
+  ```
+
+  *Notes*
+
+  - Switching stores does not migrate existing local data. Experiments created before the change remain on the local volume and will not appear.
+  - Clearing the override returns the instance to local storage.
+  - With both stores external, the PersistentVolumeClaim is still provisioned but unused.
+
+  **Authentication**
+
+  MLflow is unauthenticated by default. Enable basic authentication via the **cluster** configuration override:
+
+  ```yaml
+  auth:
+    enabled: true
+    adminUsername: <username>
+    adminPassword: <password>
+    sqliteFullPath: /mlflow/data/
+  ```
+
+  NKP SSO is not enabled. Browser-based single sign-on on the Ingress blocks scripts and training jobs from the MLflow API, which is the application's primary interface.
+
+  **Access**
+
+  Open MLflow from the cluster **Application Dashboards** tab or at `/nkp/mlflow/` through the NKP Traefik endpoint.
+
+  ```python
+  mlflow.set_tracking_uri("https://<traefik-ip>/nkp/mlflow")
+  ```
+
+  **Version mapping**
+
+  This catalog entry and Helm chart are version 1.11.4. The chart deploys MLflow application version 3.15.1 from `burakince/mlflow:3.15.1`.
+
+  **Resources**
+
+  [MLflow documentation](https://mlflow.org/docs/latest/) · [MLflow project](https://github.com/mlflow/mlflow) · [Helm chart](https://community-charts.github.io/docs/charts/mlflow/)
+scope:
+  - workspace
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://mlflow.org/docs/latest/
+type: nkp-catalog
+---
