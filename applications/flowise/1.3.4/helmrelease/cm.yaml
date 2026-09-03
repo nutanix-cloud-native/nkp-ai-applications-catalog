@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ingress:
+      enabled: false
+    service:
+      type: LoadBalancer

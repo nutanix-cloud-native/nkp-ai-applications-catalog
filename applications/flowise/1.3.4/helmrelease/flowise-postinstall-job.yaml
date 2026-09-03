@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${releaseName}-postinstall-${appVersion}
+  namespace: ${workspaceNamespace}
+spec:
+  template:
+    spec:
+      serviceAccountName: ${releaseName}-postinstall # Ensure RBAC is created for this!
+      restartPolicy: OnFailure
+      containers:
+      - name: patch-dashboard-link
+        image: mesosphere/kubectl:v1.34.1-alpine
+        env:
+        - name: WORKSPACE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: APP_NAMESPACE
+          value: "flowise"
+        - name: APP_SERVICE
+          value: "flowise-flowise"
+        - name: CONFIGMAP_NAME
+          value: "${releaseName}-ui"
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Waiting for LoadBalancer IP..."
+          while [ -z "$IP" ]; do
+            sleep 5
+            IP=$(kubectl get svc -n "$APP_NAMESPACE" "$APP_SERVICE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          done
+          PAYLOAD=$(printf '{"data": {"dashboardLink": "http://%s:3000"}}' "$IP")
+          kubectl patch configmap "$CONFIGMAP_NAME" -n "$WORKSPACE_NAMESPACE" --type=merge -p "$PAYLOAD"
