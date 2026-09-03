@@ -121,7 +121,6 @@ artifactRoot:
     path: artifacts
     existingSecret:
       name: mlflow-s3-credentials
-
 # Non-AWS endpoints only
 extraEnvVars:
   MLFLOW_S3_ENDPOINT_URL: http://minio.example.com:9000 # modify
