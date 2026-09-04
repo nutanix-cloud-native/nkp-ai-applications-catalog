@@ -7,20 +7,20 @@ data:
   values.yaml: |
     ---
     fullnameOverride: open-webui
+    # Disable the chart's bundled Ollama subchart (upstream default is enabled).
+    # This does not install or require the catalog Ollama app.
     ollama:
       enabled: false
-    ollamaUrls:
-      - "http://ollama-ollama.ollama.svc.cluster.local:11434"
     pipelines:
       enabled: false
     websocket:
       enabled: false
     enableOpenaiApi: false
     # Open WebUI does not support a URL prefix, so it cannot share Traefik with
-    # the NKP UI. LoadBalancer gives it / on its own address. disableWait on the
-    # HelmRelease avoids hanging if the LB IP is slow (then use port-forward).
+    # the NKP UI. ClusterIP + port-forward (or in-cluster DNS) exposes it at /
+    # on its own origin without taking over the NKP dashboard host.
     service:
-      type: LoadBalancer
+      type: ClusterIP
     ingress:
       enabled: false
     route:

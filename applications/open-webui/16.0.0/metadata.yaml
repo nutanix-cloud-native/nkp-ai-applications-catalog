@@ -24,12 +24,9 @@ overview: |
 
   **Access**
 
-  Open WebUI cannot use a URL prefix (the UI always calls `/api/config` at `/`). It is exposed as a LoadBalancer at `/` on its own address, not on the NKP Traefik host.
+  Open WebUI cannot use a URL prefix (the UI always calls `/api/config` at `/`). It is a ClusterIP Service, not on the NKP Traefik host.
 
-  - Open Open WebUI from the cluster **Application Dashboards** tab. A post-install Job sets Launch to `http://<loadbalancer-ip>:80/` once the Service has an address.
-  - If the LoadBalancer stays Pending (no MetalLB/cloud LB), port-forward:
-    `kubectl -n open-webui port-forward svc/open-webui 8080:80`
-    then open `http://127.0.0.1:8080/`.
+  - Port-forward: `kubectl -n open-webui port-forward svc/open-webui 8080:80` then open `http://127.0.0.1:8080/`.
   - In-cluster: `http://open-webui.open-webui.svc.cluster.local:80` (same namespace: `http://open-webui:80`).
 
   **Authentication**
@@ -38,9 +35,14 @@ overview: |
 
   **LLM backends**
 
-  Open WebUI does not require another catalog app. Optionally install **Ollama** in the same workspace; default values point at:
+  To use the catalog Ollama app (or any other Ollama Service), set `ollamaUrls` in **App Config Overrides** after Ollama is installed:
 
-  `http://ollama-ollama.ollama.svc.cluster.local:11434`
+  ```yaml
+  ollamaUrls:
+    - "http://ollama-ollama.ollama.svc.cluster.local:11434"
+  ```
+
+  You can also add an Ollama connection in the Open WebUI admin UI after login.
 
   **Resources**
 

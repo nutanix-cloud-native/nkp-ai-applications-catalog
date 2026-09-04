@@ -10,7 +10,6 @@ spec:
     substitute:
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
-      workspaceNamespace: ${workspaceNamespace}
       appVersion: "16.0.0"
   prune: true
   retryInterval: 1m0s
