@@ -118,9 +118,9 @@ The operator (via the GPU Operator's NFD rules) produces two NIC labels. Each re
 | `feature.node.kubernetes.io/amd-nic: "true"` | Physical NIC (PF) — Pensando DSC Ethernet Controller |
 | `feature.node.kubernetes.io/amd-vnic: "true"` | Virtual NIC (SR-IOV VF) — Pensando DSC Ethernet Controller VF |
 
-## NetworkConfig CR (Private Registry)
+## NetworkConfig CR (Ubuntu 24.04 + private registry)
 
-After enabling the operator, create a `NetworkConfig` CR that aligns with the `kmm-registry-credentials` secret created for the AMD KMM Operator:
+After enabling the operator, create a `NetworkConfig` CR that aligns with the `kmm-registry-credentials` secret created for the AMD KMM Operator. The chart does **not** auto-create this CR. Name it anything other than `default`.
 
 ```yaml
 apiVersion: amd.com/v1alpha1
@@ -133,7 +133,18 @@ spec:
     feature.node.kubernetes.io/amd-nic: "true"
   driver:
     enable: true
-    image: "<registry-host>:<port>/<project>/amdnetwork_kmod"
+    blacklist: true
+    version: "1.117.1-a-63"   # must match NIC firmware
+    image: "<registry-host>:<port>/<project>/amdainic_kmods"
+    upgradePolicy:
+      enable: true
+      maxParallelUpgrades: 1
+      maxUnavailableNodes: 1
+      rebootRequired: true
+      nodeDrainPolicy:
+        force: true
+        timeoutSeconds: 600
+        gracePeriodSeconds: -1
     imageBuild:
       baseImageRegistry: "<registry-host>:<port>/<project>"
       baseImageRegistryTLS:
@@ -144,17 +155,52 @@ spec:
     imageRegistryTLS:
       insecure: false
       insecureSkipTLSVerify: false
+  devicePlugin:
+    enableNodeLabeller: true  # required for Ubuntu blacklist
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.2.0
+    devicePluginImagePullPolicy: IfNotPresent
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.2.0
+    nodeLabellerImagePullPolicy: IfNotPresent
+    imageRegistrySecret:
+      name: "kmm-registry-dockerconfig"
+  metricsExporter:
+    enable: true
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
+    imagePullPolicy: IfNotPresent
+    hostNetwork: false
+    port: 5001
+    prometheus:
+      serviceMonitor:
+        enable: true
+        honorLabels: true
+        honorTimestamps: false
+        interval: 30s
+        labels:
+          prometheus.kommander.d2iq.io/select: "true"
+  secondaryNetwork:
+    cniPlugins:
+      enable: true
+      image: docker.io/rocm/k8s-cni-plugins:v1.2.0
 ```
+
+Hub `k8s-network-device-plugin:v1.2.0` bundles nicctl for firmware `1.117.5-a-56` / `1.117.5-a-77` only. If card firmware is `1.117.1-a-63`, override `devicePlugin.devicePluginImage` with a private image whose nicctl matches that drop, or the plugin CrashLoopBackOffs with empty `lif`. See the [plugin compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix).
 
 ### Override Fields
 
 | Field | Description |
 |---|---|
+| `driver.blacklist` | Required on Ubuntu 24.04 so inbox `ionic` does not block OOT `ionic_rdma`. Needs `devicePlugin.enableNodeLabeller: true` and a reboot. |
+| `driver.version` | AINIC package version; must match NIC firmware (`dmesg` / `nicctl show version firmware`). |
+| `driver.upgradePolicy` | Drain + reboot one node at a time when `driver.version` changes. Keep `rebootRequired: true` for initramfs/ionic. |
 | `driver.image` | Registry path where built NIC driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically. |
 | `driver.imageRegistrySecret.name` | Must be `kmm-registry-dockerconfig`, auto-created by the AMD KMM Operator reconciler. |
 | `driver.imageBuild.baseImageRegistry` | Private mirror hosting OS base images (e.g. `ubuntu:24.04`) for Kaniko builds. Avoids Docker Hub rate limits. |
 | `driver.imageRegistryTLS.insecure` | Set `true` for plain HTTP registries. |
 | `driver.imageRegistryTLS.insecureSkipTLSVerify` | Set `true` for self-signed certificates. |
+| `devicePlugin.enableNodeLabeller` | Required for Ubuntu blacklist. Nested CRD defaults do not apply if this object is omitted. |
+| `devicePlugin.devicePluginImage` | Bundles nicctl; must match firmware. Override when Hub tag nicctl does not match the card. |
+| `metricsExporter.port` / `hostNetwork` | Use `:5001` and `hostNetwork: false` so this coexists with GPU Operator exporter `:5000`. |
+| `metricsExporter.prometheus.serviceMonitor.labels` | `prometheus.kommander.d2iq.io/select: "true"` so NKP Prometheus scrapes the NIC exporter. |
 
 ### Credential Flow
 
