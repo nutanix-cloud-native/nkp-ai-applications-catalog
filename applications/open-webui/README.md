@@ -35,12 +35,25 @@ Open WebUI does **not** declare a catalog dependency on Ollama.
 subchart (upstream default is enabled). It does not require the catalog
 Ollama app.
 
-To point Open WebUI at catalog Ollama, set **App Config Overrides**:
+To point Open WebUI at catalog Ollama, set **App Config Overrides**. If Open WebUI already started once, also disable persistent config so SQLite does not keep `host.docker.internal` / `ENABLE_OLLAMA_API=False`:
 
 ```yaml
 ollamaUrls:
   - "http://ollama-ollama.ollama.svc.cluster.local:11434"
+extraEnvVars:
+  - name: ENABLE_PERSISTENT_CONFIG
+    value: "False"
+  - name: OLLAMA_BASE_URL
+    value: "http://ollama-ollama.ollama.svc.cluster.local:11434"
 ```
+
+Confirm on the **StatefulSet** (not a Deployment):
+
+```bash
+kubectl -n open-webui get sts open-webui -o jsonpath='{range .spec.template.spec.containers[0].env[*]}{.name}={.value}{"\n"}{end}' | grep -iE 'ollama|persistent'
+```
+
+Look in **Admin → Settings → Connections**, not only the chat model picker. Models appear after Ollama has pulled at least one (catalog Ollama pulls `llama3.2`).
 
 ## Authentication
 

@@ -35,14 +35,23 @@ overview: |
 
   **LLM backends**
 
-  To use the catalog Ollama app (or any other Ollama Service), set `ollamaUrls` in **App Config Overrides** after Ollama is installed:
+  Catalog defaults turn off the bundled Ollama subchart and do not set an Ollama URL. The Helm chart then sets `ENABLE_OLLAMA_API=False`. Open WebUI persists that in SQLite on first boot, so a later `ollamaUrls` override updates the pod env but **does not** change Admin → Settings → Connections.
+
+  For an existing install, set **both** the URL and a config reset in **App Config Overrides**, then wait for the StatefulSet to roll:
 
   ```yaml
   ollamaUrls:
     - "http://ollama-ollama.ollama.svc.cluster.local:11434"
+  extraEnvVars:
+    - name: ENABLE_PERSISTENT_CONFIG
+      value: "False"
+    - name: OLLAMA_BASE_URL
+      value: "http://ollama-ollama.ollama.svc.cluster.local:11434"
   ```
 
-  You can also add an Ollama connection in the Open WebUI admin UI after login.
+  `ENABLE_PERSISTENT_CONFIG=False` makes env vars win over the saved `host.docker.internal` URL. After Ollama shows up, you can remove that flag if you want Admin UI edits to persist.
+
+  You can also paste the same URL in Admin → Settings → Connections and Save.
 
   **Resources**
 
