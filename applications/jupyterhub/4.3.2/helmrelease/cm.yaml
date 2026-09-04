@@ -55,6 +55,15 @@ data:
           - ports:
               - port: 6443
     singleuser:
+      # Baseline resource defaults for single-user pods (Kubernetes requests/limits).
+      # Override via Workspace Configuration / App Config Overrides based on cluster capacity.
+      # guarantee → resources.requests; limit → resources.limits
+      cpu:
+        guarantee: 0.05
+        limit: 4
+      memory:
+        guarantee: 512M
+        limit: 4G
       # Block cloud-metadata egress via NetworkPolicy instead of the chart's default iptables
       # init container, which uses legacy iptables and crashes on nftables-only nodes
       # (e.g. Rocky 9: "can't initialize iptables table filter"), blocking user server spawn.
