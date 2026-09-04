@@ -358,6 +358,7 @@ These apps demonstrate catalog composability and dependency flow. See [docs/demo
 | agentgateway | 2.2.0 | `oci://cr.agentgateway.dev/charts/agentgateway` | AI-focused gateway for security, observability, and traffic management of LLM workloads |
 | vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
 | flowise | 6.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` | Drag-and-drop UI to build customized LLM flows with LangChain |
+| open-webui | 16.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/open-webui` | Self-hosted web interface for LLMs with Ollama and OpenAI-compatible APIs |
 
 ## Scripts & Justfile
 
@@ -377,7 +378,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just mirror-chart-from-oci <oci-url> <ver> [oci]` | Mirror a chart from upstream OCI to our OCI |
 | `just push-ollama [version]` | Shortcut for ollama (default: `1.39.0`) |
 | `just push-vllm [version]` | Shortcut for vllm (default: `0.1.1`) |
-| `just push-openwebui [version]` | Shortcut for open-webui (default: `12.0.1`) |
+| `just push-openwebui [version]` | Shortcut for open-webui (default: `16.0.0`) |
 | `just push-weaviate [version]` | Shortcut for weaviate (default: `17.7.0`) |
 | `just push-coder [version]` | Shortcut for coder (default: `2.30.2`) |
 | `just push-mlflow [version]` | Shortcut for mlflow (default: `1.8.1`) |

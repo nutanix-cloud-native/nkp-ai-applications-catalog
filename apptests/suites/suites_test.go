@@ -17,6 +17,7 @@ var enabledApps = []string{
 	"jupyterhub",
 	"slurm-operator",
 	"ollama",
+	"open-webui",
 	"kuberay",
 	"ray-cluster",
 }
