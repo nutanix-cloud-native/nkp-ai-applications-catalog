@@ -149,7 +149,7 @@ overview: |
   [MLflow documentation](https://mlflow.org/docs/latest/) · [MLflow project](https://github.com/mlflow/mlflow) · [Helm chart](https://community-charts.github.io/docs/charts/mlflow/)
 scope:
   - workspace
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.20.0"
 supportLink: https://mlflow.org/docs/latest/
 type: nkp-catalog
 ---
