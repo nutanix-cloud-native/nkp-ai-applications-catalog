@@ -33,7 +33,7 @@ overview: |
 
   The default is an evaluation-grade, single-replica deployment. Its `ReadWriteOnce` volume and SQLite backend are not suitable for concurrent multi-user or production workloads. SQLite may report database locking errors under load.
 
-  - **Default resource caps** — the tracking server pod requests 250m CPU / 512Mi memory and is limited to 1 CPU / 2Gi memory by default, so an uncapped process cannot exhaust node capacity.
+  - **Default resource caps** — the tracking server pod requests 500m CPU / 1Gi memory and is limited to 2 CPU / 4Gi memory by default, so an uncapped process cannot exhaust node capacity.
 
   **Production configuration**
 
@@ -129,10 +129,10 @@ overview: |
 
   | Resource | Request | Limit |
   |----------|---------|-------|
-  | CPU      | 250m    | 1     |
-  | Memory   | 512Mi   | 2Gi   |
+  | CPU      | 500m    | 2     |
+  | Memory   | 1Gi     | 4Gi   |
 
-  Override for heavier proxied artifact traffic via **Workspace Configuration** / App Config Overrides:
+  Override for heavier proxied artifact traffic via **Workspace Configuration** or a cluster configuration override:
 
   ```yaml
   resources:
@@ -140,8 +140,8 @@ overview: |
       cpu: "1"
       memory: 2Gi
     limits:
-      cpu: "2"
-      memory: 4Gi
+      cpu: "4"
+      memory: 8Gi
   ```
 
   **Resources**
