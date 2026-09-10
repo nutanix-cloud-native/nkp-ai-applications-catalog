@@ -66,7 +66,21 @@ func (c *versionCtx) generateChart() error {
 		injectPlaceholders(r, w)
 	}
 
-	joined, err := joinDocs(docs)
+	// Default: keep CRDs in the chart template (pipelines / central-dashboard).
+	// includeCRDs: false (training-operator) writes them next to the HelmRelease
+	// so Flux applies CRDs before the chart, and Helm does not own CRD lifecycle.
+	templateDocs := docs
+	if c.ver.Chart.IncludeCRDs != nil && !*c.ver.Chart.IncludeCRDs {
+		crds, resources := splitCRDs(docs)
+		if err := os.MkdirAll(c.manifestsDir, dirMode); err != nil {
+			return err
+		}
+		if err := writeCRDs(c.manifestsDir, crds); err != nil {
+			return err
+		}
+		templateDocs = resources
+	}
+	joined, err := joinDocs(templateDocs)
 	if err != nil {
 		return err
 	}
@@ -96,6 +110,31 @@ func (c *versionCtx) generateChart() error {
 
 // Applies literal find/replace injections for custom integrations. Errors if
 // a target is missing to prevent silent failures when upstream manifests change.
+func splitCRDs(docs []*yaml.Node) (crds, resources []*yaml.Node) {
+	for _, doc := range docs {
+		if r := root(doc); mapValue(r, "kind") != nil && mapValue(r, "kind").Value == "CustomResourceDefinition" {
+			crds = append(crds, doc)
+		} else {
+			resources = append(resources, doc)
+		}
+	}
+	return crds, resources
+}
+
+func writeCRDs(chartDir string, docs []*yaml.Node) error {
+	for i, doc := range docs {
+		data, err := encodeYAML(doc)
+		if err != nil {
+			return err
+		}
+		name := fmt.Sprintf("%02d-crd.yaml", i+1)
+		if err := os.WriteFile(filepath.Join(chartDir, name), data, fileMode); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *versionCtx) applyInjections(template string) (string, error) {
 	if c.ver.Chart.Overlay == nil {
 		return template, nil

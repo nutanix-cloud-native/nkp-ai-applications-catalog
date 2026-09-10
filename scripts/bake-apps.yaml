@@ -97,6 +97,22 @@ apps:
               - find: "  name: seaweedfs-pvc\n  namespace: kubeflow\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 20Gi"
                 replace: "  name: seaweedfs-pvc\n  namespace: kubeflow\n  annotations:\n    helm.sh/resource-policy: keep\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: {{ (index ((index .Values \"storage\") | default (dict)) \"seaweedfs\") | default \"10Gi\" }}"
 
+  training-operator:
+    repo: https://github.com/kubeflow/manifests
+    versions:
+      - version: "1.9.2"
+        ref: v1.11.0
+        overlays:
+          - applications/training-operator/upstream/overlays/kubeflow
+        namespace: training-operator
+        chart:
+          version: "1.9.2"
+          appVersion: "1.9.2"
+          includeCRDs: false
+          workloads:
+            - name: training-operator
+              kind: Deployment
+
   kubeflow-central-dashboard:
     repo: https://github.com/kubeflow/manifests
     versions:

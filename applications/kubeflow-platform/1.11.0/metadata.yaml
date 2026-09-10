@@ -7,7 +7,7 @@ category:
   - model-development-and-training
 certifications:
   - qualified
-description: One authenticated, multi-user home for your Kubeflow apps - reuses NKP login (Dex) and provisions dedicated kubeflow gateway pods with a dedicated LoadBalancer. You must set config.kubeflowIngressHost (DNS name or IP) in app config when enabling.
+description: One authenticated, multi-user home for your Kubeflow apps - reuses NKP login (Dex) and provisions dedicated kubeflow gateway pods with a dedicated LoadBalancer.
 dependencies: []
 requiredDependencies:
   - istio-helm
@@ -28,23 +28,30 @@ overview: |
   - **Dedicated Kubeflow ingress address.** The app provisions dedicated Istio
     gateway pods (`kubeflow-ingressgateway`) and a separate LoadBalancer
     Service, so Kubeflow does not share NKP console / Traefik routes.
+  - **Kommander Launch button.** After enable, the workspace **Application
+     Dashboards** tab shows a **Kubeflow Platform** tile. `secret-syncer` sets
+     its `dashboardLink` to the configured HTTP or HTTPS URL once the LoadBalancer
+
+    address is known (or to your host/URL when `kubeflowIngressHost` is set).
+    Use that button to open Central Dashboard with SSO.
   - **Per-user workspaces.** Each user gets their own isolated namespace with the
     right permissions, so teammates don't see or touch each other's work.
   - **Component UIs under one host.** Dashboard at `/`, Pipelines at
     `/pipeline/`.
 
-  **Operator action required** — Set `config.kubeflowIngressHost` (and
-  optionally `config.kubeflowIngressURL`) in app config before or when
-  enabling. Do not enable with an empty host. Then enable Central Dashboard
-  and Pipelines so their baked VirtualServices can reach oauth2-proxy.
-
-  Set this in the app configuration (Kommander UI → Configuration, or `configOverrides`):
+  **Operator action** — By default, the app discovers the dedicated LoadBalancer
+  IP automatically and configures oauth2-proxy, the Dex client redirect URIs,
+  and the Kommander Launch tile automatically (no host needs to be set). If you
+  want a friendly DNS name instead, set `config.kubeflowIngressHost` before or
+  when enabling. Optionally set `config.kubeflowIngressURL` only together with
+  a host (for example `https://…`); do not set URL alone — host is the primary
+  knob and URL defaults to `http://<host>`:
 
   ```yaml
   config:
-    # DNS name or IP the browser will open (no http://). Required.
-    kubeflowIngressHost: "10.22.203.228"
-    # optional; defaults to http://<kubeflowIngressHost>
+    # DNS name or IP the browser will open (no http://). Optional — discovered at install time.
+    kubeflowIngressHost: "<kubeflow-load-balancer-address>"
+    # optional; defaults to http://<kubeflowIngressHost>. Requires host when set.
     kubeflowIngressURL: ""
     userIDClaim: email
   ```
@@ -59,12 +66,23 @@ overview: |
   private workspace. No `kubectl` required.
 
   **Before you enable**
-  - Set `config.kubeflowIngressHost` (required) and optional `config.kubeflowIngressURL`.
+  - `config.kubeflowIngressHost` is **optional** — the `secret-syncer` sidecar
+    discovers the dedicated LB IP after install and patches oauth2-proxy, Dex
+    redirect URIs, and the Kommander **Launch** button (`dashboardLink`)
+    automatically. Set the host only for a friendly DNS name.
   - **istio-helm** (required) — Istio revision for the dedicated gateway pods.
     Enable it from the workspace catalog. NKP Dex is already on the management
     plane (same login as the console); there is no Dex app to enable.
   - Enable **Central Dashboard** and **Pipelines** after Platform. Their
     charts expect this app's oauth2-proxy; port-forward skips login.
+
+  **Access** — Prefer the workspace **Application Dashboards → Kubeflow Platform**
+  Launch button. Or open the LoadBalancer URL directly:
+
+  ```sh
+  kubectl -n kubeflow get svc kubeflow-ingressgateway \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+  ```
 
   **Resources** — [Kubeflow Profiles](https://www.kubeflow.org/docs/components/central-dash/profiles/) |
   [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/)

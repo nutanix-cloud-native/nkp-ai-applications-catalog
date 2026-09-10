@@ -1,11 +1,8 @@
 apiVersion: v1
-data:
-  values.yaml: |
-    dashboard:
-      namespace: ${workspaceNamespace}
-      configMapName: ${releaseName}-ui
 kind: ConfigMap
 metadata:
   name: ${releaseName}-${appVersion}-defaults
   namespace: ${releaseNamespace}
+data:
+  values.yaml: ""
 ---
