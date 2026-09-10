@@ -29,7 +29,7 @@ just mirror-chart-from-repo https://community-charts.github.io/helm-charts mlflo
 
 Consumed as `oci://ghcr.io/nutanix-cloud-native/charts/mlflow:1.11.4`.
 
-Images: `burakince/mlflow:3.15.1` always. `busybox:1.38.0` renders only in configurations the default install doesn't use — the dbchecker init container with an external database, and ini-file-initializer with chart auth. Image discovery renders catalog defaults, so it misses it; the image is listed explicitly in `helmrelease/extra-images.txt` as `docker.io/library/busybox:1.38.0`.
+Images: `burakince/mlflow:3.15.1` always. `docker.io/library/busybox:1.38.0` is used only as init containers when an external database (`dbchecker`) or chart auth (`ini-file-initializer`) is enabled. Image discovery renders catalog defaults, so it misses busybox; list it in `helmrelease/extra-images.txt`. Pin the same fully qualified name under `initImages` in `helmrelease/cm.yaml` so the running spec matches the bundled image.
 
 ## Catalog manifests
 

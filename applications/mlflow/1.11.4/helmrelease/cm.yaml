@@ -38,6 +38,17 @@ data:
       proxiedArtifactStorage: true
       defaultArtifactsDestination: /mlflow/data/mlartifacts
 
+    # Fully qualified so airgap rewriting matches extra-images.txt.
+    # These init containers are off by default; they appear with external
+    # Postgres (dbchecker) or chart basic auth (ini-file-initializer).
+    initImages:
+      dbchecker:
+        repository: docker.io/library/busybox
+        tag: "1.38.0"
+      iniFileInitializer:
+        repository: docker.io/library/busybox
+        tag: "1.38.0"
+
     extraArgs:
       staticPrefix: /nkp/mlflow
 
