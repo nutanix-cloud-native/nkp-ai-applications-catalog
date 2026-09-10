@@ -1,0 +1,34 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-${appVersion}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 24h
+  ref:
+    tag: 1.9.2
+  url: oci://ghcr.io/nutanix-cloud-native/charts/training-operator
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: training-operator
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-${appVersion}-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+  interval: 15s
+  targetNamespace: training-operator
+  upgrade:
+    remediation:
+      retries: 30
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+---

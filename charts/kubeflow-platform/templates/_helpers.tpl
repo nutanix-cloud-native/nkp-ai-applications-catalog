@@ -5,8 +5,7 @@
 {{/*
 Resolves the integration config once so every consumer sees the same values.
 Per field: .Values.config override -> value persisted from a prior render ->
-derived (Dex issuer, http://<host> URL) or generated (OIDC secrets).
-kubeflowIngressHost is operator-set and is not looked up from a Service.
+derived or generated.
 */}}
 {{- define "kubeflow-platform.derived" -}}
 {{- $cfg := .Values.config -}}
@@ -16,7 +15,17 @@ kubeflowIngressHost is operator-set and is not looked up from a Service.
 {{- $kv := lookup "v1" "ConfigMap" "kommander" "kommander-vars" -}}
 {{- if $kv -}}{{- with (index $kv.data "ingressAddress") -}}{{- $dexIssuer = printf "https://%s/dex" . -}}{{- end -}}{{- end -}}
 {{- end -}}
+{{- $prev := lookup "v1" "Secret" $platformNamespace "kubeflow-platform-generated" -}}
+{{- if and (not $prev) (ne .Release.Namespace $platformNamespace) -}}
+{{- $prev = lookup "v1" "Secret" .Release.Namespace "kubeflow-platform-generated" -}}
+{{- end -}}
+{{- /* Host is primary. URL is only honored when a host is also set; URL-alone is ignored. */ -}}
 {{- $ingressHost := $cfg.kubeflowIngressHost -}}
+{{- if and (not $ingressHost) $prev -}}{{- with (index $prev.data "kubeflowIngressHost") -}}{{- $ingressHost = b64dec . -}}{{- end -}}{{- end -}}
+{{- if and (not $ingressHost) .Values.dedicatedIngress.enabled -}}
+{{- $svc := lookup "v1" "Service" $platformNamespace .Values.dedicatedIngress.serviceName -}}
+{{- if $svc -}}{{- with $svc.status.loadBalancer.ingress -}}{{- with (index . 0) -}}{{- if .ip -}}{{- $ingressHost = .ip -}}{{- else if .hostname -}}{{- $ingressHost = .hostname -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}
+{{- end -}}
 {{- $ingressGatewayPrincipal := $cfg.ingressGatewayPrincipal -}}
 {{- if .Values.dedicatedIngress.enabled -}}
 {{- if not $ingressGatewayPrincipal -}}
@@ -26,11 +35,16 @@ kubeflowIngressHost is operator-set and is not looked up from a Service.
 {{- if and (not $ingressGatewayPrincipal) .Values.config.ingressGatewayNamespace .Values.config.ingressGatewayService -}}
 {{- $ingressGatewayPrincipal = printf "cluster.local/ns/%s/sa/%s" .Values.config.ingressGatewayNamespace .Values.config.ingressGatewayService -}}
 {{- end -}}
-{{- $ingressURL := $cfg.kubeflowIngressURL -}}
-{{- if and (not $ingressURL) $ingressHost -}}{{- $ingressURL = printf "http://%s" $ingressHost -}}{{- end -}}
-{{- $prev := lookup "v1" "Secret" $platformNamespace "kubeflow-platform-generated" -}}
-{{- if and (not $prev) (ne .Release.Namespace $platformNamespace) -}}
-{{- $prev = lookup "v1" "Secret" .Release.Namespace "kubeflow-platform-generated" -}}
+{{- $ingressURL := "" -}}
+{{- if $ingressHost -}}
+{{- if and $cfg.kubeflowIngressURL $cfg.kubeflowIngressHost -}}
+{{- $ingressURL = $cfg.kubeflowIngressURL -}}
+{{- else -}}
+  {{- $scheme := "http" -}}
+  {{- if .Values.tls.enabled }}{{- $scheme = "https" -}}{{- end -}}
+  {{- $ingressURL = printf "%s://%s" $scheme $ingressHost -}}
+
+{{- end -}}
 {{- end -}}
 {{- $client := $cfg.oauth2ClientSecret -}}
 {{- if and (not $client) $prev -}}{{- with (index $prev.data "oauth2ClientSecret") -}}{{- $client = b64dec . -}}{{- end -}}{{- end -}}
