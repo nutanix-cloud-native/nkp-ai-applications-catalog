@@ -6,6 +6,13 @@ metadata:
 data:
   values.yaml: |
     ---
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
     fullnameOverride: open-webui
     # Disable the chart's bundled Ollama subchart (upstream default is enabled).
     # This does not install or require the catalog Ollama app.
