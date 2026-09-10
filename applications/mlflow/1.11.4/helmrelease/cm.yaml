@@ -11,6 +11,17 @@ data:
     strategy:
       type: Recreate
 
+    # Baseline resource defaults so the tracking server cannot exhaust node capacity.
+    # Override via Workspace or Cluster Config Overrides for heavier artifact traffic.
+    # Chart path: top-level resources (community-charts/mlflow).
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+
     extraVolumes:
       - name: mlflow-data
         persistentVolumeClaim:
