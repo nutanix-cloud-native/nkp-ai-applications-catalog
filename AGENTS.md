@@ -211,13 +211,13 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 2. **Validate manifests first**
    - Run: `nkp validate catalog-repository --repo-dir=.`
 
-3. **Create the airgapped bundle** (renders `.release/full.yaml.tmpl` with `includeApplicationImages: true`)
-   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-full.tar`:
-     - `just create-application-airgapped-bundle <app> <version>`
-     - Example: `just create-application-airgapped-bundle kai-scheduler 0.15.2`
-   - Full collection → writes `nkp-ai-applications-catalog-<tag>-full.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
-     - `just create-collection-airgapped-bundle <collection-tag>`
-     - Example: `just create-collection-airgapped-bundle 2.19-dev`
+3. **Create the full bundle** (renders a release spec with `includeApplicationImages: true`)
+    - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-full.tar`:
+      - `just create-application-full-bundle <app> <version>`
+      - Example: `just create-application-full-bundle kai-scheduler 0.15.2`
+    - Full collection → writes `nkp-ai-applications-catalog-<tag>-full.tar` (the `<collection-tag>` must exist in `.release/dev-bundles.yaml`, e.g. `2.20`):
+      - `just create-collection-full-bundle <collection-tag>`
+      - Example: `just create-collection-full-bundle 2.20 "" .release/dev-bundles.yaml`
 
 4. **Push the bundle to an OCI registry**
    - Authenticate to your registry first.
