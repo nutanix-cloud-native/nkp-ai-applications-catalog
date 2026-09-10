@@ -23,4 +23,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 8080
+    {{- if .Values.tls.enabled }}
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8443
+    {{- end }}
 {{- end }}

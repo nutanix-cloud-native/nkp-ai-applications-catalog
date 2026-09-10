@@ -1,7 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- 01-crd.yaml
+- 02-crd.yaml
+- 03-crd.yaml
+- 04-crd.yaml
+- 05-crd.yaml
+- 06-crd.yaml
 - cm.yaml
-- kubeflow-platform-ui-dashboard-cm.yaml
 - helmrelease.yaml
 ---

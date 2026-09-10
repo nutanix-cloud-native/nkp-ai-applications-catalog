@@ -20,6 +20,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/ollama:1.72.0
       - oci://<registry-url>/nkp-ai-applications-catalog/ray-cluster:1.7.0
       - oci://<registry-url>/nkp-ai-applications-catalog/slurm-operator:1.1.1
+      - oci://<registry-url>/nkp-ai-applications-catalog/training-operator:1.9.2
   - name: amd-device-metrics-exporter
     version: 1.4.2
     images:
@@ -157,6 +158,11 @@ applications:
       - ghcr.io/kubeflow/kubeflow/kfam:v1.10.0
       - ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
       - quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+  - name: training-operator
+    version: 1.9.2
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/training-operator:1.9.2
+      - ghcr.io/kubeflow/training-v1/training-operator:v1-3f15cb8
   - name: kuberay
     version: 1.7.0
     images:

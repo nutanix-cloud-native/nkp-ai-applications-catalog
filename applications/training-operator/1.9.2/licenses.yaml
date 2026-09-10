@@ -1,0 +1,7 @@
+ignore: []
+resources:
+- container_image: ghcr.io/kubeflow/training-v1/training-operator:v1-3f15cb8
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/kubeflow/training-operator.git
+---

@@ -18,19 +18,22 @@ VirtualServices at `oauth2-proxy`, so enable **Platform first**.
 1. In the workspace (NKP UI → Workspace Catalog, or a GitOps `AppDeployment`),
    enable **cert-manager** and **istio-helm**. Dex is already on the management
    plane; this app requires it.
-2. Set `config.kubeflowIngressHost` in Kubeflow Platform app configuration at
-   enable time. This is the DNS name or IP the browser will open. Optionally set
-   `config.kubeflowIngressURL`; if omitted it is derived as `http://<host>`.
-   Do not enable with an empty host on live clusters.
+2. (Optional) Set `config.kubeflowIngressHost` for a friendly DNS name (and
+   optionally `config.kubeflowIngressURL` with that host, e.g. `https://…`).
+   If host is left empty, the app installs with a placeholder and `secret-syncer`
+   updates oauth2-proxy, Dex redirect URIs, and the Kommander Launch tile once
+   the dedicated LoadBalancer receives an IP. Do not set URL without a host.
 3. Enable **Kubeflow Platform**.
-4. Enable **Kubeflow Central Dashboard** and **Kubeflow Pipelines**. Then open
-   the one URL and log in:
+4. Open Kubeflow from the workspace **Application Dashboards** tab (tile
+   **Kubeflow Platform**) once the Launch URL is populated, **or** look up the
+   dedicated LoadBalancer IP and open it in a browser. Enable **Kubeflow Central
+   Dashboard** and **Kubeflow Pipelines** so `/` and `/pipeline/` have backends:
 
 ```sh
 # The single Kubeflow entry point (dedicated LB Service):
 kubectl -n kubeflow get svc kubeflow-ingressgateway \
   -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-# e.g. 10.22.203.228  ->  open http://<that-address>/
+# e.g. <kubeflow-load-balancer-address>  ->  open http://<that-address>/
 ```
 
 You'll see a **"Sign in with Dex"** page → the **NKP Dex** login (the same
@@ -38,6 +41,11 @@ account you use for the NKP/Kommander console) → then the **Central Dashboard*
 Component UIs live under the same URL by path: `…/` (dashboard),
 `…/pipeline/` (Pipelines). Other header-auth UIs (for example `/katib/`) can
 be added later; they are not catalog apps today.
+
+The Kommander Launch tile is a workspace ConfigMap (`${releaseName}-ui`).
+`secret-syncer` patches `dashboardLink` to `http://<host>/` after the LB
+assigns an address (or to your host/URL when `config.kubeflowIngressHost` is
+set). Until then the tile may show without a working link.
 
 Do not use `kubectl port-forward` to the component UIs for login. Identity
 headers come from oauth2-proxy on the dedicated ingress URL.
@@ -47,10 +55,31 @@ headers come from oauth2-proxy on the dedicated ingress URL.
 
 ---
 
-## Required host config and overrides
+## Ingress host and overrides
 
-Set the ingress host explicitly when enabling. The chart does not wait for LB
-assignment and does not auto-discover the host for oauth2/Dex resources.
+The ingress **host** is the primary knob (optional). Leave it empty to let the
+syncer discover the LoadBalancer IP or hostname; set it for a friendly DNS name.
+`config.kubeflowIngressURL` is an optional override that defaults to
+`http://<host>`, or `https://<host>` when TLS is enabled. Set it only **with** a host.
+URL alone (without host) is not supported.
+
+To enable HTTPS, create a customer-managed Secret named `kubeflow-tls` in the
+`kubeflow` namespace containing `tls.crt` and `tls.key`, then configure:
+
+```yaml
+tls:
+  enabled: true
+  secretName: kubeflow-tls
+  redirectHttpToHttps: true
+config:
+  kubeflowIngressHost: kubeflow.example.com
+  kubeflowIngressURL: https://kubeflow.example.com
+```
+
+The chart does not create or rotate the certificate. Customers can provision the
+Secret manually or with cert-manager. The certificate must cover the configured
+hostname; an LB IP requires a certificate with an IP SAN and is generally not
+suitable for publicly trusted certificates.
 
 If you need to look up the value before enabling, use the known external
 address your platform team assigned for this Service. For already-provisioned
@@ -67,10 +96,15 @@ kubectl -n kubeflow get svc kubeflow-ingressgateway \
 Then set:
 
 ```yaml
-config:
-  kubeflowIngressHost: "<external-ip-or-dns>"
-  # optional; defaults to http://<kubeflowIngressHost> when empty
-  kubeflowIngressURL: ""
+  config:
+    kubeflowIngressHost: "<external-ip-or-dns>" # optional; empty uses the allocated LB address
+      # optional; defaults to http://<kubeflowIngressHost>. Do not set without a host.
+    kubeflowIngressURL: ""
+  tls:
+    enabled: false
+    secretName: ""
+    redirectHttpToHttps: false
+
   # Dex claim copied into kubeflow-userid. Profile.owner must match this value.
   # Default email. Username-only Dex (no email claim) can set preferred_username.
   # Changing this after Profiles exist orphans those workspaces.
@@ -82,7 +116,9 @@ Other fields continue to auto-derive/generate:
 | Setting | Auto-behavior | Override (app config) |
 | --- | --- | --- |
 | Dex issuer URL | Derived from `kommander-vars.ingressAddress` (`https://<addr>/dex`) | `config.dexIssuerURL` |
-| Ingress URL / host | `kubeflowIngressHost` is operator-set, `kubeflowIngressURL` defaults to `http://<host>` | `config.kubeflowIngressURL`, `config.kubeflowIngressHost` |
+| Ingress host | Explicit host wins; otherwise syncer discovers the dedicated LB address | `config.kubeflowIngressHost` |
+| Ingress URL | Defaults to `http://<host>`, or `https://<host>` when TLS is enabled | `config.kubeflowIngressURL` |
+
 | User id claim | `email` → `kubeflow-userid`; Profile.owner must equal that value | `config.userIDClaim` |
 | OIDC client & cookie secrets | Generated once, then preserved across upgrades | `config.oauth2ClientSecret`, `config.oauth2CookieSecret` |
 
@@ -301,7 +337,10 @@ kubectl -n <profile-namespace> get pods -o wide
   hand-authored Helm chart (this is glue, not a baked upstream flatten). The app
   wraps it with an `OCIRepository` + `HelmRelease` like the other catalog apps.
 - Self-configuration lives in `templates/_helpers.tpl` (`kubeflow-platform.derived`):
-  host/URL come from explicit `config.*` values (URL defaults to `http://<host>`),
+  explicit `config.*` values take precedence, then the generated Secret and live
+   LoadBalancer status supply the host (URL defaults to `http://<host>`, or
+   `https://<host>` when TLS is enabled),
+
   and `randAlphaNum` + lookup-preserve keep secrets stable across upgrades.
   Offline (`helm template`/lint) lookups are empty, so live-cluster host assertions
   only run when the cluster API is reachable.

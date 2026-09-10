@@ -9,7 +9,7 @@ certifications:
 dependencies: []
 # Multi-user Pipelines manifests include Istio resources (VirtualService,
 # DestinationRule, AuthorizationPolicy), so Istio must be present first. Enable Platform
-# with config.kubeflowIngressHost before Pipelines. Refer kubeflow-platform for more details.
+# with Kubeflow Platform before Pipelines. Refer to kubeflow-platform for more details.
 requiredDependencies:
   - istio-helm
   - kubeflow-platform
@@ -33,8 +33,8 @@ overview: |
   - Tunable resources/replicas/scheduling via `configOverrides` (Helm-chart backed)
 
   **Prerequisites**
-  - **Kubeflow Platform** (required) — enable it with `config.kubeflowIngressHost`
-    before this app. Baked VirtualServices route `/pipeline/` through
+  - **Kubeflow Platform** (required) — enable it before Pipelines; its ingress host is optional and can be discovered from the LoadBalancer.
+    Baked VirtualServices route `/pipeline/` through
     `oauth2-proxy`; without Platform there is no login path.
   - **istio-helm** (required) — multi-user manifests include VirtualService,
     DestinationRule, and AuthorizationPolicy.
