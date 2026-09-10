@@ -1,0 +1,38 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-${appVersion}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 24h0m0s
+  url: oci://ghcr.io/nutanix-cloud-native/charts/open-webui
+  ref:
+    tag: 16.0.0
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: open-webui
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-${appVersion}-chart
+    namespace: ${releaseNamespace}
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: 30
+    timeout: 10m
+  interval: 15s
+  targetNamespace: open-webui
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+    timeout: 10m
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-defaults
+---

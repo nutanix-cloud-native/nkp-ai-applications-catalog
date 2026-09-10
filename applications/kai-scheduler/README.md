@@ -6,8 +6,6 @@
 
 Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-share scheduling capabilities.
 
-## KAI Scheduler - High-Level Overview
-
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -27,12 +25,16 @@ Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-sh
   - [Q: How does it handle workload priorities?](#q-how-does-it-handle-workload-priorities)
   - [Q: Is KAI only for NVIDIA GPUs?](#q-is-kai-only-for-nvidia-gpus)
   - [Q: Does it integrate with Ray?](#q-does-it-integrate-with-ray)
-  - [Question 1: How much of our testing can be done on CPU-only clusters?](#question-1-how-much-of-our-testing-can-be-done-on-cpu-only-clusters)
-  - [Question 2: How many GPU nodes, and of what types, to properly validate GPU workloads?](#question-2-how-many-gpu-nodes-and-of-what-types-to-properly-validate-gpu-workloads)
+  - [Q: How much testing can be done on CPU-only clusters?](#q-how-much-testing-can-be-done-on-cpu-only-clusters)
+  - [Q: How many GPU nodes are needed to validate GPU workloads?](#q-how-many-gpu-nodes-are-needed-to-validate-gpu-workloads)
+- [Chart Source](#chart-source)
+- [Dependencies](#dependencies)
+- [Smoke Test Validation](#smoke-test-validation)
+- [Links](#links)
 
 ## Introduction
 
-KAI Scheduler is a robust, efficient, and scalable Kubernetes Native scheduler designed specifically to optimize GPU resource allocation for AI and machine learning workloads. Built on top of `kube-batch`, it is an open-source CNCF sandbox project.
+KAI Scheduler is a robust, efficient, and scalable Kubernetes-native scheduler designed specifically to optimize GPU resource allocation for AI and machine learning workloads. Built on top of `kube-batch`, it is an open-source CNCF sandbox project.
 
 The problem it solves: Managing large-scale GPU clusters (thousands of nodes) with high-throughput workloads requires advanced placement logic that the default Kubernetes scheduler lacks. KAI handles the entire AI lifecycle, from small interactive jobs to massive distributed training and inference, while ensuring resource fairness and optimal allocation.
 
@@ -48,7 +50,7 @@ Ensures that all pods in a group are scheduled simultaneously or not at all (all
 
 *Why it is useful: A distributed training job might require 16 GPUs to run. If the scheduler places 14 pods and leaves 2 pending because the cluster is full, those 14 GPUs sit completely idle, burning money without doing any compute work. Gang scheduling ensures you only consume resources when the job can actually execute.*
 
- *ELI5: Like a group of friends refusing to be seated until a table big enough for all of them is ready, ensuring they do not take up smaller tables while waiting for latecomers.*
+*ELI5: Like a group of friends refusing to be seated until a table big enough for all of them is ready, ensuring they do not take up smaller tables while waiting for latecomers.*
 
 ### Bin-Packing & Spread Scheduling
 
@@ -56,7 +58,7 @@ Optimizes node usage by either minimizing fragmentation (bin-packing) or increas
 
 *Why it is useful: Bin-packing groups small jobs onto the fewest nodes possible. This leaves entirely empty nodes available so that massive, multi-GPU training jobs have the contiguous space they need to run. It also allows cloud auto-scalers to spin down completely empty nodes to save money.*
 
-*ELI5: Bin-packing is like seating as many people as possible in one corner of the restaurant so you have a huge empty space saved for a big party later. Spread scheduling is like seating parties far apart so the waiters aren't crowded in one spot.*
+*ELI5: Bin-packing is like seating as many people as possible in one corner of the restaurant so you have a huge empty space saved for a big party later. Spread scheduling is like seating parties far apart so the waiters are not crowded in one spot.*
 
 ### Topology-Aware Scheduling (TAS) & Hierarchical PodGroups
 
@@ -99,7 +101,7 @@ When a complex AI workload is submitted, KAI Scheduler looks at the priority, th
 * **Hardware Topology Optimization:** Distributed AI workloads need pods close together to reduce network latency. KAI's Topology-Aware Scheduling ensures optimal physical placement.
 * **Complex Gang Scheduling:** Prevents deadlock by ensuring large, multi-component jobs get all their resources at once.
 * **Fairness Over Time:** Instead of just pointing out who is using what *right now*, Time-based Fairshare looks at historical usage so a team that was idle yesterday can catch up today.
-* **Hardware Utilization:** Through Bin Packing, Workload Consolidation, and GPU sharing, KAI ensures that expensive GPU nodes are fully utilized rather than sitting partially empty.
+* **Hardware Utilization:** Through bin-packing, Workload Consolidation, and GPU sharing, KAI ensures that expensive GPU nodes are fully utilized rather than sitting partially empty.
 
 ## Relationship with Kueue
 
@@ -118,11 +120,11 @@ A: Yes. It can run alongside other schedulers installed on the cluster. You can 
 
 ### Q: Does KAI support dynamic cloud auto-scalers?
 
-A: Yes. It is fully compatible with dynamic cloud infrastructures (including auto-scalers like Karpenter) as well as static on-premise deployments.
+A: Yes. It is fully compatible with dynamic cloud infrastructures (including auto-scalers like Karpenter) as well as static on-premises deployments.
 
 ### Q: How does it handle workload priorities?
 
-A: KAI supports workload priority within queues and uniquely separates workload priority from preemptibility, treating them as two independent policies. It also includes a `min-guaranteed-runtime` to ensure a workload isn't preempted too quickly after starting.
+A: KAI supports workload priority within queues and uniquely separates workload priority from preemptibility, treating them as two independent policies. It also includes a `min-guaranteed-runtime` to ensure a workload is not preempted too quickly after starting.
 
 ### Q: Is KAI only for NVIDIA GPUs?
 
@@ -132,7 +134,7 @@ A: While highly optimized for NVIDIA GPUs (requiring the NVIDIA GPU-Operator for
 
 A: Yes. KAI Scheduler is natively integrated for Ray workloads on Kubernetes (KubeRay), making it highly effective for orchestrating complex agentic pipelines and distributed AI computing.
 
-### Question 1: How much of our testing can be done on CPU-only clusters?
+### Q: How much testing can be done on CPU-only clusters?
 
 A: A significant portion of KAI's core queueing and placement logic can be tested on CPU-only clusters. Features like batch/gang scheduling (all-or-nothing), hierarchical queues, Time-based Fairshare, workload consolidation, and basic bin-packing or spread scheduling are resource-agnostic and work perfectly with standard CPU and memory requests.
 
@@ -143,7 +145,7 @@ A: A significant portion of KAI's core queueing and placement logic can be teste
 * **Dynamic Resource Allocation (DRA):** Testing vendor-specific hardware claims (e.g., NVIDIA GB200/GB300 compute resources).
 * **Real GPU Execution:** The physical binding and execution of GPU-dependent AI jobs.
 
-### Question 2: How many GPU nodes, and of what types, to properly validate GPU workloads?
+### Q: How many GPU nodes are needed to validate GPU workloads?
 
 A: The required hardware depends on which advanced KAI features you need to prove:
 
@@ -182,7 +184,9 @@ This section captures what was validated and how.
   - `spec.schedulerName: kai-scheduler`
   - `kai.scheduler/queue: default-queue` (or another valid queue).
 
-- CPU workload scheduling path is functional.
+- CPU workload scheduling path is functional (single pod and parallel Job).
+- KAI coexists with the default scheduler for pods that do not select it.
+- Invalid queue references leave pods `Pending` with identifiable events.
 - GPU scheduling depends on node-level accelerator capacity exposure (for example, `nvidia.com/gpu` or `amd.com/gpu`).
 
 ### Installation and verification commands used
@@ -196,7 +200,7 @@ helm upgrade -i kai-scheduler \
 
 kubectl get pods -n kai-scheduler
 kubectl wait --for=condition=Available deployment --all -n kai-scheduler --timeout=180s
-kubectl get crd | rg -i "kai\\.scheduler|queues|podgroups"
+kubectl get crd | grep -Ei "kai\\.scheduler|queues|podgroups"
 kubectl get queue -A
 ```
 
@@ -215,17 +219,23 @@ Observed install outcome:
   - `default-parent-queue`
   - `default-queue`
 
-### Smoke test manifests used
+### Smoke test procedures
 
-Create test namespace:
+Each numbered workload test below follows the same flow: apply → validate → expected → cleanup.
+
+#### 1. Create test namespace
 
 ```bash
 kubectl create namespace kai-test --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-CPU smoke pod:
+#### 2. Single CPU pod
+
+Validates that a basic CPU pod is scheduled by KAI when it selects `kai-scheduler` and a valid queue.
 
 ```bash
+kubectl delete pod kai-cpu-smoke -n kai-test --ignore-not-found
+
 kubectl apply -n kai-test -f - <<'EOF'
 apiVersion: v1
 kind: Pod
@@ -249,9 +259,196 @@ spec:
 EOF
 ```
 
-GPU smoke pod:
+Validate:
 
 ```bash
+kubectl get pod kai-cpu-smoke -n kai-test -o wide
+kubectl describe pod kai-cpu-smoke -n kai-test
+```
+
+Expected:
+
+- Status: `Running`
+- Events show `Scheduled` and `Bound` from `kai-scheduler`
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-cpu-smoke -n kai-test
+```
+
+#### 3. Parallel multi-pod workload
+
+Validates that KAI schedules the pods created by one Kubernetes Job. Multi-pod / batch-style scheduling is one of KAI's supported workload patterns.
+
+```bash
+kubectl delete job kai-parallel-cpu -n kai-test --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kai-parallel-cpu
+spec:
+  parallelism: 3
+  completions: 3
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        kai.scheduler/queue: default-queue
+    spec:
+      schedulerName: kai-scheduler
+      restartPolicy: Never
+      containers:
+      - name: worker
+        image: registry.k8s.io/pause:3.10
+        resources:
+          requests:
+            cpu: 250m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+EOF
+```
+
+Validate:
+
+```bash
+kubectl get pods -n kai-test \
+  -l job-name=kai-parallel-cpu -o wide
+
+kubectl get events -n kai-test --sort-by=.lastTimestamp \
+  | grep kai-parallel-cpu
+
+kubectl get podgroups -A
+```
+
+Expected:
+
+- Three pods are created.
+- All three are `Running`.
+- Events show `Scheduled` and `Bound` from `kai-scheduler`.
+- A PodGroup is created for the Job.
+
+Note: because `pause` never exits, the Job stays active until cleaned up.
+
+Cleanup:
+
+```bash
+kubectl delete job kai-parallel-cpu -n kai-test
+```
+
+#### 4. Scheduler coexistence
+
+Verifies that KAI handles only workloads that explicitly select it. KAI is designed to run alongside the default scheduler.
+
+```bash
+kubectl delete pod kai-targeted kai-default -n kai-test \
+  --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-targeted
+  labels:
+    kai.scheduler/queue: default-queue
+spec:
+  schedulerName: kai-scheduler
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-default
+spec:
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+EOF
+```
+
+Validate:
+
+```bash
+kubectl get pods kai-targeted kai-default -n kai-test -o wide
+kubectl describe pod kai-targeted -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
+kubectl describe pod kai-default -n kai-test | grep -E 'Scheduler|Scheduled|Bound'
+```
+
+Expected:
+
+- `kai-targeted`: scheduled by `kai-scheduler`
+- `kai-default`: scheduled by `default-scheduler`
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-targeted kai-default -n kai-test
+```
+
+#### 5. Invalid queue test
+
+Validates failure behavior when a workload references a queue that does not exist.
+
+```bash
+kubectl delete pod kai-invalid-queue -n kai-test --ignore-not-found
+
+kubectl apply -n kai-test -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kai-invalid-queue
+  labels:
+    kai.scheduler/queue: queue-does-not-exist
+spec:
+  schedulerName: kai-scheduler
+  restartPolicy: Never
+  containers:
+  - name: pause
+    image: registry.k8s.io/pause:3.10
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+EOF
+```
+
+Validate:
+
+```bash
+kubectl get pod kai-invalid-queue -n kai-test
+kubectl describe pod kai-invalid-queue -n kai-test
+kubectl get events -n kai-test --sort-by=.lastTimestamp
+```
+
+Expected:
+
+- The pod remains `Pending`.
+- Events identify the invalid or unavailable queue.
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-invalid-queue -n kai-test
+```
+
+#### 6. GPU smoke pod
+
+Requires cluster nodes that expose allocatable GPU capacity (for example, `nvidia.com/gpu`).
+
+```bash
+kubectl delete pod kai-gpu-smoke -n kai-test --ignore-not-found
+
 kubectl apply -n kai-test -f - <<'EOF'
 apiVersion: v1
 kind: Pod
@@ -269,6 +466,34 @@ spec:
       limits:
         nvidia.com/gpu: "1"
 EOF
+```
+
+Validate:
+
+```bash
+kubectl get pod kai-gpu-smoke -n kai-test -o wide
+kubectl describe pod kai-gpu-smoke -n kai-test
+```
+
+Expected (when GPUs are available):
+
+- Status: `Running` (or `Succeeded` if the sample exits)
+- Events show scheduling by `kai-scheduler`
+
+If no GPU capacity is present, the pod stays `Pending` with a scheduler message about missing GPU resources.
+
+Cleanup:
+
+```bash
+kubectl delete pod kai-gpu-smoke -n kai-test
+```
+
+#### 7. Cleanup test namespace
+
+After all tests:
+
+```bash
+kubectl delete namespace kai-test
 ```
 
 ### Cluster test results

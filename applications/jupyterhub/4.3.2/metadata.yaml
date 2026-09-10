@@ -22,6 +22,7 @@ overview: |
   - **Multi-user notebooks** — a central hub spawns and manages a per-user Jupyter notebook server on demand.
   - **NKP SSO integration** — authenticates users via Traefik Forward Auth and the NKP identity provider (Dex). Users log in with their NKP credentials.
   - **Kubernetes-native spawning** — each user server runs as its own pod with its own resources and persistent storage.
+  - **Default resource caps** — single-user pods request 0.05 CPU / 512M memory and are limited to 4 CPU / 4G memory by default, so uncapped notebooks cannot exhaust node capacity.
 
   **Access**
 
@@ -40,6 +41,27 @@ overview: |
       Authenticator:
         admin_users:
           - admin@example.com
+  ```
+
+  **Single-user resource defaults**
+
+  Each spawned notebook pod gets these baseline CPU and memory requests/limits (chart `guarantee` → `resources.requests`, `limit` → `resources.limits`):
+
+  | Resource | Request (guarantee) | Limit |
+  |----------|---------------------|-------|
+  | CPU      | 0.05                | 4     |
+  | Memory   | 512M                | 4G    |
+
+  Override them for your cluster via **Workspace Configuration** / App Config Overrides, for example:
+
+  ```yaml
+  singleuser:
+    cpu:
+      guarantee: 0.5
+      limit: 8
+    memory:
+      guarantee: 2G
+      limit: 16G
   ```
 
   **Resources**
