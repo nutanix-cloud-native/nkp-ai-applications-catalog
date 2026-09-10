@@ -1,6 +1,7 @@
 docker.io/rocm/network-operator:v1.2.0
 docker.io/rocm/k8s-cni-plugins:v1.2.0
+docker.io/rocm/k8s-network-device-plugin:v1.2.0
+docker.io/rocm/k8s-network-node-labeller:v1.2.0
+docker.io/rocm/device-metrics-exporter:nic-v1.2.0
 docker.io/rocm/kernel-module-management-operator:v1.0.0
 docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
-ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2
-registry.k8s.io/nfd/node-feature-discovery:v0.16.1

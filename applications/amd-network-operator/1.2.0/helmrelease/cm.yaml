@@ -41,3 +41,106 @@ data:
           requests:
             cpu: 100m
             memory: 256Mi
+    #
+    # ---------------------------------------------------------------------------
+    # NetworkConfig CR — create separately; these Helm values do not install it.
+    # Unlike the GPU Operator's deviceConfig, this chart does not auto-create a
+    # NetworkConfig. After enabling the app, apply a NetworkConfig named anything
+    # other than "default" (that name conflicts with the GPU Operator DeviceConfig).
+    # Copy the spec below into that CR. Users must update spec.driver.image (and
+    # imageBuild.baseImageRegistry) to their actual registry path.
+    #
+    # apiVersion: amd.com/v1alpha1
+    # kind: NetworkConfig
+    # metadata:
+    #   name: network
+    #   namespace: <workspace-namespace>
+    # spec:
+    #   selector:
+    #     feature.node.kubernetes.io/amd-nic: "true"
+    #   driver:
+    #     enable: true
+    #     # NOTE: Setting `spec.driver.blacklist: false` leaves the inbox/in-tree
+    #     # `ionic` (and `pds_core`) kernel modules loaded. On Ubuntu 24.04
+    #     # (kernel 6.8+) that inbox `ionic` does not export `ionic_api_*`
+    #     # symbols. KMM then inserts out-of-tree `ionic_rdma` against the inbox
+    #     # driver, `modprobe` fails with "Unknown symbol in module", and the
+    #     # kmm-worker pods CrashLoopBackOff. Use `false` only when:
+    #     #   - `driver.enable` is also `false` (inbox Ethernet only, no OOT RoCE), or
+    #     #   - the node OS has no in-tree `ionic` (the AMD Ubuntu assumption).
+    #     # `blacklist: true` writes a host modprobe blacklist so OOT DKMS modules
+    #     # can load. It requires `devicePlugin.enableNodeLabeller: true` (the
+    #     # labeller DaemonSet writes `/etc/modprobe.d/`) and a node reboot after
+    #     # `update-initramfs -u`. A blacklist file does not unload a module that
+    #     # is already loaded. Not supported on OpenShift (use MachineConfig).
+    #     blacklist: true
+    #     # Driver package version from https://repo.radeon.com/amdainic.
+    #     # MUST match NIC firmware (dmesg: `ionic ... FW:`; or
+    #     # `nicctl show version firmware`). Userspace nicctl in the device
+    #     # plugin image must use the same drop. Omit the image tag; the
+    #     # operator manages it.
+    #     version: "1.117.1-a-63"
+    #     image: "registry.example.com:5000/drivers/amdainic_kmods"
+    #     # Inbox ionic + blacklist needs a reboot for initramfs. Keep this
+    #     # enabled so a driver.version change drains and reboots one node
+    #     # at a time instead of a silent KMM swap.
+    #     upgradePolicy:
+    #       enable: true
+    #       maxParallelUpgrades: 1
+    #       maxUnavailableNodes: 1
+    #       rebootRequired: true
+    #       nodeDrainPolicy:
+    #         force: true
+    #         timeoutSeconds: 600
+    #         gracePeriodSeconds: -1
+    #     imageBuild:
+    #       baseImageRegistry: "docker.io"
+    #       baseImageRegistryTLS:
+    #         insecure: false
+    #         insecureSkipTLSVerify: false
+    #     imageRegistrySecret:
+    #       name: "kmm-registry-dockerconfig"
+    #     imageRegistryTLS:
+    #       insecure: false
+    #       insecureSkipTLSVerify: false
+    #   devicePlugin:
+    #     # Required for `driver.blacklist: true` to take effect on Ubuntu.
+    #     # Nested CRD defaults do not apply when this object is omitted.
+    #     enableNodeLabeller: true
+    #     # The plugin image bundles nicctl; the host does not need a nicctl
+    #     # install. Bundled nicctl MUST match NIC firmware (same drop as
+    #     # spec.driver.version). Compatibility matrix:
+    #     #   https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix
+    #     #   Hub v1.2.0 → firmware 1.117.5-a-56 / 1.117.5-a-77
+    #     # Firmware 1.117.1-a-63 has no published Hub tag. Using the image
+    #     # below against a-63 makes `nicctl show card device -j` return empty
+    #     # lif and CrashLoopBackOff. Override devicePluginImage with a
+    #     # private build that installs nicctl_1.117.1.a.63_amd64.deb from
+    #     # repo.radeon.com, or install that nicctl on the host and use v1.0.0.
+    #     devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.2.0
+    #     devicePluginImagePullPolicy: IfNotPresent
+    #     nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.2.0
+    #     nodeLabellerImagePullPolicy: IfNotPresent
+    #     imageRegistrySecret:
+    #       name: "kmm-registry-dockerconfig"
+    #   metricsExporter:
+    #     enable: true
+    #     image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
+    #     imagePullPolicy: IfNotPresent
+    #     # CRD default hostNetwork is true. Set false so this coexists with
+    #     # GPU Operator DeviceConfig (GPU exporter :5000, NIC :5001).
+    #     hostNetwork: false
+    #     port: 5001
+    #     prometheus:
+    #       serviceMonitor:
+    #         enable: true
+    #         honorLabels: true
+    #         honorTimestamps: false
+    #         interval: 30s
+    #         labels:
+    #           prometheus.kommander.d2iq.io/select: "true"
+    #   secondaryNetwork:
+    #     cniPlugins:
+    #       enable: true
+    #       image: docker.io/rocm/k8s-cni-plugins:v1.2.0
+    # ---------------------------------------------------------------------------
