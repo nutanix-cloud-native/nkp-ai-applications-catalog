@@ -118,12 +118,12 @@ When a test fails in CI, the workflow automatically:
 
 You can download these from the workflow run's **Artifacts** section.
 
-### Airgapped bundle artifacts
+### Full bundle artifacts
 
 When an app's E2E test passes, the workflow also builds an **airgapped** catalog
 bundle for the `app/version` under test by running
-`just create-application-airgapped-bundle <app> <version>`. That recipe renders
-`.release/full.yaml.tmpl` (`includeApplicationImages: true`) for the single
+`just create-application-full-bundle <app> <version>`. That recipe generates
+a release spec from scratch (`includeApplicationImages: true`) for the single
 app, so the tarball includes the container images and OCI artifacts needed to
 deploy on a disconnected cluster — not just the manifests and image references.
 The generated `<app>-<version>-full.tar` is uploaded as a GitHub Actions
