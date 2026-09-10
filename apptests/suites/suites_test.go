@@ -18,6 +18,7 @@ var enabledApps = []string{
 	"slurm-operator",
 	"ollama",
 	"flowise",
+	"open-webui",
 	"kuberay",
 	"ray-cluster",
 }
