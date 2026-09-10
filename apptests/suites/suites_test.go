@@ -17,6 +17,7 @@ var enabledApps = []string{
 	"jupyterhub",
 	"slurm-operator",
 	"ollama",
+	"flowise",
 	"mlflow",
 	"open-webui",
 	"kuberay",
