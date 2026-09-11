@@ -20,18 +20,34 @@ config:
   ingressGatewayNamespace: istio-helm-gateway-ns
   ingressGatewayService: istio-helm-ingressgateway
   ingressGatewayPrincipal: ""
+namespace: kubeflow
+
+tls:
+  enabled: true
+  name: ""
+  mode: selfSigned
+  secretName: kubeflow-tls
+  redirectHttpToHttps: true
+  issuerRef:
+    name: ""
+    kind: ClusterIssuer
+    group: cert-manager.io
+  selfSigned:
+    issuerName: ""
+    caIssuerName: ""
+    caCertificateName: ""
+    caSecretName: ""
+    duration: 87600h
+    leafDuration: 2160h
+    leafRenewBefore: 360h
 
 # Dedicated Kubeflow edge: new gateway pods in this release namespace plus a
 # LoadBalancer Service. Does not reuse istio-helm-ingressgateway pods.
-tls:
-  enabled: false
-  secretName: ""
-  redirectHttpToHttps: false
-
 dedicatedIngress:
   enabled: true
   serviceName: kubeflow-ingressgateway
   gatewayLabel: kubeflow-ingressgateway
+  gatewayName: kubeflow-gateway
   istioRevision: istio-helm
   # Real image so airgap can pull it. Do not use Istio's "auto" — nkp tries
   # to download docker.io/library/auto:latest. istiod still swaps this at runtime.

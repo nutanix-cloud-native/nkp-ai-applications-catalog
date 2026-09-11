@@ -1,0 +1,34 @@
+# =============================================================================
+# KUBEFLOW-SPECIFIC ROUTING — Not portable, depends on oauth2-proxy
+# =============================================================================
+# This VirtualService routes traffic to the oauth2-proxy authentication layer.
+# It is kubeflow-specific and should NOT be extracted with the generic TLS
+# gateway when porting to another app.
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: kubeflow-oauth2-proxy
+  namespace: {{ .Values.namespace | default "kubeflow" }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: edge-gateway
+spec:
+  gateways:
+    - {{ .Values.dedicatedIngress.gatewayName | default "kubeflow-gateway" }}
+  hosts:
+    - {{ .Values.config.kubeflowIngressHost | default "*" | quote }}
+  http:
+  {{- if .Values.tls.enabled }}
+  {{- if .Values.tls.redirectHttpToHttps | default true }}
+    - match:
+        - port: 80
+      redirect:
+        scheme: https
+        port: 443
+  {{- end }}
+  {{- end }}
+    - route:
+        - destination:
+            host: oauth2-proxy.{{ .Values.namespace | default "kubeflow" }}.svc.cluster.local
+            port:
+              number: 80

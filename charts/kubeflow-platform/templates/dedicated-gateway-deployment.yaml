@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ $gw.serviceName }}
-  namespace: kubeflow
+  namespace: {{ .Values.namespace | default "kubeflow" }}
   labels:
     app.kubernetes.io/name: kubeflow-platform
     istio: {{ $gw.gatewayLabel }}
@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $gw.serviceName }}
-  namespace: kubeflow
+  namespace: {{ .Values.namespace | default "kubeflow" }}
   labels:
     app.kubernetes.io/name: kubeflow-platform
     istio: {{ $gw.gatewayLabel }}
