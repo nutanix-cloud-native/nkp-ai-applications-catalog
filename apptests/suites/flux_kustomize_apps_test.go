@@ -41,6 +41,10 @@ var bakedManifestApps = map[string]bakedReadiness{
 		namespace:   "kubeflow",
 		deployments: []string{"mysql", "ml-pipeline", "ml-pipeline-ui"},
 	},
+	trainingOperatorApp: {
+		namespace:   trainingOperatorApp,
+		deployments: []string{trainingOperatorApp},
+	},
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs

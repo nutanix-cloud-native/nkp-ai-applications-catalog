@@ -1,0 +1,7 @@
+workloads:
+  trainingoperator:
+    replicas: 1
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}

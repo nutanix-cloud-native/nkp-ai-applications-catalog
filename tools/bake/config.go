@@ -32,10 +32,11 @@ type Version struct {
 // Chart is the generated Helm chart under charts/<app>/, which gives a baked app
 // a configOverrides surface.
 type Chart struct {
-	Version    string     `yaml:"version"`    // Chart.yaml version (default: catalog version)
-	AppVersion string     `yaml:"appVersion"` // Chart.yaml appVersion (default: upstream ref)
-	Workloads  []Workload `yaml:"workloads"`  // workloads exposed as tunable values
-	Overlay    *Overlay   `yaml:"overlay"`    // hand-authored additions layered onto the generated chart
+	Version     string     `yaml:"version"`     // Chart.yaml version (default: catalog version)
+	AppVersion  string     `yaml:"appVersion"`  // Chart.yaml appVersion (default: upstream ref)
+	Workloads   []Workload `yaml:"workloads"`   // workloads exposed as tunable values
+	Overlay     *Overlay   `yaml:"overlay"`     // hand-authored additions layered onto the generated chart
+	IncludeCRDs *bool      `yaml:"includeCRDs"` // false: emit CRDs beside HelmRelease; else keep them in the chart
 }
 
 // Overlay layers hand-authored content onto the generated chart so `just bake`

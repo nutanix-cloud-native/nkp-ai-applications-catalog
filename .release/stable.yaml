@@ -19,6 +19,8 @@ releases:
         version: 1.10.0
       - name: kubeflow-platform
         version: 1.11.0
+      - name: training-operator
+        version: 1.9.2
       - name: kai-scheduler
         version: 0.15.2
       - name: kueue

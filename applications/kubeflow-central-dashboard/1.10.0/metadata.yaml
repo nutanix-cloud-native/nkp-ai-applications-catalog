@@ -27,7 +27,7 @@ overview: |
 
   **Prerequisites**
   - **Kubeflow Platform** (required) — enable it with
-    `config.kubeflowIngressHost` first. Without Platform there is no SSO
+    Platform first. Without Platform there is no SSO
     entry point; baked routes expect `oauth2-proxy`.
   - **istio-helm** (required) — VirtualService / AuthorizationPolicy.
   - **Namespace** — Workloads land in `kubeflow-central-dashboard`
