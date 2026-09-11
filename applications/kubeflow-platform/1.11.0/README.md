@@ -55,31 +55,149 @@ headers come from oauth2-proxy on the dedicated ingress URL.
 
 ---
 
+## HTTPS / TLS Edge Termination
+
+The chart provides generic, catalog-wide HTTPS edge termination on the dedicated
+Istio gateway (`kubeflow-ingressgateway`). **Self-signed TLS is enabled by
+default** — the chart bootstraps a CA and leaf certificate via cert-manager on
+install (cert-manager must be enabled in the workspace catalog). To switch
+modes (for example, to bring your own certificate), set `tls.mode` to
+`existingSecret` or `certManager` while keeping `tls.enabled: true`. To
+disable TLS entirely (HTTP only), set `tls.enabled: false`.
+
+When TLS is enabled (the default), the gateway serves HTTPS on port **443**.
+HTTP/80 is also configured when `redirectHttpToHttps: true` (the default) so
+that HTTP traffic is redirected to HTTPS rather than hanging. Set
+`redirectHttpToHttps: false` to expose port 443 only (HTTP/80 is omitted) for
+a fail-closed edge. The gateway `hosts` is set to `["*"]` to
+avoid SNI validation errors when the ingress host is a bare LoadBalancer IP
+address (which is not a valid SNI hostname).
+
+### TLS modes
+
+| Mode | Use case | Resources created | Pre-reqs |
+|---|---|---|---|
+| `existingSecret` | Customer brings their own TLS certificate | None (reference only) | Pre-create a Secret with `tls.crt` / `tls.key` |
+| `certManager` | cert-manager provisions via an Issuer | A `Certificate` | cert-manager installed; `tls.issuerRef` set |
+| `selfSigned` | One-click dev / test cluster | CA Issuer + CA Secret + leaf `Certificate` + a ConfigMap publishing the CA cert | cert-manager installed |
+
+### Enabling TLS
+
+TLS is on by default (`mode: selfSigned`). To switch modes or disable entirely:
+
+```yaml
+# Default (self-signed via cert-manager):
+tls:
+  enabled: true
+  mode: selfSigned
+  secretName: kubeflow-tls
+config:
+  kubeflowIngressHost: <external-ip-or-dns>
+
+# Disable TLS (HTTP only):
+tls:
+  enabled: false
+
+# Customer-provided certificate:
+tls:
+  enabled: true
+  mode: existingSecret
+  secretName: my-tls-secret
+config:
+  kubeflowIngressHost: kubeflow.example.com
+```
+
+For **cert-manager** mode, supply:
+
+```yaml
+tls:
+  mode: certManager
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+```
+
+For **existingSecret** mode, simply point at a pre-existing Secret (no
+cert-manager resources are rendered):
+
+```yaml
+tls:
+  enabled: true
+  mode: existingSecret
+  secretName: my-tls-secret
+config:
+  kubeflowIngressHost: kubeflow.example.com
+```
+
+### TLS RBAC
+
+The gateway ServiceAccount is granted a namespace-scoped `Role` allowing
+`get`/`list`/`watch` on Secrets so Istio's SDS server can fetch and refresh the
+TLS credential. This is automatically created when TLS is enabled and removed
+(Helm prune) when disabled.
+
+### Security notes
+
+- **mTLS**: Traffic between Istio gateway pods and backend services (oauth2-proxy,
+  Kubeflow components) uses Istio mTLS — unchanged by this TLS setup. The
+  edge TLS only secures the outer ingress hop.
+- **Certificate renewal**: The leaf certificate auto-renews 360h (15 days) before
+  expiry and rotates via cert-manager's `Always` policy. The CA certificate
+  persists for 10 years. Envoy picks up rotated certs without pod restarts.
+- **Static IP**: The LoadBalancer IP must match a SAN in the certificate. An IP
+  requires an IP SAN (auto-detected), while a hostname requires a DNS SAN.
+- **Cookie security**: `cookie_secure=true` is set when TLS is enabled, preventing
+  cookies over plaintext HTTP.
+
+### Trusting the self-signed CA
+
+In `selfSigned` mode the CA certificate is published in a ConfigMap named
+`<tls.name>-ca` in the app namespace. Download it to trust the leaf certificate
+in browsers/clients:
+
+```sh
+kubectl -n kubeflow get configmap kubeflow-platform-ca \
+  -o jsonpath='{.data.ca\.crt}' > kubeflow-ca.crt
+```
+
+> **Tip:** Use `kubectl -n kubeflow get configmap -l app.kubernetes.io/component=tls`
+> to discover the exact name if `tls.name` was customized.
+
+The chart never publishes the CA private key or falls back to HTTP without
+explicit redirect configuration. When TLS is enabled, HTTPS is served on port
+443. If `redirectHttpToHttps: true` (the default), HTTP/80 is also configured
+to redirect to HTTPS, so HTTP traffic does not hang. If
+`redirectHttpToHttps: false`, HTTP/80 is not configured (fail-closed on the
+edge service). A configured hostname must be covered by
+the certificate; a bare LoadBalancer IP requires an IP SAN and is generally
+unsuitable for publicly trusted certificates.
+
+---
+
+### Switching TLS modes
+
+| From → To | Notes |
+|---|---|
+| `existingSecret` → `selfSigned` | Set `mode: selfSigned`; cert-manager creates the CA + leaf cert |
+| `selfSigned` → `existingSecret` | Pre-create a Secret at `tls.secretName`, then switch `mode` |
+| Any → `existingSecret` | No cert-manager resources are rendered; the gateway reads your existing Secret |
+
+`existingSecret` mode requires **no extra resources or issuer** — just a
+pre-existing Secret with `tls.crt` and `tls.key`. The chart still creates the
+TLS RBAC Role so the gateway SA can read your Secret. This flow cannot conflict
+with `selfSigned` or `certManager` because they use different `mode` values and
+different sets of rendered resources.
+
+---
+
 ## Ingress host and overrides
 
 The ingress **host** is the primary knob (optional). Leave it empty to let the
 syncer discover the LoadBalancer IP or hostname; set it for a friendly DNS name.
 `config.kubeflowIngressURL` is an optional override that defaults to
-`http://<host>`, or `https://<host>` when TLS is enabled. Set it only **with** a host.
+`http://<host>` — set it only **with** a host (for example to force `https://…`).
 URL alone (without host) is not supported.
-
-To enable HTTPS, create a customer-managed Secret named `kubeflow-tls` in the
-`kubeflow` namespace containing `tls.crt` and `tls.key`, then configure:
-
-```yaml
-tls:
-  enabled: true
-  secretName: kubeflow-tls
-  redirectHttpToHttps: true
-config:
-  kubeflowIngressHost: kubeflow.example.com
-  kubeflowIngressURL: https://kubeflow.example.com
-```
-
-The chart does not create or rotate the certificate. Customers can provision the
-Secret manually or with cert-manager. The certificate must cover the configured
-hostname; an LB IP requires a certificate with an IP SAN and is generally not
-suitable for publicly trusted certificates.
 
 If you need to look up the value before enabling, use the known external
 address your platform team assigned for this Service. For already-provisioned
@@ -96,15 +214,10 @@ kubectl -n kubeflow get svc kubeflow-ingressgateway \
 Then set:
 
 ```yaml
-  config:
-    kubeflowIngressHost: "<external-ip-or-dns>" # optional; empty uses the allocated LB address
-      # optional; defaults to http://<kubeflowIngressHost>. Do not set without a host.
-    kubeflowIngressURL: ""
-  tls:
-    enabled: false
-    secretName: ""
-    redirectHttpToHttps: false
-
+config:
+  kubeflowIngressHost: "<external-ip-or-dns>" # optional; empty uses the allocated LB address
+  # optional; defaults to http://<kubeflowIngressHost>. Do not set without a host.
+  kubeflowIngressURL: ""
   # Dex claim copied into kubeflow-userid. Profile.owner must match this value.
   # Default email. Username-only Dex (no email claim) can set preferred_username.
   # Changing this after Profiles exist orphans those workspaces.
@@ -117,8 +230,7 @@ Other fields continue to auto-derive/generate:
 | --- | --- | --- |
 | Dex issuer URL | Derived from `kommander-vars.ingressAddress` (`https://<addr>/dex`) | `config.dexIssuerURL` |
 | Ingress host | Explicit host wins; otherwise syncer discovers the dedicated LB address | `config.kubeflowIngressHost` |
-| Ingress URL | Defaults to `http://<host>`, or `https://<host>` when TLS is enabled | `config.kubeflowIngressURL` |
-
+| Ingress URL | Defaults to `http://<host>`, or `https://<host>` when `tls.enabled` is true | `config.kubeflowIngressURL` |
 | User id claim | `email` → `kubeflow-userid`; Profile.owner must equal that value | `config.userIDClaim` |
 | OIDC client & cookie secrets | Generated once, then preserved across upgrades | `config.oauth2ClientSecret`, `config.oauth2CookieSecret` |
 
@@ -338,9 +450,7 @@ kubectl -n <profile-namespace> get pods -o wide
   wraps it with an `OCIRepository` + `HelmRelease` like the other catalog apps.
 - Self-configuration lives in `templates/_helpers.tpl` (`kubeflow-platform.derived`):
   explicit `config.*` values take precedence, then the generated Secret and live
-   LoadBalancer status supply the host (URL defaults to `http://<host>`, or
-   `https://<host>` when TLS is enabled),
-
+  LoadBalancer status supply the host (URL defaults to `http://<host>`),
   and `randAlphaNum` + lookup-preserve keep secrets stable across upgrades.
   Offline (`helm template`/lint) lookups are empty, so live-cluster host assertions
   only run when the cluster API is reachable.

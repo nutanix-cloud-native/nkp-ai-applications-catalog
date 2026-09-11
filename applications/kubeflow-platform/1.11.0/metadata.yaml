@@ -29,23 +29,23 @@ overview: |
     gateway pods (`kubeflow-ingressgateway`) and a separate LoadBalancer
     Service, so Kubeflow does not share NKP console / Traefik routes.
   - **Kommander Launch button.** After enable, the workspace **Application
-     Dashboards** tab shows a **Kubeflow Platform** tile. `secret-syncer` sets
-     its `dashboardLink` to the configured HTTP or HTTPS URL once the LoadBalancer
-
-    address is known (or to your host/URL when `kubeflowIngressHost` is set).
-    Use that button to open Central Dashboard with SSO.
+    Dashboards** tab shows a **Kubeflow Platform** tile. `secret-syncer` sets
+    its `dashboardLink` to `https://<lb-ip-or-host>/` once the LoadBalancer
+     address is known (or to your host/URL when `kubeflowIngressHost` is set).
+     Use that button to open Central Dashboard with SSO. When TLS is enabled,
+     the scheme becomes `https://`.
   - **Per-user workspaces.** Each user gets their own isolated namespace with the
     right permissions, so teammates don't see or touch each other's work.
   - **Component UIs under one host.** Dashboard at `/`, Pipelines at
     `/pipeline/`.
 
-  **Operator action** — By default, the app discovers the dedicated LoadBalancer
+  - **Operator action** — By default, the app discovers the dedicated LoadBalancer
   IP automatically and configures oauth2-proxy, the Dex client redirect URIs,
   and the Kommander Launch tile automatically (no host needs to be set). If you
   want a friendly DNS name instead, set `config.kubeflowIngressHost` before or
   when enabling. Optionally set `config.kubeflowIngressURL` only together with
-  a host (for example `https://…`); do not set URL alone — host is the primary
-  knob and URL defaults to `http://<host>`:
+  a host (for example to force `https://…`); do not set URL alone — host is the primary
+  knob and URL defaults to `http://<host>` (or `https://<host>` when TLS is enabled):
 
   ```yaml
   config:
@@ -73,6 +73,10 @@ overview: |
   - **istio-helm** (required) — Istio revision for the dedicated gateway pods.
     Enable it from the workspace catalog. NKP Dex is already on the management
     plane (same login as the console); there is no Dex app to enable.
+  - **cert-manager** (required — TLS is enabled by default in `selfSigned` mode) —
+    the chart bootstraps a CA and leaf certificate via cert-manager. For
+    `existingSecret` mode, disable TLS and provide your own; cert-manager is
+    still needed for `selfSigned` and `certManager` modes.
   - Enable **Central Dashboard** and **Pipelines** after Platform. Their
     charts expect this app's oauth2-proxy; port-forward skips login.
 

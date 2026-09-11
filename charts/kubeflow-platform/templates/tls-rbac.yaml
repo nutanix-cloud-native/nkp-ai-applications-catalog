@@ -1,0 +1,31 @@
+{{- if .Values.tls.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.tls.name | default (include "kubeflow-platform.fullname" .) }}-tls-reader
+  namespace: {{ .Values.namespace | default "kubeflow" }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.tls.name | default (include "kubeflow-platform.fullname" .) }}-tls-reader
+  namespace: {{ .Values.namespace | default "kubeflow" }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.tls.name | default (include "kubeflow-platform.fullname" .) }}-tls-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.dedicatedIngress.serviceName }}
+    namespace: {{ .Values.namespace | default "kubeflow" }}
+{{- end }}
