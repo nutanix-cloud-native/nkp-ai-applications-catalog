@@ -24,7 +24,8 @@ derived or generated.
 {{- if and (not $ingressHost) $prev -}}{{- with (index $prev.data "kubeflowIngressHost") -}}{{- $ingressHost = b64dec . -}}{{- end -}}{{- end -}}
 {{- if and (not $ingressHost) .Values.dedicatedIngress.enabled -}}
 {{- $svc := lookup "v1" "Service" $platformNamespace .Values.dedicatedIngress.serviceName -}}
-{{- if $svc -}}{{- with $svc.status.loadBalancer.ingress -}}{{- with (index . 0) -}}{{- if .ip -}}{{- $ingressHost = .ip -}}{{- else if .hostname -}}{{- $ingressHost = .hostname -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}
+{{- /* Nested with avoids Helm abort when loadBalancer.ingress is empty (pending LB). */ -}}
+{{- if $svc -}}{{- with $svc.status }}{{- with .loadBalancer }}{{- with .ingress }}{{- with (index . 0) -}}{{- if .ip -}}{{- $ingressHost = .ip -}}{{- else if .hostname -}}{{- $ingressHost = .hostname -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}
 {{- end -}}
 {{- $ingressGatewayPrincipal := $cfg.ingressGatewayPrincipal -}}
 {{- if .Values.dedicatedIngress.enabled -}}
@@ -43,7 +44,6 @@ derived or generated.
   {{- $scheme := "http" -}}
   {{- if .Values.tls.enabled }}{{- $scheme = "https" -}}{{- end -}}
   {{- $ingressURL = printf "%s://%s" $scheme $ingressHost -}}
-
 {{- end -}}
 {{- end -}}
 {{- $client := $cfg.oauth2ClientSecret -}}

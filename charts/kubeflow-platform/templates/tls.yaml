@@ -1,0 +1,138 @@
+{{- if and .Values.tls.enabled (not (has .Values.tls.mode (list "existingSecret" "certManager" "selfSigned"))) }}
+{{- fail "kubeflow-platform: tls.mode must be existingSecret, certManager, or selfSigned" }}
+{{- end }}
+{{- if and .Values.tls.enabled (ne .Values.tls.mode "existingSecret") }}
+{{- $ns := .Values.namespace | default "kubeflow" }}
+{{- $tlsName := .Values.tls.name | default (include "kubeflow-platform.fullname" .) }}
+{{- $host := .Values.config.kubeflowIngressHost }}
+{{- /* IPv4 only for now; IPv6 LB addresses are treated as DNS names until classified. */ -}}
+{{- $isIP := and $host (regexMatch `^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$` $host) }}
+{{- /* Emit the leaf Certificate only when a host is known. Empty-host installs
+     defer leaf creation to secret-syncer once the LoadBalancer address exists;
+     patching cannot rescue a Certificate admission rejected for missing SANs. */ -}}
+{{- $emitLeaf := and $host (or (eq .Values.tls.mode "certManager") (eq .Values.tls.mode "selfSigned")) }}
+{{- if eq .Values.tls.mode "certManager" }}
+{{- if $emitLeaf }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tlsName }}
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+spec:
+  secretName: {{ required "kubeflow-platform: tls.secretName is required when tls.enabled is true" .Values.tls.secretName }}
+{{- if $isIP }}
+  ipAddresses:
+    - {{ $host | quote }}
+{{- else }}
+  dnsNames:
+    - {{ $host | quote }}
+{{- end }}
+  issuerRef:
+    name: {{ required "kubeflow-platform: tls.issuerRef.name is required when tls.mode is certManager" .Values.tls.issuerRef.name }}
+    kind: {{ .Values.tls.issuerRef.kind }}
+    group: {{ .Values.tls.issuerRef.group }}
+{{- end }}
+{{- else if eq .Values.tls.mode "selfSigned" }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.tls.selfSigned.issuerName | default (printf "%s-selfsigned" $tlsName) }}
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.tls.selfSigned.caCertificateName | default (printf "%s-ca" $tlsName) }}
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+spec:
+  isCA: true
+  commonName: {{ .Values.tls.selfSigned.caCertificateName | default (printf "%s-ca" $tlsName) | quote }}
+  secretName: {{ .Values.tls.selfSigned.caSecretName | default (printf "%s-ca" $tlsName) }}
+  duration: {{ .Values.tls.selfSigned.duration }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Never
+  issuerRef:
+    name: {{ .Values.tls.selfSigned.issuerName | default (printf "%s-selfsigned" $tlsName) }}
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.tls.selfSigned.caIssuerName | default (printf "%s-ca-issuer" $tlsName) }}
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+spec:
+  ca:
+    secretName: {{ .Values.tls.selfSigned.caSecretName | default (printf "%s-ca" $tlsName) }}
+{{- if $emitLeaf }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tlsName }}
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+spec:
+  secretName: {{ required "kubeflow-platform: tls.secretName is required when tls.enabled is true" .Values.tls.secretName }}
+  duration: {{ .Values.tls.selfSigned.leafDuration }}
+  renewBefore: {{ .Values.tls.selfSigned.leafRenewBefore }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+{{- if $isIP }}
+  ipAddresses:
+    - {{ $host | quote }}
+{{- else }}
+  dnsNames:
+    - {{ $host | quote }}
+{{- end }}
+  issuerRef:
+    name: {{ .Values.tls.selfSigned.caIssuerName | default (printf "%s-ca-issuer" $tlsName) }}
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
+{{- /* Only emit the CA ConfigMap once the CA Secret has a real cert. An empty
+     ca.crt races with secret-syncer on upgrades; prefer syncer (or a later
+     Helm upgrade) as the publisher. */ -}}
+{{- $caSecretName := .Values.tls.selfSigned.caSecretName | default (printf "%s-ca" $tlsName) }}
+{{- $caSecret := lookup "v1" "Secret" $ns $caSecretName }}
+{{- $caCert := "" }}
+{{- if $caSecret }}
+{{- $caCert = index $caSecret.data "ca.crt" | default (index $caSecret.data "tls.crt") | b64dec }}
+{{- end }}
+{{- if $caCert }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $tlsName }}-ca
+  namespace: {{ $ns }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: tls
+data:
+  ca.crt: {{ $caCert | quote }}
+{{- end }}
+{{- end }}
+{{- end }}

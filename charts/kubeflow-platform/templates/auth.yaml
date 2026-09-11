@@ -34,9 +34,12 @@ stringData:
     email_domains = ["*"]
     cookie_secret = "{{ $c.oauth2CookieSecret }}"
     cookie_name = "oauth2_proxy_kubeflow"
-    cookie_secure = {{ .Values.tls.enabled }}
+    {{- if .Values.tls.enabled }}
+    cookie_secure = true
+    {{- else }}
+    cookie_secure = false
+    {{- end }}
     ssl_insecure_skip_verify = true
-
     skip_provider_button = false
     redirect_url = "{{ if $c.kubeflowIngressURL }}{{ $c.kubeflowIngressURL }}{{ else }}http://127.0.0.1{{ end }}/oauth2/callback"
     whitelist_domains = ["{{ if $c.kubeflowIngressHost }}{{ $c.kubeflowIngressHost }}{{ else }}127.0.0.1{{ end }}"]

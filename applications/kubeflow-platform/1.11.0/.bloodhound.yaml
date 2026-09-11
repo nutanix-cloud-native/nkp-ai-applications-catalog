@@ -5,16 +5,17 @@ k8s_versions:
 
 strict: false
 
-# These CRDs are owned by dependencies (istio-helm) or NKP core (Dex), not by
-# this app's baked manifests, so strict schema validation cannot resolve them.
-# Skip the types; the CRDs exist on any cluster where the requiredDependencies
-# (istio-helm) and NKP Dex are present.
+# These CRDs are owned by dependencies (istio-helm), NKP core (Dex/cert-manager),
+# or Kubeflow Profile CRDs — not by this app's baked manifests.
 skip_types:
   - dex.mesosphere.io/v1alpha1
   - networking.istio.io/v1alpha3
   - networking.istio.io/v1beta1
   - security.istio.io/v1beta1
   - kyverno.io/v1
+  - cert-manager.io/v1/Certificate
+  - cert-manager.io/v1/Issuer
+  - kubeflow.org/v1
 
 additional_crds: []
 

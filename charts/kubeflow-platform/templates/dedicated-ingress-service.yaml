@@ -3,12 +3,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.dedicatedIngress.serviceName }}
-  namespace: kubeflow
+  namespace: {{ .Values.namespace | default "kubeflow" }}
   labels:
     app.kubernetes.io/name: kubeflow-platform
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: edge-gateway
   {{- with .Values.dedicatedIngress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+{{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   type: LoadBalancer
@@ -19,10 +21,12 @@ spec:
   selector:
     istio: {{ .Values.dedicatedIngress.gatewayLabel }}
   ports:
+    {{- if or (not .Values.tls.enabled) (and .Values.tls.enabled .Values.tls.redirectHttpToHttps) }}
     - name: http2
       port: 80
       protocol: TCP
       targetPort: 8080
+    {{- end }}
     {{- if .Values.tls.enabled }}
     - name: https
       port: 443
