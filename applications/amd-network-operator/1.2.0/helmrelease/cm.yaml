@@ -127,6 +127,9 @@ data:
     #     enable: true
     #     image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
     #     imagePullPolicy: IfNotPresent
+    #     config:
+    #       # Adds CLUSTER_NAME=${clusterName} for the AINIC Grafana dashboards.
+    #       name: ${releaseName}-${appVersion}-metrics-exporter-config
     #     # CRD default hostNetwork is true. Set false so this coexists with
     #     # GPU Operator DeviceConfig (GPU exporter :5000, NIC :5001).
     #     hostNetwork: false
