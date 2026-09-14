@@ -23,15 +23,17 @@ var enabledApps = []string{
 	"ray-cluster",
 }
 
-// customTestApps deploy via Flux GitRepository + Kustomization instead of a
-// HelmRelease. They run through the shared Kustomize suite
+// customTestApps are Flux/baked apps that share the Kustomize suite
 // (flux_kustomize_apps_test.go); platform dependencies come from each app's
-// metadata.yaml. Add a Flux-Kustomize app here only once it is graduated from
+// metadata.yaml. Add an app here only once it is graduated from
 // parking-lot/drafts-repo into applications/, so its E2E test and CI matrix
 // detection can resolve applications/<app>.
+const trainingOperatorApp = "training-operator"
+
 var customTestApps = []string{
 	"kubeflow-central-dashboard",
 	"kubeflow-pipelines",
+	trainingOperatorApp,
 }
 
 //nolint:gochecknoinits // init required for test registration before suite runs

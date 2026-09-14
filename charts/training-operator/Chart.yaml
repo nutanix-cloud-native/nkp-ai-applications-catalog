@@ -1,0 +1,9 @@
+apiVersion: v2
+name: training-operator
+description: Auto-generated from baked upstream manifests. Regenerate with 'just bake training-operator'; do not edit by hand.
+home: https://github.com/kubeflow/manifests
+type: application
+version: 1.9.2
+appVersion: "1.9.2"
+sources:
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog

@@ -136,6 +136,40 @@ func mapSetString(m *yaml.Node, key, value string) {
 	)
 }
 
+// Sets key to value in a mapping, replacing an existing pair when present.
+func mapPutString(m *yaml.Node, key, value string) {
+	if m == nil || m.Kind != yaml.MappingNode {
+		return
+	}
+	for i := 0; i+1 < len(m.Content); i += 2 {
+		if m.Content[i].Value == key {
+			m.Content[i+1].Value = value
+			m.Content[i+1].Tag = strTag
+			return
+		}
+	}
+	mapSetString(m, key, value)
+}
+
+// Marks a resource so Flux prune leaves it alone on app uninstall.
+// Used for CRDs split beside the HelmRelease (includeCRDs: false).
+func ensureFluxPruneDisabled(r *yaml.Node) {
+	if r == nil || r.Kind != yaml.MappingNode {
+		return
+	}
+	md := mapValue(r, "metadata")
+	if md == nil {
+		md = &yaml.Node{Kind: yaml.MappingNode}
+		addPair(r, "metadata", md)
+	}
+	anns := mapValue(md, "annotations")
+	if anns == nil {
+		anns = &yaml.Node{Kind: yaml.MappingNode}
+		addPair(md, "annotations", anns)
+	}
+	mapPutString(anns, "kustomize.toolkit.fluxcd.io/prune", "disabled")
+}
+
 // Reports whether a document's root matches kind/name.
 func isWorkload(r *yaml.Node, kind, name string) bool {
 	k := mapValue(r, "kind")

@@ -5,9 +5,9 @@ push-baked-chart app oci-registry=OCI_REGISTRY:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ app }}" in
-      kubeflow-pipelines|kubeflow-central-dashboard) ;;
+      kubeflow-pipelines|kubeflow-central-dashboard|training-operator) ;;
       *)
-        echo "push-baked-chart only accepts kubeflow-pipelines or kubeflow-central-dashboard" >&2
+        echo "push-baked-chart only accepts kubeflow-pipelines, kubeflow-central-dashboard, or training-operator" >&2
         exit 1
         ;;
     esac
