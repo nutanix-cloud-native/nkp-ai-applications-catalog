@@ -16,7 +16,10 @@ Baked from `kubeflow/manifests` (tag `v1.11.0`, overlay
 | Namespace | `training-operator` |
 
 CRDs are applied by Flux from `helmrelease/0N-crd.yaml` (`includeCRDs: false`)
-before the HelmRelease, so Helm does not own CRD lifecycle.
+before the HelmRelease, so Helm does not own CRD lifecycle. Each CRD is annotated
+`kustomize.toolkit.fluxcd.io/prune: disabled` so disabling the app removes the
+operator but leaves CRDs (and existing training jobs) intact. Re-bake preserves
+that annotation via `tools/bake`.
 
 ## Smoke test
 

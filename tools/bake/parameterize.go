@@ -69,9 +69,14 @@ func (c *versionCtx) generateChart() error {
 	// Default: keep CRDs in the chart template (pipelines / central-dashboard).
 	// includeCRDs: false (training-operator) writes them next to the HelmRelease
 	// so Flux applies CRDs before the chart, and Helm does not own CRD lifecycle.
+	// Those sidecar CRDs get prune:disabled so app uninstall does not cascade-delete
+	// training jobs (PyTorchJob / TFJob / … and their pods).
 	templateDocs := docs
 	if c.ver.Chart.IncludeCRDs != nil && !*c.ver.Chart.IncludeCRDs {
 		crds, resources := splitCRDs(docs)
+		for _, doc := range crds {
+			ensureFluxPruneDisabled(root(doc))
+		}
 		if err := os.MkdirAll(c.manifestsDir, dirMode); err != nil {
 			return err
 		}

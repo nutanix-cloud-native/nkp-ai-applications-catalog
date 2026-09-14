@@ -10,6 +10,35 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func TestEnsureFluxPruneDisabled(t *testing.T) {
+	doc := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{{
+		Kind: yaml.MappingNode,
+		Content: []*yaml.Node{
+			{Kind: yaml.ScalarNode, Value: "kind"},
+			{Kind: yaml.ScalarNode, Value: "CustomResourceDefinition"},
+			{Kind: yaml.ScalarNode, Value: "metadata"},
+			{Kind: yaml.MappingNode, Content: []*yaml.Node{
+				{Kind: yaml.ScalarNode, Value: "name"},
+				{Kind: yaml.ScalarNode, Value: "pytorchjobs.kubeflow.org"},
+				{Kind: yaml.ScalarNode, Value: "annotations"},
+				{Kind: yaml.MappingNode, Content: []*yaml.Node{
+					{Kind: yaml.ScalarNode, Value: "controller-gen.kubebuilder.io/version"},
+					{Kind: yaml.ScalarNode, Value: "v0.16.5"},
+				}},
+			}},
+		},
+	}}}
+	ensureFluxPruneDisabled(root(doc))
+	anns := mapValue(mapValue(root(doc), "metadata"), "annotations")
+	got := mapValue(anns, "kustomize.toolkit.fluxcd.io/prune")
+	if got == nil || got.Value != "disabled" {
+		t.Fatalf("prune annotation = %v, want disabled", got)
+	}
+	if v := mapValue(anns, "controller-gen.kubebuilder.io/version"); v == nil || v.Value != "v0.16.5" {
+		t.Fatalf("lost existing annotation: %v", v)
+	}
+}
+
 func TestExpandPlaceholders(t *testing.T) {
 	in := strings.Join([]string{
 		"spec:",

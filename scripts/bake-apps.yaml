@@ -108,6 +108,8 @@ apps:
         chart:
           version: "1.9.2"
           appVersion: "1.9.2"
+          # Sidecar CRDs in helmrelease/ (not Helm-owned). Bake stamps
+          # kustomize.toolkit.fluxcd.io/prune: disabled so uninstall keeps jobs.
           includeCRDs: false
           workloads:
             - name: training-operator
