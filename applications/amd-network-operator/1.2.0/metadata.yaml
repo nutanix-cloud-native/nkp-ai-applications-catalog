@@ -86,6 +86,8 @@ overview: |-
       enable: true
       image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
       imagePullPolicy: IfNotPresent
+      config:
+        name: ${releaseName}-${appVersion}-metrics-exporter-config
       hostNetwork: false
       port: 5001
       prometheus:
@@ -112,6 +114,7 @@ overview: |-
   - `devicePlugin.enableNodeLabeller` — **required** for Ubuntu blacklist. Nested CRD defaults do not apply if the `devicePlugin` object is omitted.
   - `devicePlugin.devicePluginImage` — the plugin image bundles `nicctl`; the host does not need nicctl installed. Bundled nicctl **must match firmware** (same drop as `driver.version`). Hub `v1.2.0` ships nicctl for firmware `1.117.5-a-56` / `1.117.5-a-77` only ([compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix)). Against firmware `1.117.1-a-63` that image CrashLoopBackOffs with empty `lif`. Override `devicePluginImage` with a private image that installs `nicctl_1.117.1.a.63_amd64.deb` from repo.radeon.com.
   - `metricsExporter` — NIC exporter listens on **:5001** (`hostNetwork: false`) so it coexists with the GPU Operator exporter on **:5000**. The ServiceMonitor `prometheus.kommander.d2iq.io/select: "true"` label is required for NKP Prometheus to scrape it.
+  - The catalog-generated exporter ConfigMap sets `NICConfig.CustomLabels.CLUSTER_NAME` from the target NKP `${clusterName}` substitution variable. On a workload cluster, this is that workload cluster's KommanderCluster name.
   - `secondaryNetwork.cniPlugins.enable` — must be `true` to deploy the `amd-host-device` CNI plugin binary to `/opt/cni/bin` on each node. Without this, Multus cannot attach NICs to pods (`failed to find plugin "amd-host-device"`).
 
   ### Config Overrides (Helm)
