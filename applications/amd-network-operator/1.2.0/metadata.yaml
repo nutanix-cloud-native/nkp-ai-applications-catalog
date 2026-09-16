@@ -24,22 +24,45 @@ overview: |-
   The AMD Network Operator automates NIC discovery and driver management for AMD AI NICs (e.g. AMD Pensando Pollara), with RDMA/RoCE support, Prometheus metrics, and dynamic resource allocation. It can be installed alongside the AMD GPU Operator on the same cluster. For a detailed overview of the operator's architecture and components, see the [Network Operator Overview](https://instinct.docs.amd.com/projects/network-operator/en/main/overview.html).
 
   ## Key Features
-  ### Automated Network Driver Builds
-  Builds and loads out-of-tree AMD NIC kernel modules (ionic, ionic_rdma, pds_core, tawk_ipc) on target nodes using KMM and Kaniko for in-cluster driver compilation.
+  ### Driver Lifecycle
+  Builds and loads the out-of-tree AMD NIC modules (ionic, ionic_rdma, pds_core, and tawk_ipc) with KMM and Kaniko. Driver images are built for the target kernel, pushed to the configured registry, and loaded by KMM workers.
 
-  ### Device Plugin and Metrics
-  Deploys an AMD NIC device plugin and an optional metrics exporter with Prometheus integration.
+  ### NIC Discovery and Scheduling
+  Uses Node Feature Discovery labels to select AMD physical NICs (PFs) or SR-IOV virtual functions (VFs), then deploys a device plugin that advertises `amd.com/nic` or `amd.com/vnic` to Kubernetes.
 
-  ### RDMA/RoCE Support
-  Enables RDMA over Converged Ethernet for high-performance inter-node communication in AI/ML and HPC workloads.
+  ### Metrics and Health
+  Deploys the NIC metrics exporter for Prometheus scraping and device health reporting. The exporter uses port `5001` so it can run beside the GPU Operator exporter on port `5000`.
+
+  ### RDMA/RoCE and CNI Integration
+  Enables RDMA/RoCE networking for AI/ML and HPC workloads and deploys the `amd-host-device` CNI plugin for Multus network attachments.
 
   ## Configuration
-  After enabling this operator, create a `NetworkConfig` CR to target specific nodes and trigger driver builds. The chart **does not** auto-create a `NetworkConfig` (unlike the GPU Operator's `DeviceConfig`). Choose a CR name other than `default` to avoid conflicts with the GPU Operator.
+  After enabling this operator, follow the workflow below to create a `NetworkConfig` CR, build the driver, verify NIC resources, and deploy workloads. The chart **does not** auto-create a `NetworkConfig` (unlike the GPU Operator's `DeviceConfig`). Choose a CR name other than `default` to avoid conflicts with the GPU Operator.
 
   For physical NICs (PF), use the selector `feature.node.kubernetes.io/amd-nic: "true"`. For SR-IOV virtual function (VF) environments, use `feature.node.kubernetes.io/amd-vnic: "true"` instead.
 
-  ### NetworkConfig CR (Ubuntu 24.04 + private registry)
-  After enabling this operator, create a `NetworkConfig` CR. The chart does **not** auto-create one. Name it anything other than `default` (that name conflicts with the GPU Operator `DeviceConfig`). Align registry fields with the `kmm-registry-credentials` secret created for the AMD KMM Operator. Replace the registry host, port, project, and `driver.version` with your values.
+  ### User Workflow
+  1. **Enable prerequisites.** Enable `amd-kmm-operator` first. NKP supplies Node Feature Discovery, and NKP v2.18+ supplies Multus. Ensure NFD can run on the target nodes if they are tainted.
+  2. **Enable this application.** Enable `amd-network-operator` in the workspace. Registry settings are provided in the `NetworkConfig` in step 4.
+  3. **Check firmware and labels.** Confirm the NIC firmware with `nicctl show version firmware` or `dmesg`, and verify that target nodes have the selected NFD label:
+     ```
+     kubectl get nodes -l feature.node.kubernetes.io/amd-nic=true
+     ```
+     The driver version and the device-plugin's bundled `nicctl` must match. See the [AMD Network Device Plugin compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix).
+  4. **Apply the `NetworkConfig`.** Use the example below, replacing the namespace and registry placeholders. Keep the CR name `network`; do not use `default`.
+  5. **Wait for the driver and operator resources.** Verify the generated KMM `Module`, driver image, loaded modules, device plugin, and exporter:
+     ```
+     kubectl -n <workspace-namespace> get networkconfig network
+     kubectl -n <workspace-namespace> get module network
+     kubectl -n <workspace-namespace> get daemonsets
+     kubectl get nodes -l feature.node.kubernetes.io/amd-nic=true
+     ```
+  6. **Deploy a workload.** Create a `NetworkAttachmentDefinition`, then request `amd.com/nic` or `amd.com/vnic` as shown in [Deploying Workloads with Network Devices](#deploying-workloads-with-network-devices).
+
+  ### NetworkConfig CR
+  The chart does **not** auto-create this CR. Use the name `network`; do **not** use `default`, because it conflicts with the GPU Operator's `DeviceConfig/default` and causes both operators to manage the same child resources. Align registry fields with the `kmm-registry-dockerconfig` secret created by the AMD KMM Operator.
+
+  This example uses the latest supported v1.2.0 pairing: firmware **`1.117.5-a-77`** with `docker.io/rocm/k8s-network-device-plugin:v1.2.0`. Do not use that plugin with another firmware drop unless you have a compatible plugin image.
   ```
   kubectl apply -f - <<EOF
   apiVersion: amd.com/v1alpha1
@@ -53,8 +76,8 @@ overview: |-
     driver:
       enable: true
       blacklist: true
-      version: "1.117.1-a-63"
-      image: "<registry-host>:<port>/<project>/amdnetwork_kmod"
+      version: "1.117.5-a-77"
+      image: "<registry-host>:<port>/<project>/amdainic_kmods"
       upgradePolicy:
         enable: true
         maxParallelUpgrades: 1
@@ -65,7 +88,7 @@ overview: |-
           timeoutSeconds: 600
           gracePeriodSeconds: -1
       imageBuild:
-        baseImageRegistry: "<registry-host>:<port>/<project>"
+        baseImageRegistry: "<registry-host>:<port>"
         baseImageRegistryTLS:
           insecure: false
           insecureSkipTLSVerify: false
@@ -104,15 +127,14 @@ overview: |-
         image: docker.io/rocm/k8s-cni-plugins:v1.2.0
   EOF
   ```
-  - `blacklist` — when `true`, writes a host modprobe blacklist so the out-of-tree DKMS `ionic` can load. It does **not** unload a module that is already loaded. On Ubuntu 24.04 (kernel 6.8+) the inbox `ionic` does not export `ionic_api_*`; leaving blacklist off makes KMM `modprobe ionic_rdma` fail with "Unknown symbol in module". Requires `devicePlugin.enableNodeLabeller: true` (the labeller writes `/etc/modprobe.d/`) and a reboot after `update-initramfs -u`.
-  - `version` — AINIC driver package from https://repo.radeon.com/amdainic. **Must match NIC firmware** (`dmesg`: `ionic ... FW:`, or `nicctl show version firmware`). The example `1.117.1-a-63` is the drop currently shipping on Pollara cards from the AMD support portal; change it if your firmware is different.
+  - `blacklist` — required on Ubuntu 24.04 to prevent the inbox `ionic` module from conflicting with the KMM-built driver. It requires `devicePlugin.enableNodeLabeller: true` and a reboot to apply the initramfs blacklist.
+  - `version` — AINIC driver package from https://repo.radeon.com/amdainic. **Must match NIC firmware**; verify with `dmesg` or `nicctl show version firmware`.
   - `upgradePolicy` — drain and reboot one node at a time when `driver.version` changes. `rebootRequired: true` is required on Ubuntu when blacklist/initramfs must take effect.
   - `image` — the registry path where built NIC driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically.
   - `imageRegistrySecret.name` — must be `kmm-registry-dockerconfig`, which is auto-created by the AMD KMM Operator reconciler.
   - `imageBuild.baseImageRegistry` — the private mirror hosting OS base images (e.g. `ubuntu:24.04`) used during Kaniko builds. This avoids Docker Hub rate limits.
   - Set `insecure`/`insecureSkipTLSVerify` to `true` only for registries using self-signed certificates or plain HTTP.
-  - `devicePlugin.enableNodeLabeller` — **required** for Ubuntu blacklist. Nested CRD defaults do not apply if the `devicePlugin` object is omitted.
-  - `devicePlugin.devicePluginImage` — the plugin image bundles `nicctl`; the host does not need nicctl installed. Bundled nicctl **must match firmware** (same drop as `driver.version`). Hub `v1.2.0` ships nicctl for firmware `1.117.5-a-56` / `1.117.5-a-77` only ([compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix)). Against firmware `1.117.1-a-63` that image CrashLoopBackOffs with empty `lif`. Override `devicePluginImage` with a private image that installs `nicctl_1.117.1.a.63_amd64.deb` from repo.radeon.com.
+  - `devicePlugin.devicePluginImage` — the plugin image bundles `nicctl`; the host does not need nicctl installed. Bundled nicctl **must match firmware** (same drop as `driver.version`). The Docker Hub image `v1.2.0` supports firmware `1.117.5-a-56` / `1.117.5-a-77` ([compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix)).
   - `metricsExporter` — NIC exporter listens on **:5001** (`hostNetwork: false`) so it coexists with the GPU Operator exporter on **:5000**. The ServiceMonitor `prometheus.kommander.d2iq.io/select: "true"` label is required for NKP Prometheus to scrape it.
   - The catalog-generated exporter ConfigMap sets `NICConfig.CustomLabels.CLUSTER_NAME` from the target NKP `${clusterName}` substitution variable. On a workload cluster, this is that workload cluster's KommanderCluster name.
   - `secondaryNetwork.cniPlugins.enable` — must be `true` to deploy the `amd-host-device` CNI plugin binary to `/opt/cni/bin` on each node. Without this, Multus cannot attach NICs to pods (`failed to find plugin "amd-host-device"`).
