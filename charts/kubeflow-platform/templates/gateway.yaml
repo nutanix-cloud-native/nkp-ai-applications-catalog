@@ -1,24 +1,33 @@
-# Binds kubeflow-gateway to the dedicated Kubeflow ingress pods.
+# =============================================================================
+# GENERIC TLS Edge Gateway — Portable to any Istio gateway app
+# =============================================================================
+# This Gateway template provides TLS edge termination for any Istio gateway.
+# It uses .Values.namespace, .Values.tls.*, and .Values.dedicatedIngress.*
+# To extract for a standalone chart: copy this file and its dependencies.
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: kubeflow-gateway
-  namespace: kubeflow
+  name: {{ .Values.dedicatedIngress.gatewayName | default "kubeflow-gateway" }}
+  namespace: {{ .Values.namespace | default "kubeflow" }}
+  labels:
+    app.kubernetes.io/part-of: kubeflow-platform-tls
+    app.kubernetes.io/component: edge-gateway
 spec:
   selector:
     istio: {{ .Values.dedicatedIngress.gatewayLabel }}
   servers:
+  {{- if .Values.tls.enabled }}
+  {{- if .Values.tls.redirectHttpToHttps | default true }}
     - port:
         number: 80
         name: http
         protocol: HTTP
       hosts:
-        - {{ .Values.config.kubeflowIngressHost | default "*" | quote }}
-{{- if and .Values.tls.enabled .Values.tls.redirectHttpToHttps }}
-      tls:
-        httpsRedirect: true
-{{- end }}
-{{- if .Values.tls.enabled }}
+        - "*"
+      # HTTP->HTTPS redirect: Istio does not support redirect at Gateway level;
+      # use VirtualService with a redirect rule. The HTTP port below is required
+      # so the VirtualService has a listener to attach to.
+    {{- end }}
     - port:
         number: 443
         name: https
@@ -27,24 +36,12 @@ spec:
         mode: SIMPLE
         credentialName: {{ required "kubeflow-platform: tls.secretName is required when tls.enabled is true" .Values.tls.secretName | quote }}
       hosts:
+        - "*"
+  {{- else }}
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
         - {{ .Values.config.kubeflowIngressHost | default "*" | quote }}
-{{- end }}
----
-
-
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: kubeflow-oauth2-proxy
-  namespace: kubeflow
-spec:
-  gateways:
-    - kubeflow-gateway
-  hosts:
-    - "*"
-  http:
-    - route:
-        - destination:
-            host: oauth2-proxy.kubeflow.svc.cluster.local
-            port:
-              number: 80
+  {{- end }}
