@@ -6,7 +6,6 @@ allowMultipleInstances: false
 category:
   - data-and-agents
 description: Self-hosted web interface for LLMs with support for Ollama and OpenAI-compatible APIs.
-dependencies: []
 licensing:
   - Pro
   - Ultimate
