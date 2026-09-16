@@ -18,6 +18,5 @@ spec:
   postBuild:
     substitute:
       appVersion: ${appVersion}
-      clusterName: ${clusterName}
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}

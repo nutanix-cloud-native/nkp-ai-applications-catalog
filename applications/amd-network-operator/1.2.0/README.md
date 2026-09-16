@@ -167,8 +167,6 @@ spec:
     enable: true
     image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
     imagePullPolicy: IfNotPresent
-    config:
-      name: amd-network-operator-1.2.0-metrics-exporter-config
     hostNetwork: false
     port: 5001
     prometheus:
@@ -184,12 +182,6 @@ spec:
       enable: true
       image: docker.io/rocm/k8s-cni-plugins:v1.2.0
 ```
-
-The catalog-generated metrics ConfigMap sets the exporter `CLUSTER_NAME` label from
-the target NKP `${clusterName}` substitution variable. For a workload-cluster
-deployment, this is the workload cluster's KommanderCluster name. If applying
-the CR manually outside the catalog, set `metricsExporter.config.name` to your
-ConfigMap and provide the actual cluster name in `NICConfig.CustomLabels`.
 
 Hub `k8s-network-device-plugin:v1.2.0` bundles nicctl for firmware `1.117.5-a-56` / `1.117.5-a-77` only. If card firmware is `1.117.1-a-63`, override `devicePlugin.devicePluginImage` with a private image whose nicctl matches that drop, or the plugin CrashLoopBackOffs with empty `lif`. See the [plugin compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix).
 
