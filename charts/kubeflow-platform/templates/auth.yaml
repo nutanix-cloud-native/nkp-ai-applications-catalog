@@ -1,11 +1,6 @@
 {{- $c := include "kubeflow-platform.derived" . | fromYaml -}}
 {{- if lookup "v1" "Namespace" "" "kube-system" -}}
-{{- if not $c.kubeflowIngressHost -}}
-{{- fail "kubeflow-platform: config.kubeflowIngressHost is required on live clusters. Set this field in app config before or when enabling (do not enable with an empty host)." -}}
-{{- end -}}
-{{- if not $c.kubeflowIngressURL -}}
-{{- fail "kubeflow-platform: config.kubeflowIngressURL is empty and could not be derived. Set config.kubeflowIngressURL or config.kubeflowIngressHost." -}}
-{{- end -}}
+{{- /* Empty kubeflowIngressHost is tolerated at install time; secret-syncer fills oauth2/Dex once the LoadBalancer has an address. */ -}}
 {{- if not $c.dexIssuerURL -}}
 {{- fail "kubeflow-platform: could not derive Dex issuer from kommander-vars.ingressAddress - set config.dexIssuerURL." -}}
 {{- end -}}
@@ -23,6 +18,7 @@ type: Opaque
 stringData:
   oauth2ClientSecret: {{ $c.oauth2ClientSecret | quote }}
   oauth2CookieSecret: {{ $c.oauth2CookieSecret | quote }}
+  kubeflowIngressHost: {{ $c.kubeflowIngressHost | quote }}
 ---
 # Single sign-on entry point: authenticates against NKP Dex, injects
 # kubeflow-userid/-groups, and path-routes to each UI.
@@ -38,11 +34,13 @@ stringData:
     email_domains = ["*"]
     cookie_secret = "{{ $c.oauth2CookieSecret }}"
     cookie_name = "oauth2_proxy_kubeflow"
-    cookie_secure = false
+    cookie_secure = {{ .Values.tls.enabled }}
     ssl_insecure_skip_verify = true
+
     skip_provider_button = false
-    redirect_url = "{{ $c.kubeflowIngressURL }}/oauth2/callback"
-    whitelist_domains = ["{{ $c.kubeflowIngressHost }}"]
+    redirect_url = "{{ if $c.kubeflowIngressURL }}{{ $c.kubeflowIngressURL }}{{ else }}http://127.0.0.1{{ end }}/oauth2/callback"
+    whitelist_domains = ["{{ if $c.kubeflowIngressHost }}{{ $c.kubeflowIngressHost }}{{ else }}127.0.0.1{{ end }}"]
+
   alpha.yaml: |
     server:
       bindAddress: "0.0.0.0:4180"
@@ -92,5 +90,9 @@ spec:
   clientSecretRef:
     name: kubeflow-oauth2-client-secret
   displayName: Kubeflow
+{{- if $c.kubeflowIngressURL }}
   redirectURIs:
     - "{{ $c.kubeflowIngressURL }}/oauth2/callback"
+{{- else }}
+  redirectURIs: []
+{{- end }}

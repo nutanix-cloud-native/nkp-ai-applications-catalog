@@ -1,0 +1,17 @@
+# ConfigMap for NKP Launch button. dashboardLink is patched by secret-syncer
+# once the dedicated Kubeflow LoadBalancer address is known; omit it here so
+# Flux SSA Merge does not overwrite the live URL.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${workspaceNamespace}
+  labels:
+    kommander.d2iq.io/application: kubeflow-platform
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Merge
+data:
+  name: Kubeflow Platform
+  docsLink: https://www.kubeflow.org/docs/
+  version: "1.11.0"
+---

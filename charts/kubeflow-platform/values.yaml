@@ -1,11 +1,13 @@
-# Host is operator-provided; other fields are derived or generated unless
-# explicitly overridden.
+# Host is optional; other fields are derived or generated unless explicitly
+# overridden. Empty host: secret-syncer discovers the dedicated LB address.
 config:
   # Empty -> https://<kommander-vars.ingressAddress>/dex
   dexIssuerURL: ""
-  # If empty and host is set -> derived as http://<host>
+  # Optional override; defaults to http://<kubeflowIngressHost>, or https://<host> when tls.enabled. Set only with a host.
+  # URL alone (without host) is not supported.
   kubeflowIngressURL: ""
-  # Required on live clusters. Set to dedicated kubeflow ingress DNS name or IP.
+  # Optional. DNS name or IP; empty uses the allocated kubeflow-ingressgateway LB.
+  # Primary ingress knob — do not rely on URL-only configuration.
   kubeflowIngressHost: ""
   # Empty -> generated once, then preserved across upgrades
   oauth2ClientSecret: ""
@@ -21,6 +23,11 @@ config:
 
 # Dedicated Kubeflow edge: new gateway pods in this release namespace plus a
 # LoadBalancer Service. Does not reuse istio-helm-ingressgateway pods.
+tls:
+  enabled: false
+  secretName: ""
+  redirectHttpToHttps: false
+
 dedicatedIngress:
   enabled: true
   serviceName: kubeflow-ingressgateway
@@ -42,6 +49,10 @@ dedicatedIngress:
 # each component UI. Add a component by appending {id, path, uri} here or via
 # configOverrides - no template edit. Keep the catch-all "/" last. OIDC-capable apps
 # (e.g. JupyterHub) don't belong here; they use their own Dex client + ingress.
+dashboard:
+  namespace: ""
+  configMapName: ""
+
 routes:
   - id: katib
     path: /katib/
