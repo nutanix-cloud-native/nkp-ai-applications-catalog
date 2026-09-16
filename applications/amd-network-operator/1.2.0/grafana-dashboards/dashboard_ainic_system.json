@@ -2299,7 +2299,7 @@
                     "value": [
                       {
                         "title": "Filter by Hostname",
-                        "url": "/d/$${__dashboard.uid}﻿﻿/﻿﻿$${__dashboard.url:raw}﻿﻿?﻿﻿$${g_metrics_prefix:queryparam}﻿﻿&﻿﻿$${g_cluster_name:queryparam}﻿﻿&var-g_hostname=﻿﻿$${__data.fields.HOSTNAME}﻿﻿&var-g_gpu_id=$__all&var-g_gpu_partition_id=$__all"
+                        "url": "/d/$${__dashboard.uid}﻿﻿/﻿﻿$${__dashboard.url:raw}﻿﻿?﻿﻿$${g_metrics_prefix:queryparam}﻿﻿﻿﻿&var-g_hostname=﻿﻿$${__data.fields.HOSTNAME}﻿﻿&var-g_gpu_id=$__all&var-g_gpu_partition_id=$__all"
                       }
                     ]
                   }
@@ -2321,7 +2321,7 @@
                       {
                         "targetBlank": false,
                         "title": "Filter by GPU",
-                        "url": "/d/$${__dashboard.uid}/$${__dashboard.url:raw}?﻿$${g_metrics_prefix:queryparam}﻿﻿&﻿﻿$${g_cluster_name:queryparam}﻿﻿&var-g_hostname=$${__data.fields.HOSTNAME}&var-g_gpu_id=$${__data.fields[\"GPU ID\"]}"
+                        "url": "/d/$${__dashboard.uid}/$${__dashboard.url:raw}?﻿$${g_metrics_prefix:queryparam}﻿﻿﻿﻿&var-g_hostname=$${__data.fields.HOSTNAME}&var-g_gpu_id=$${__data.fields[\"GPU ID\"]}"
                       }
                     ]
                   }
@@ -4165,7 +4165,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -4183,7 +4182,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -4340,7 +4338,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -4358,7 +4355,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -4515,7 +4511,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -4533,7 +4528,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -4690,7 +4684,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -4708,7 +4701,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -5208,7 +5200,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -5226,7 +5217,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -5383,7 +5373,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -5401,7 +5390,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -5558,7 +5546,6 @@
           "options": {
             "excludeByName": {
               "__name__": true,
-              "cluster_name": true,
               "container": true,
               "eth_intf_alias": false,
               "eth_intf_name": true,
@@ -5576,7 +5563,6 @@
               "Field": 0,
               "Last": 16,
               "__name__": 1,
-              "cluster_name": 15,
               "container": 8,
               "eth_intf_alias": 4,
               "eth_intf_name": 5,
@@ -6160,31 +6146,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(cluster_name)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Cluster",
-        "multi": true,
-        "name": "g_cluster_name",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(cluster_name)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 7,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values({cluster_name=~\"$g_cluster_name\"},hostname)",
+        "definition": "label_values(hostname)",
         "hide": 0,
         "includeAll": true,
         "label": "Compute Node",
@@ -6193,7 +6155,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values({cluster_name=~\"$g_cluster_name\"},hostname)",
+          "query": "label_values(hostname)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

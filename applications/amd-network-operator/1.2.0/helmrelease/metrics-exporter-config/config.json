@@ -222,9 +222,6 @@
       "NAMESPACE",
       "CONTAINER"
     ],
-    "CustomLabels": {
-      "CLUSTER_NAME": "${clusterName}"
-    },
     "HealthCheckConfig": {
       "InterfaceAdminDownAsUnhealthy": false
     }
