@@ -167,6 +167,8 @@ spec:
     enable: true
     image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
     imagePullPolicy: IfNotPresent
+    config:
+      name: amd-network-operator-1.2.0-metrics-exporter-config
     hostNetwork: false
     port: 5001
     prometheus:
