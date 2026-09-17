@@ -15,6 +15,7 @@ licensing:
   - Ultimate
 certifications:
   - qualified
+requiredDependencies: []
 nkpVersionSupport: ">=2.18.0"
 overview: |-
   # Overview

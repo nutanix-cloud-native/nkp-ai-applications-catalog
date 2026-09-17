@@ -15,6 +15,9 @@ licensing:
   - Ultimate
 certifications:
   - qualified
+dependencies:
+  - amd-kmm-operator
+requiredDependencies: []
 dependsOn:
   - type: Application
     name: amd-kmm-operator

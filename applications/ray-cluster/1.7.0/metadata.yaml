@@ -54,6 +54,9 @@ overview: |
   [Documentation](https://docs.ray.io/en/latest/cluster/kubernetes/index.html) · [Project](https://github.com/ray-project/kuberay)
 scope:
   - workspace
+dependencies: []
+requiredDependencies:
+  - kuberay
 dependsOn:
   - type: Application
     name: kuberay

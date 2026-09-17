@@ -9,6 +9,10 @@ certifications:
 # Multi-user Pipelines manifests include Istio resources (VirtualService,
 # DestinationRule, AuthorizationPolicy), so Istio must be present first. Enable Platform
 # with config.kubeflowIngressHost before Pipelines. Refer kubeflow-platform for more details.
+dependencies: []
+requiredDependencies:
+  - istio-helm
+  - kubeflow-platform
 dependsOn:
   - type: Application
     name: istio-helm

@@ -6,6 +6,10 @@ category:
   - model-development-and-training
 certifications:
   - qualified
+dependencies: []
+requiredDependencies:
+  - istio-helm
+  - kubeflow-platform
 dependsOn:
   - type: Application
     name: istio-helm

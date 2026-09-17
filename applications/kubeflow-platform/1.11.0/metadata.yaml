@@ -8,6 +8,9 @@ category:
 certifications:
   - qualified
 description: One authenticated, multi-user home for your Kubeflow apps - reuses NKP login (Dex) and provisions dedicated kubeflow gateway pods with a dedicated LoadBalancer. You must set config.kubeflowIngressHost (DNS name or IP) in app config when enabling.
+dependencies: []
+requiredDependencies:
+  - istio-helm
 dependsOn:
   - type: Application
     name: istio-helm
