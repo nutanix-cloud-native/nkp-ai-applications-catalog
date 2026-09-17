@@ -1,6 +1,25 @@
-# AMD Network Operator
+# AMD Network Operator (catalog 1.2.0) — internal notes
 
-NKP catalog component for the [AMD Network Operator](https://github.com/ROCm/network-operator).
+**Source of truth for product docs, user workflow, and the `NetworkConfig` example is [`metadata.yaml`](metadata.yaml)** (`overview:`). Edit that file first. This README must not carry a second copy of the CR; it only adds packaging, architecture, and lab details for catalog maintainers.
+
+Customer-facing content in `metadata.yaml` includes:
+
+- Application description, workflow, and `NetworkConfig` example (`name: network`, firmware `1.117.5-a-77`, device plugin `v1.2.0`, `secondaryNetwork.cniPlugins`).
+- Field notes (`blacklist`, `upgradePolicy`, nicctl/firmware pairing, exporter `:5001`, CNI plugins).
+- Workload NAD + `amd.com/nic` example.
+
+If those drift, the NKP UI is wrong even if this README looks current.
+
+## Catalog layout
+
+| Path | Role |
+| --- | --- |
+| `metadata.yaml` | NKP UI overview and the canonical `NetworkConfig`. |
+| `helmrelease/` | HelmRelease + values ConfigMap (`cm.yaml`). Controller chart only; it does **not** create a `NetworkConfig`. |
+| `helmrelease/metrics-exporter-config/` | ConfigMap name referenced as `${releaseName}-${appVersion}-metrics-exporter-config`. |
+| `grafana-dashboards/` | AINIC system/job dashboards. |
+| `licenses.yaml` | License set; CNI plugins are in-scope once `secondaryNetwork.cniPlugins.enable: true`. |
+| `../../../../scripts/cirrascale-amd-network-operator-config-overrides.yaml` | CirraScale lab overlay (private registry, firmware `1.117.5-a-77`). Do not copy lab IPs or `10.216.61.81:5000` into `metadata.yaml`. |
 
 ## Architecture
 
@@ -8,6 +27,7 @@ NKP catalog component for the [AMD Network Operator](https://github.com/ROCm/net
 graph TD
     subgraph "NKP Platform Layer"
         NFD["Node Feature Discovery<br/>(Kommander)"]
+        MULTUS["Multus CNI<br/>(NKP v2.18+)"]
     end
 
     subgraph "AMD KMM Operator"
@@ -21,6 +41,7 @@ graph TD
         NC["NetworkConfig CR<br/>(user-created)<br/>selector: amd-nic=true"]
         DP["NIC Device Plugin DaemonSet"]
         ME["Metrics Exporter DaemonSet"]
+        CNI["CNI plugins DaemonSet<br/>amd-host-device -> /opt/cni/bin"]
     end
 
     subgraph "KMM-Managed (per node)"
@@ -39,6 +60,8 @@ graph TD
     CTRL -->|"creates"| MOD
     CTRL -->|"deploys"| DP
     CTRL -->|"deploys"| ME
+    CTRL -->|"deploys"| CNI
+    CNI --> MULTUS
     MOD -->|"triggers build"| KANIKO
     KANIKO -->|"pushes image to<br/>private registry"| DC_SECRET
     MOD -->|"triggers load"| WORKER
@@ -47,7 +70,7 @@ graph TD
     KMOD --- NIC
 ```
 
-### Driver Build Flow
+### Driver build flow
 
 ```mermaid
 sequenceDiagram
@@ -69,35 +92,44 @@ sequenceDiagram
     KMM->>Worker: Deploys worker pod on target node
     Worker->>Reg: Pulls driver image (via kmm-registry-dockerconfig)
     Worker->>Node: Runs modprobe to load NIC kernel modules
-    Ctrl->>Node: Deploys NIC device plugin + metrics exporter
+    Ctrl->>Node: Deploys device plugin, metrics exporter, CNI plugins DS
 ```
 
-## Key Difference from GPU Operator
+### Credential flow
 
-The Network Operator **does not** auto-create a `NetworkConfig` CR from Helm values. Users must manually create one after enabling the operator. This is different from the GPU Operator, which auto-creates a `DeviceConfig` named `default`.
+```mermaid
+graph LR
+    A["kmm-registry-dockerconfig<br/>(auto-created by KMM Operator)"] -->|"referenced in"| B["NetworkConfig<br/>driver + devicePlugin<br/>imageRegistrySecret"]
+    B -->|"propagated to"| C["Module CR<br/>imageRepoSecret"]
+    C -->|"injected into"| D["Kaniko Build Pod<br/>(push auth)"]
+    C -->|"injected into"| E["KMM Worker Pod<br/>(pull auth)"]
+```
 
-> **Important:** Choose a `NetworkConfig` name other than `default` to avoid conflicts with the GPU Operator's `DeviceConfig`, since both CRD controllers use the name to generate a shared Dockerfile ConfigMap.
+`secondaryNetwork.cniPlugins` uses the public image `docker.io/rocm/k8s-cni-plugins:v1.2.0`. Do **not** attach `kmm-registry-dockerconfig` to that block.
 
-## Dependencies
+## Difference from GPU Operator
+
+The Network Operator **does not** auto-create a `NetworkConfig` from Helm values. Users apply the CR from `metadata.yaml` after enabling the app. The GPU Operator auto-creates `DeviceConfig/default`. **Never** name the `NetworkConfig` `default`; both controllers derive child names from the CR name and will collide.
+
+## Dependencies and subcharts
 
 | Dependency | Purpose | Enforcement |
 |---|---|---|
-| `amd-kmm-operator` | Shared KMM instance + registry plumbing | `metadata.yaml` (`dependencies`) -- strongly recommended, not required |
-| Node Feature Discovery | NIC hardware detection and labelling | Provided by Kommander platform layer |
+| `amd-kmm-operator` | Shared KMM + `kmm-registry-dockerconfig` | `metadata.yaml` `dependencies` (recommended, not `requiredDependencies`) |
+| Node Feature Discovery | `amd-nic` / `amd-vnic` labels | Kommander; chart NFD subchart stays off |
+| Multus | `NetworkAttachmentDefinition` | NKP v2.18+; `multus.enabled: false` in this chart |
 
-## Default Configuration
-
-The following subcharts are **disabled** by default because they are provided by other NKP components:
-
-| Subchart | Disabled | Provided By |
+| Subchart | Default | Provided by |
 |---|---|---|
 | `kmm` | `kmm.enabled: false` | `amd-kmm-operator` |
-| `node-feature-discovery` | `node-feature-discovery.enabled: false` | Kommander |
-| `multus` | `multus.enabled: false` | NKP v2.18+ |
+| `node-feature-discovery` | disabled | Kommander |
+| `multus` | disabled | NKP v2.18+ |
 
-## NFD Toleration Requirement
+Embedded KMM (`kmm.enabled: true`) is an escape hatch: skip the catalog KMM app and create `kmm-registry-dockerconfig` yourself. NKP v2.17 and earlier need `multus.enabled: true` in Helm overrides.
 
-Kommander's NFD worker DaemonSet must include the following toleration to discover AMD NICs on tainted nodes:
+## NFD on tainted GPU nodes
+
+Kommander's NFD worker must tolerate:
 
 ```yaml
 tolerations:
@@ -107,115 +139,26 @@ tolerations:
     effect: "NoExecute"
 ```
 
-Without this, NFD workers won't run on nodes with the `amd-dcm` taint, and those nodes won't receive AMD NIC feature labels.
+Without that, tainted GPU nodes never get `feature.node.kubernetes.io/amd-nic=true`, and the `NetworkConfig` selector matches nothing.
 
-## Node Feature Labels
+## Firmware and nicctl (lab)
 
-The operator (via the GPU Operator's NFD rules) produces two NIC labels. Each requires its own `NetworkConfig` CR:
+Canonical pairing in `metadata.yaml` is firmware **`1.117.5-a-77`** with Hub `k8s-network-device-plugin:v1.2.0` (nicctl for `1.117.5-a-56` / `1.117.5-a-77` only).
 
-| NFD Label | Meaning |
-|---|---|
-| `feature.node.kubernetes.io/amd-nic: "true"` | Physical NIC (PF) — Pensando DSC Ethernet Controller |
-| `feature.node.kubernetes.io/amd-vnic: "true"` | Virtual NIC (SR-IOV VF) — Pensando DSC Ethernet Controller VF |
+If a card is still on **`1.117.1-a-63`**, do not use that Hub plugin tag: it CrashLoopBackOffs with empty `lif`. Override `devicePlugin.devicePluginImage` with a private image whose bundled nicctl matches the card. Matrix: https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix
 
-## NetworkConfig CR (Ubuntu 24.04 + private registry)
+`driver.version` must match firmware (`dmesg` or `nicctl show version firmware`).
 
-After enabling the operator, create a `NetworkConfig` CR that aligns with the `kmm-registry-credentials` secret created for the AMD KMM Operator. The chart does **not** auto-create this CR. Name it anything other than `default`.
+## CNI plugins vs Test 1 static PF
 
-```yaml
-apiVersion: amd.com/v1alpha1
-kind: NetworkConfig
-metadata:
-  name: network              # must NOT be "default" — see note above
-  namespace: <workspace-namespace>
-spec:
-  selector:
-    feature.node.kubernetes.io/amd-nic: "true"
-  driver:
-    enable: true
-    blacklist: true
-    version: "1.117.1-a-63"   # must match NIC firmware
-    image: "<registry-host>:<port>/<project>/amdainic_kmods"
-    upgradePolicy:
-      enable: true
-      maxParallelUpgrades: 1
-      maxUnavailableNodes: 1
-      rebootRequired: true
-      nodeDrainPolicy:
-        force: true
-        timeoutSeconds: 600
-        gracePeriodSeconds: -1
-    imageBuild:
-      baseImageRegistry: "<registry-host>:<port>/<project>"
-      baseImageRegistryTLS:
-        insecure: false
-        insecureSkipTLSVerify: false
-    imageRegistrySecret:
-      name: "kmm-registry-dockerconfig"
-    imageRegistryTLS:
-      insecure: false
-      insecureSkipTLSVerify: false
-  devicePlugin:
-    enableNodeLabeller: true  # required for Ubuntu blacklist
-    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.2.0
-    devicePluginImagePullPolicy: IfNotPresent
-    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.2.0
-    nodeLabellerImagePullPolicy: IfNotPresent
-    imageRegistrySecret:
-      name: "kmm-registry-dockerconfig"
-  metricsExporter:
-    enable: true
-    image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
-    imagePullPolicy: IfNotPresent
-    config:
-      name: amd-network-operator-1.2.0-metrics-exporter-config
-    hostNetwork: false
-    port: 5001
-    prometheus:
-      serviceMonitor:
-        enable: true
-        honorLabels: true
-        honorTimestamps: false
-        interval: 30s
-        labels:
-          prometheus.kommander.d2iq.io/select: "true"
-  secondaryNetwork:
-    cniPlugins:
-      enable: true
-      image: docker.io/rocm/k8s-cni-plugins:v1.2.0
-```
+`secondaryNetwork.cniPlugins.enable: true` installs `amd-host-device` into `/opt/cni/bin`. Missing this yields `failed to find plugin "amd-host-device"`.
 
-Hub `k8s-network-device-plugin:v1.2.0` bundles nicctl for firmware `1.117.5-a-56` / `1.117.5-a-77` only. If card firmware is `1.117.1-a-63`, override `devicePlugin.devicePluginImage` with a private image whose nicctl matches that drop, or the plugin CrashLoopBackOffs with empty `lif`. See the [plugin compatibility matrix](https://github.com/ROCm/k8s-network-device-plugin#compatibility-matrix).
+`amd.com/nic: 1` plus `amd-host-device` injects RDMA device nodes but **does not** pick the same PF on two nodes. Isolated Test 0 `/24` rails then cannot peer. CirraScale Test 1 therefore used standard `host-device` + explicit `TEST_RAIL` and a privileged `/dev/infiniband` hostPath so `ibv_open_device` works. That is a lab workaround, not catalog default. Document it in `network-operator-tests/test-1/`, not in `metadata.yaml`.
 
-### Override Fields
+## Install / uninstall
 
-| Field | Description |
-|---|---|
-| `driver.blacklist` | Required on Ubuntu 24.04 so inbox `ionic` does not block OOT `ionic_rdma`. Needs `devicePlugin.enableNodeLabeller: true` and a reboot. |
-| `driver.version` | AINIC package version; must match NIC firmware (`dmesg` / `nicctl show version firmware`). |
-| `driver.upgradePolicy` | Drain + reboot one node at a time when `driver.version` changes. Keep `rebootRequired: true` for initramfs/ionic. |
-| `driver.image` | Registry path where built NIC driver images are pushed/pulled. Do not include a tag; the operator manages tags automatically. |
-| `driver.imageRegistrySecret.name` | Must be `kmm-registry-dockerconfig`, auto-created by the AMD KMM Operator reconciler. |
-| `driver.imageBuild.baseImageRegistry` | Private mirror hosting OS base images (e.g. `ubuntu:24.04`) for Kaniko builds. Avoids Docker Hub rate limits. |
-| `driver.imageRegistryTLS.insecure` | Set `true` for plain HTTP registries. |
-| `driver.imageRegistryTLS.insecureSkipTLSVerify` | Set `true` for self-signed certificates. |
-| `devicePlugin.enableNodeLabeller` | Required for Ubuntu blacklist. Nested CRD defaults do not apply if this object is omitted. |
-| `devicePlugin.devicePluginImage` | Bundles nicctl; must match firmware. Override when Hub tag nicctl does not match the card. |
-| `metricsExporter.port` / `hostNetwork` | Use `:5001` and `hostNetwork: false` so this coexists with GPU Operator exporter `:5000`. |
-| `metricsExporter.prometheus.serviceMonitor.labels` | `prometheus.kommander.d2iq.io/select: "true"` so NKP Prometheus scrapes the NIC exporter. |
+Enable `amd-kmm-operator`, then `amd-network-operator`, then apply the `NetworkConfig` from `metadata.yaml`. Uninstall in reverse: delete the CR, disable network operator, then KMM.
 
-### Credential Flow
+## Helm overrides
 
-```mermaid
-graph LR
-    A["kmm-registry-dockerconfig<br/>(auto-created by KMM Operator)"] -->|"referenced in"| B["NetworkConfig<br/>imageRegistrySecret"]
-    B -->|"propagated to"| C["Module CR<br/>imageRepoSecret"]
-    C -->|"injected into"| D["Kaniko Build Pod<br/>(push auth)"]
-    C -->|"injected into"| E["KMM Worker Pod<br/>(pull auth)"]
-```
-
-## Install / Uninstall
-
-**Install:** It is strongly recommended to enable `amd-kmm-operator` first, then `amd-network-operator`. Without a KMM instance, driver builds will not function.
-
-**Uninstall:** Disable `amd-network-operator` first, then `amd-kmm-operator`.
+Controller image, resources, and tolerations are Helm values (`helmrelease/cm.yaml`). The `NetworkConfig` is **not** a Helm value. Full chart knobs: [values.yaml](https://github.com/ROCm/network-operator/blob/v1.2.0/helm-charts-k8s/values.yaml).
