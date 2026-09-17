@@ -24,14 +24,21 @@ const (
 var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
 
 // dependencyProvisioners installs a lightweight stand-in on Kind for each
-// platform dependency an app names in its metadata requiredDependencies.
+// hard platform dependency an app names in metadata dependsOn (optional: false).
 var dependencyProvisioners = map[string]func(context.Context) error{
 	"cert-manager": provisionCertManager,
 	"istio-helm":   provisionIstioCRDs,
 	"kuberay":      provisionKubeRay,
 }
 
-// provisionDependencies installs every dependency the app declares in its
+type dependsOnEntry struct {
+	Type     string `yaml:"type"`
+	Name     string `yaml:"name"`
+	Version  string `yaml:"version"`
+	Optional bool   `yaml:"optional"`
+}
+
+// provisionDependencies installs every hard dependency the app declares in its
 // metadata, so metadata.yaml is the single source of truth shared by the Helm
 // and Kustomize suites.
 func provisionDependencies(ctx context.Context, appName string) error {
@@ -66,12 +73,23 @@ func requiredDependencies(appName string) ([]string, error) {
 	}
 
 	var metadata struct {
-		RequiredDependencies []string `yaml:"requiredDependencies"`
+		DependsOn []dependsOnEntry `yaml:"dependsOn"`
 	}
 	if err := yaml.Unmarshal(content, &metadata); err != nil {
 		return nil, err
 	}
-	return metadata.RequiredDependencies, nil
+
+	var names []string
+	for _, dep := range metadata.DependsOn {
+		if dep.Optional {
+			continue
+		}
+		if dep.Name == "" {
+			return nil, fmt.Errorf("app %q has a dependsOn entry with empty name", appName)
+		}
+		names = append(names, dep.Name)
+	}
+	return names, nil
 }
 
 // metadataPath resolves applications/<app>/<version>/metadata.yaml.

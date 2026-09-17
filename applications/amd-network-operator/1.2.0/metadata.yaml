@@ -15,9 +15,14 @@ licensing:
   - Ultimate
 certifications:
   - qualified
-requiredDependencies: []
 dependencies:
   - amd-kmm-operator
+requiredDependencies: []
+dependsOn:
+  - type: Application
+    name: amd-kmm-operator
+    version: ""
+    optional: true
 nkpVersionSupport: ">=2.18.0"
 overview: |-
   # Overview
