@@ -16,9 +16,11 @@ requiredDependencies:
 dependsOn:
   - type: Application
     name: istio-helm
+    version: ""
     optional: false
   - type: Application
     name: kubeflow-platform
+    version: ""
     optional: false
 description: End-to-end ML pipelines (train, tune, serve) with experiments and recurring runs.
 displayName: Kubeflow Pipelines

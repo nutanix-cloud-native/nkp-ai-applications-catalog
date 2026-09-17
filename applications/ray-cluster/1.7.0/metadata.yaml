@@ -60,6 +60,7 @@ requiredDependencies:
 dependsOn:
   - type: Application
     name: kuberay
+    version: ""
     optional: false
 supportLink: https://docs.ray.io/en/latest/cluster/kubernetes/index.html
 type: nkp-catalog

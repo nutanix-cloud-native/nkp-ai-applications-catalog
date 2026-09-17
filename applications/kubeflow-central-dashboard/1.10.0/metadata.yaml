@@ -13,9 +13,11 @@ requiredDependencies:
 dependsOn:
   - type: Application
     name: istio-helm
+    version: ""
     optional: false
   - type: Application
     name: kubeflow-platform
+    version: ""
     optional: false
 description: Single UI for Pipelines and other Kubeflow components. Enable Kubeflow Platform first for SSO.
 displayName: Kubeflow Central Dashboard
