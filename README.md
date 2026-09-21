@@ -413,7 +413,8 @@ to `oci://ghcr.io/nutanix-cloud-native/charts`.
 
 ### Manual CI publish for first-party charts
 
-Use `Publish First-Party Charts to GHCR` for hand-authored charts (no bake step).
+Use `Publish First-Party Charts to GHCR` for hand-authored charts under `charts/`
+(no bake step).
 
 - Trigger it manually and set `chart` to the directory name under `charts/`.
 - The workflow runs `helm lint`, then `helm package` / `helm push`.
@@ -427,7 +428,7 @@ Use `Publish First-Party Charts to GHCR` for hand-authored charts (no bake step)
 
 These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
 
-**Kubeflow:** Catalog ships [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) from [kubeflow/manifests v1.11.0](https://github.com/kubeflow/manifests/releases/tag/v1.11.0). Central Dashboard and the unified platform chart are not included.
+**Kubeflow:** Catalog ships standalone ClusterIP [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) from [kubeflow/manifests v1.11.0](https://github.com/kubeflow/manifests/releases/tag/v1.11.0) (`platform-agnostic`). No SSO, dedicated ingress, Central Dashboard, or Training Operator.
 
 ## Existing Applications
 
@@ -468,7 +469,7 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just bake-check` | Re-bake all apps; fail if committed artifacts drifted |
 | `just push-baked-chart <app>` | Package and push `kubeflow-pipelines` |
 | `Publish Baked Charts to GHCR` (GitHub Actions) | Manual CI workflow to bake and push changed baked charts to GHCR using CI credentials |
-| `Publish First-Party Charts to GHCR` (GitHub Actions) | Manual CI workflow to lint and push hand-authored charts |
+| `Publish First-Party Charts to GHCR` (GitHub Actions) | Manual CI workflow to lint and push hand-authored charts under `charts/` |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |
