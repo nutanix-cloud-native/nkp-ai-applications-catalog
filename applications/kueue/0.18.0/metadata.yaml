@@ -98,7 +98,7 @@ overview: |
               - gpu.nvidia.com
   ```
 
-  Applying the override upgrades the HelmRelease. The chart annotates the controller Deployment with `charts.kueue.x-k8s.io/config-checksum` (a SHA-256 of the rendered manager ConfigMap), so the checksum change rolls the pods. Kueue reads this Configuration at startup. Then include the mapped name (for example `gpu.nvidia.com`) in the `ClusterQueue` `coveredResources` and set a quota.
+  Applying the override upgrades the HelmRelease. The chart annotates the controller Deployment with `charts.kueue.x-k8s.io/config-checksum` (a SHA-256 of the rendered manager ConfigMap), so the checksum change rolls the pods. Kueue reads this Configuration at startup. Then include the mapped name (for example `gpu.nvidia.com`) in the `ClusterQueue` `coveredResources` and set a quota. See the catalog `README.md` for a device-plugin Job (`nvidia.com/gpu`) and a DRA Job (`gpu.nvidia.com`) side by side.
 
   **Dependencies — Cluster Autoscaler / ProvisioningRequest (optional)**
 
