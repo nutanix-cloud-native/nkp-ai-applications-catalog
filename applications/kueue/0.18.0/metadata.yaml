@@ -23,10 +23,82 @@ overview: |
   - **Gang scheduling** — multi-pod workloads are admitted all-or-nothing.
   - **Fair sharing** — borrowing across cohorts and preemption.
   - **Integrations** — `batch/Job`, `JobSet`, Ray, and Kubeflow training jobs are enabled by default; plain Pods, Deployments, and StatefulSets are supported when their integration is enabled (each non-core integration also needs its CRD/controller present).
+  - **DRA quota** — map cluster `DeviceClass` objects to logical quota names with `resources.deviceClassMappings` so `ResourceClaimTemplate` workloads are admitted against queue quota.
 
   **Getting started**
 
   Kueue installs the controller and CRDs but ships **no queues** by default — quotas are cluster-specific. To start admitting work, create a `ResourceFlavor`, a `ClusterQueue` with a quota, and a `LocalQueue` in your namespace, then submit a Job carrying the `kueue.x-k8s.io/queue-name` label. See the catalog `README.md` for a copy-paste starter.
+
+  **Configuration — Dynamic Resource Allocation (DRA)**
+
+  To have Kueue account for DRA devices, add `deviceClassMappings` under `resources` in the controller Configuration. The Helm value `managerConfig.controllerManagerConfigYaml` **replaces** the entire Configuration, so start from the live ConfigMap rather than a partial snippet.
+
+  1. After Kueue is Ready, fetch the current Configuration (`apiVersion: config.kueue.x-k8s.io/v1beta2`):
+
+  ```
+  kubectl get configmap kueue-system-kueue-manager-config -n kueue-system -o jsonpath='{.data.controller_manager_config\.yaml}'
+  ```
+
+  2. Append `deviceClassMappings` under `resources`. `name` is the logical quota resource used on the `ClusterQueue`; `deviceClassNames` are the cluster `DeviceClass` objects to map.
+
+  3. Paste the full updated Configuration into the app's config overrides. Example (replace `gpu.nvidia.com` with your DeviceClass):
+
+  ```
+  managerConfig:
+    controllerManagerConfigYaml: |
+      apiVersion: config.kueue.x-k8s.io/v1beta2
+      kind: Configuration
+      clientConnection:
+        burst: 100
+        qps: 50
+      controller:
+        groupKindConcurrency:
+          ClusterQueue.kueue.x-k8s.io: 1
+          Job.batch: 5
+          LocalQueue.kueue.x-k8s.io: 1
+          Pod: 5
+          ResourceFlavor.kueue.x-k8s.io: 1
+          Workload.kueue.x-k8s.io: 5
+      health:
+        healthProbeBindAddress: :8081
+      integrations:
+        frameworks:
+        - batch/job
+        - kubeflow.org/mpijob
+        - ray.io/rayjob
+        - ray.io/rayservice
+        - ray.io/raycluster
+        - jobset.x-k8s.io/jobset
+        - trainer.kubeflow.org/trainjob
+        - kubeflow.org/paddlejob
+        - kubeflow.org/pytorchjob
+        - kubeflow.org/tfjob
+        - kubeflow.org/xgboostjob
+        - kubeflow.org/jaxjob
+        - workload.codeflare.dev/appwrapper
+        - pod
+        - deployment
+        - statefulset
+        - leaderworkerset.x-k8s.io/leaderworkerset
+      internalCertManagement:
+        enable: true
+        webhookSecretName: kueue-system-kueue-webhook-server-cert
+        webhookServiceName: kueue-system-kueue-webhook-service
+      leaderElection:
+        leaderElect: true
+        resourceName: c1f6bfd2.kueue.x-k8s.io
+      metrics:
+        bindAddress: :8443
+      webhook:
+        port: 9443
+      resources:
+        deviceClassMappings:
+          - name: gpu.nvidia.com
+            deviceClassNames:
+              - gpu.nvidia.com
+  ```
+
+  Applying the override upgrades the HelmRelease. The chart annotates the controller Deployment with `charts.kueue.x-k8s.io/config-checksum` (a SHA-256 of the rendered manager ConfigMap), so the checksum change rolls the pods. Kueue reads this Configuration at startup. Then include the mapped name (for example `gpu.nvidia.com`) in the `ClusterQueue` `coveredResources` and set a quota.
 
   **Dependencies — Cluster Autoscaler / ProvisioningRequest (optional)**
 
@@ -37,7 +109,7 @@ overview: |
 
   **Resources**
 
-  [Documentation](https://kueue.sigs.k8s.io/docs/) · [Project](https://github.com/kubernetes-sigs/kueue)
+  [Documentation](https://kueue.sigs.k8s.io/docs/) · [DRA setup](https://kueue.sigs.k8s.io/docs/tasks/manage/setup_dra/) · [Project](https://github.com/kubernetes-sigs/kueue)
 scope:
   - workspace
 nkpVersionSupport: ">=2.18.0"
