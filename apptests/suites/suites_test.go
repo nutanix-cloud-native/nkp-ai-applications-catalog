@@ -30,7 +30,6 @@ var enabledApps = []string{
 // parking-lot/drafts-repo into applications/, so its E2E test and CI matrix
 // detection can resolve applications/<app>.
 var customTestApps = []string{
-	"kubeflow-central-dashboard",
 	"kubeflow-pipelines",
 }
 

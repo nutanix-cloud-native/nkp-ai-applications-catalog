@@ -11,9 +11,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
-      - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-central-dashboard:1.10.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-pipelines:2.15.0
-      - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-platform:1.11.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kuberay:1.7.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kueue:0.18.0
       - oci://<registry-url>/nkp-ai-applications-catalog/milvus-operator:1.3.6
@@ -121,11 +119,6 @@ applications:
       - ghcr.io/kai-scheduler/kai-scheduler/podgrouper:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/queuecontroller:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/scheduler:v0.15.2
-  - name: kubeflow-central-dashboard
-    version: 1.10.0
-    images:
-      - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-central-dashboard:1.10.0
-      - ghcr.io/kubeflow/kubeflow/central-dashboard:v1.10.0
   - name: kubeflow-pipelines
     version: 2.15.0
     images:
@@ -151,15 +144,6 @@ applications:
       - ghcr.io/metacontroller/metacontroller:v4.11.22
       - quay.io/argoproj/argoexec:v3.7.3
       - quay.io/argoproj/workflow-controller:v3.7.3
-  - name: kubeflow-platform
-    version: 1.11.0
-    images:
-      - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-platform:1.11.0
-      - docker.io/alpine/k8s:1.31.2
-      - docker.io/istio/proxyv2:1.29.0
-      - ghcr.io/kubeflow/kubeflow/kfam:v1.10.0
-      - ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
-      - quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
   - name: kuberay
     version: 1.7.0
     images:
