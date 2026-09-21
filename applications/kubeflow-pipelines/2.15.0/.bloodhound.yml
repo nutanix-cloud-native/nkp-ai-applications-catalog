@@ -8,7 +8,10 @@ k8s_versions:
 # use strict validation (reject unknown fields in resources)
 strict: true
 
-# types to be skipped (e.g. certmanager.k8s.io/v1, or certmanager.k8s.io/v1/Certificate)
+# nkp validate renders the published OCI chart, not charts/. The currently
+# published tag still includes Istio types from the previous multi-user bake.
+# Harmless no-op after the ClusterIP chart is published. Remove in a follow-up
+# once GHCR matches this repo.
 skip_types:
   - networking.istio.io/v1alpha3/DestinationRule
   - networking.istio.io/v1alpha3/VirtualService
