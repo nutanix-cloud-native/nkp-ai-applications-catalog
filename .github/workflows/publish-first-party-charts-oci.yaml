@@ -9,7 +9,6 @@ on:
       chart:
         description: "Chart directory under charts/ to publish (no bake)."
         type: string
-        default: kubeflow-platform
         required: true
 
 jobs:
