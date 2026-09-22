@@ -63,17 +63,15 @@ application has a label matching its directory name, and each test type has a
 label (`install`, `upgrade`). You can filter with `--ginkgo.label-filter`:
 
 ```sh
-cd apptests && GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests \
-  NKP_CATALOG_DIR="$(git rev-parse --show-toplevel)" \
+cd apptests && NKP_CATALOG_DIR="$(git rev-parse --show-toplevel)" \
   go test ./suites/ -v -count=1 \
   --ginkgo.label-filter="kagent && install" \
   -app-version=0.7.13
 ```
 
-`just e2e-test` sets `GOPRIVATE` and `NKP_CATALOG_DIR` for you. `GOPRIVATE` is
-required while `nkp-catalog-tests` is a private GitHub repo; Go clones it via
-git instead of `proxy.golang.org`. Git must already be able to read
-`github.com/nutanix-cloud-native/nkp-catalog-tests`.
+`just e2e-test` sets `NKP_CATALOG_DIR` for you. The test framework is fetched
+from the public `kommander-applications` repository branch configured in
+`apptests/go.mod`.
 
 ### Docker host
 

@@ -13,6 +13,8 @@ require (
 	sigs.k8s.io/controller-runtime v0.22.2
 )
 
+replace github.com/nutanix-cloud-native/nkp-catalog-tests => github.com/mesosphere/kommander-applications v0.0.0-20260922210923-b3bf700fea37
+
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
