@@ -11,6 +11,7 @@ admission for batch and AI/ML workloads.
 - [Default Configuration](#default-configuration)
 - [Getting Started (hello world)](#getting-started-hello-world)
 - [GPU queueing](#gpu-queueing)
+- [Dynamic Resource Allocation (DRA)](#dynamic-resource-allocation-dra)
 - [Dependencies](#dependencies)
 
 **Concepts and FAQ**
@@ -128,16 +129,192 @@ job finishes and frees quota, then it is admitted automatically.
 
 ## GPU queueing
 
-GPU support is runtime configuration only — no change to this catalog entry or
-the chart. To queue GPU work:
+Two ways to request GPUs. They use **different resource names** and are not
+interchangeable:
+
+| Path | Job requests | ClusterQueue quota name | Needs |
+|------|--------------|-------------------------|-------|
+| Device plugin (classic) | `resources.limits: { nvidia.com/gpu: 1 }` | `nvidia.com/gpu` | NVIDIA device plugin / GPU operator advertising that extended resource |
+| DRA | `ResourceClaimTemplate` with `deviceClassName: gpu.nvidia.com` | `gpu.nvidia.com` (from `deviceClassMappings`) | DRA, a `DeviceClass`, and the Kueue mapping in [DRA](#dynamic-resource-allocation-dra) |
+
+A Job that asks for `nvidia.com/gpu` does **not** consume `gpu.nvidia.com`
+quota, and a DRA claim for `gpu.nvidia.com` does **not** consume
+`nvidia.com/gpu` quota.
+
+### Device plugin (`nvidia.com/gpu`)
+
+This path does not change the catalog entry or the chart. To queue GPU work:
 
 - Label the `ResourceFlavor` to your GPU nodes (`spec.nodeLabels`).
 - Add `nvidia.com/gpu` to the `ClusterQueue` `coveredResources` with a quota.
-- Have the Job request `resources.limits: { nvidia.com/gpu: 1 }`.
+- Have the Job request `nvidia.com/gpu` as an extended resource:
 
-This requires the cluster to actually have GPU worker nodes and a GPU device
-plugin / NVIDIA GPU operator exposing `nvidia.com/gpu` as an allocatable
-resource.
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpu-job
+  namespace: default
+  labels:
+    kueue.x-k8s.io/queue-name: smoke-lq
+spec:
+  parallelism: 1
+  completions: 1
+  suspend: true
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: sleep
+        image: registry.k8s.io/e2e-test-images/agnhost:2.53
+        args: ["pause"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+            nvidia.com/gpu: "1"
+          limits:
+            nvidia.com/gpu: "1"
+```
+
+This requires GPU worker nodes and a GPU device plugin / NVIDIA GPU operator
+exposing `nvidia.com/gpu` as an allocatable resource.
+
+## Dynamic Resource Allocation (DRA)
+
+Use this path when workloads claim devices through a `ResourceClaimTemplate`
+instead of `nvidia.com/gpu`. In Kueue 0.18 that requires
+`resources.deviceClassMappings` so Kueue can charge quota for the DeviceClass.
+
+`gpu.nvidia.com` is the **DeviceClass** (and the logical quota name in the
+example mapping). It is not the device-plugin extended resource
+`nvidia.com/gpu`.
+
+### 1. Enable DRA in Kueue
+
+The Helm value `managerConfig.controllerManagerConfigYaml` **replaces** the
+entire Configuration. Fetch the live file, then append the mapping.
+
+```bash
+kubectl get configmap kueue-system-kueue-manager-config -n kueue-system \
+  -o jsonpath='{.data.controller_manager_config\.yaml}'
+```
+
+Append under `resources` (replace `gpu.nvidia.com` with your DeviceClass):
+
+```yaml
+resources:
+  deviceClassMappings:
+    - name: gpu.nvidia.com          # logical quota name on the ClusterQueue
+      deviceClassNames:
+        - gpu.nvidia.com            # cluster DeviceClass
+```
+
+Paste the **full** updated Configuration into the app's config overrides:
+
+```yaml
+managerConfig:
+  controllerManagerConfigYaml: |
+    apiVersion: config.kueue.x-k8s.io/v1beta2
+    kind: Configuration
+    # ... keep every field from the fetched ConfigMap ...
+    resources:
+      deviceClassMappings:
+        - name: gpu.nvidia.com
+          deviceClassNames:
+            - gpu.nvidia.com
+```
+
+Applying the override upgrades the HelmRelease. The chart annotates the
+controller Deployment with `charts.kueue.x-k8s.io/config-checksum` (a SHA-256
+of the rendered manager ConfigMap), so the checksum change rolls the pods.
+Kueue reads this Configuration at startup.
+
+### 2. Add `gpu.nvidia.com` quota to the ClusterQueue
+
+```yaml
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: smoke-cq
+spec:
+  namespaceSelector: {}
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "gpu.nvidia.com"]
+    flavors:
+    - name: default-flavor
+      resources:
+      - name: "cpu"
+        nominalQuota: "2"
+      - name: "memory"
+        nominalQuota: "4Gi"
+      - name: "gpu.nvidia.com"
+        nominalQuota: "1"
+```
+
+### 3. Submit a DRA Job (not `nvidia.com/gpu`)
+
+The Job does not set `resources.limits.nvidia.com/gpu`. It references a
+`ResourceClaimTemplate` whose `deviceClassName` is `gpu.nvidia.com`. Kueue
+looks that class up in `deviceClassMappings` and charges the mapped quota
+name (`gpu.nvidia.com`).
+
+```yaml
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: single-gpu
+  namespace: default
+spec:
+  spec:
+    devices:
+      requests:
+      - name: gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dra-gpu-job
+  namespace: default
+  labels:
+    kueue.x-k8s.io/queue-name: smoke-lq
+spec:
+  parallelism: 1
+  completions: 1
+  suspend: true
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: sleep
+        image: registry.k8s.io/e2e-test-images/agnhost:2.53
+        args: ["pause"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          claims:
+          - name: gpu
+      resourceClaims:
+      - name: gpu
+        resourceClaimTemplateName: single-gpu
+```
+
+Verify admission and that quota was charged as `gpu.nvidia.com`:
+
+```bash
+kubectl get workloads -n default
+kubectl get resourceclaims -n default
+kubectl describe clusterqueue smoke-cq
+```
+
+If the DeviceClass is missing from `deviceClassMappings`, Kueue marks the
+Workload inadmissible (`DeviceClass is not mapped in DRA configuration`)
+instead of admitting it without GPU quota.
+
+See [Set up Dynamic Resource Allocation](https://kueue.sigs.k8s.io/docs/tasks/manage/setup_dra/).
 
 ## Dependencies
 
@@ -309,5 +486,6 @@ A: Quotas are just fields on the `ClusterQueue`, so an admin edits `nominalQuota
 ## Links
 
 - [Kueue docs](https://kueue.sigs.k8s.io/docs/)
+- [Set up Dynamic Resource Allocation](https://kueue.sigs.k8s.io/docs/tasks/manage/setup_dra/)
 - [GitHub](https://github.com/kubernetes-sigs/kueue)
 - [Helm chart reference](https://github.com/kubernetes-sigs/kueue/blob/main/charts/kueue/README.md)
