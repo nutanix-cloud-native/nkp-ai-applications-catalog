@@ -63,10 +63,15 @@ application has a label matching its directory name, and each test type has a
 label (`install`, `upgrade`). You can filter with `--ginkgo.label-filter`:
 
 ```sh
-cd apptests && go test ./suites/ -v -count=1 \
+cd apptests && NKP_CATALOG_DIR="$(git rev-parse --show-toplevel)" \
+  go test ./suites/ -v -count=1 \
   --ginkgo.label-filter="kagent && install" \
   -app-version=0.7.13
 ```
+
+`just e2e-test` sets `NKP_CATALOG_DIR` for you. The test framework is fetched
+from the public `kommander-applications` repository branch configured in
+`apptests/go.mod`.
 
 ### Docker host
 
