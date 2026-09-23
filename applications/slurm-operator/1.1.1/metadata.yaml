@@ -13,6 +13,9 @@ icon: iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABlGlDQ1BJQ0MgUHJvZmlsZQAAKJ
 licensing:
   - Pro
   - Ultimate
+dependencies: []
+requiredDependencies:
+  - cert-manager
 overview: |
   **Overview**
 
