@@ -21,10 +21,9 @@ as a Kustomize tree — typically one that:
 - hides image references in `env`, `args`, or `ConfigMap` values (not just
   `image:` fields), so the air-gap bundler would otherwise miss them.
 
-Kubeflow components (Pipelines, Central Dashboard, Katib, …) are the motivating
-example. If an app already publishes a clean Helm chart, **don't bake it** — add
-it the normal way (`OCIRepository` + `HelmRelease`, see the repo
-[README](../../README.md#adding-a-new-application)).
+Kubeflow Pipelines is the motivating example. If an app already publishes a
+clean Helm chart, **don't bake it** — add it the normal way (`OCIRepository` +
+`HelmRelease`, see the repo [README](../../README.md#adding-a-new-application)).
 
 ### Why a chart at all?
 
