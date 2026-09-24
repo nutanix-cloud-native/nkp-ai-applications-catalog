@@ -34,7 +34,6 @@ var dependencyProvisioners = map[string]func(context.Context) error{
 type dependsOnEntry struct {
 	Type     string `yaml:"type"`
 	Name     string `yaml:"name"`
-	Version  string `yaml:"version"`
 	Optional bool   `yaml:"optional"`
 }
 
