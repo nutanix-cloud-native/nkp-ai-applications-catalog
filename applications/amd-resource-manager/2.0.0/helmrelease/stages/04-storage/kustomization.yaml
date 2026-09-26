@@ -1,0 +1,21 @@
+# Stage 04 — Kustomize assembly
+#
+# This file packages storage.sh into an executable ConfigMap and applies the
+# cluster-scoped StorageClass RBAC before creating the compatibility Job. The
+# generated script is mounted read-only by storage-job.yaml.
+#
+# Flux starts this stage after Keycloak configuration and waits for the
+# `airm-storage` Job health check. Successful completion guarantees that the
+# literal `default` StorageClass expected by AIRM infrastructure charts exists
+# before stage 05 deploys operators and storage-backed services.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - storage.sh
+  name: airm-storage-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- storage-job.yaml
+---

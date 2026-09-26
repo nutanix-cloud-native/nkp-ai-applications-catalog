@@ -1,0 +1,21 @@
+# Stage 10 — Identity synchronization Kustomize assembly
+#
+# This file packages identity-sync.sh into an executable ConfigMap and applies
+# its namespaced ServiceAccount/RBAC before creating the synchronization Job.
+# The generated script is mounted read-only by identity-sync-job.yaml.
+#
+# Flux starts this stage only after stage 09 has registered the cluster and
+# replaced the temporary RabbitMQ Secret. It waits for the
+# `airm-identity-sync` Job, ensuring the broker identity and topology match that
+# Secret before the agent is allowed to start.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - identity-sync.sh
+  name: airm-identity-sync-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- identity-sync-job.yaml
+---

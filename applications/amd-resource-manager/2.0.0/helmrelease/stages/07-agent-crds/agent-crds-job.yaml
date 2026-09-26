@@ -1,0 +1,58 @@
+# Stage 07 — Agent CRD installation Job
+#
+# This Job installs the Kaiwo and AIM Engine CRDs required by AIRM and creates
+# the seed KaiwoQueueConfig. Versions and expected SHA-256 digests are supplied
+# by the orchestration chart, allowing the script to reject changed or corrupt
+# release artifacts before applying them.
+#
+# agent-crds.sh is packaged into an executable ConfigMap by kustomization.yaml
+# and mounted read-only. The utility image provides curl, Python/PyYAML,
+# sha256sum, and kubectl for verified extraction and installation.
+#
+# The dedicated ServiceAccount can mutate only CRDs and the cluster-scoped
+# KaiwoQueueConfig API. The ten-minute deadline covers downloads, API
+# establishment, and retries. Flux blocks management installation until this
+# Job proves the required APIs and seed object are present.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-agent-crds
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: agent-crds
+        airm.nutanix.com/stage: 07-agent-crds
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-agent-crds
+      containers:
+      - name: agent-crds
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: KAIWO_VERSION
+          value: ${kaiwoVersion}
+        - name: KAIWO_MANIFEST_DIGEST
+          value: ${kaiwoManifestDigest}
+        - name: AIM_ENGINE_VERSION
+          value: ${aimEngineVersion}
+        - name: AIM_ENGINE_CRDS_DIGEST
+          value: ${aimEngineCrdsDigest}
+        command:
+        - /bin/sh
+        - /scripts/agent-crds.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: agent-crds-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-agent-crds-script
+        name: agent-crds-script
+---

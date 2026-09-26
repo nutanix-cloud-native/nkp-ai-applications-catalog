@@ -1,0 +1,71 @@
+# Stage 10 — RabbitMQ identity synchronization permissions
+#
+# All Kubernetes access is confined to the AIRM namespace:
+#
+# - `get` on `airm-rabbitmq-common-vhost-user` reads the registered cluster ID
+#   and one-time secret produced by stage 09.
+# - `get` on `airm-rabbitmq-admin` reads the credential used to declare the
+#   per-cluster queue.
+# - `get`/`list`/`watch` on the specifically named broker pod support
+#   `kubectl wait --for=condition=Ready`.
+# - `create` on `pods/exec` permits rabbitmqctl/rabbitmqadmin execution inside
+#   the broker. Kubernetes cannot constrain this subresource permission by
+#   command; the Job script and fixed environment target the expected pod and
+#   `rabbitmq` container.
+#
+# There is no Secret write, pod mutation, delete, or cluster-scoped access.
+# RabbitMQ's own admin/user authorization governs the operations inside the
+# broker. The RoleBinding grants these permissions only to this stage's
+# short-lived ServiceAccount.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-identity-sync
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-identity-sync
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-rabbitmq-admin
+  - airm-rabbitmq-common-vhost-user
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-infra-rabbitmq-rabbitmq-server-0
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-identity-sync
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-identity-sync
+subjects:
+- kind: ServiceAccount
+  name: airm-identity-sync
+  namespace: ${releaseNamespace}
+---

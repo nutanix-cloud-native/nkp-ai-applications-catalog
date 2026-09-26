@@ -1,0 +1,84 @@
+# Stage 01 — Secret initialization permissions
+#
+# The Job's ServiceAccount needs access in two namespaces, so two namespaced
+# Roles are used instead of a cluster-wide role:
+#
+# 1. Release namespace (`airm-secret-init-discovery`):
+#    `get` only on the specifically named `airm-discovered` ConfigMap. The Job
+#    reads the domain and readiness marker produced by stage 00. `resourceNames`
+#    prevents it from reading unrelated ConfigMaps in the release namespace.
+#
+# 2. AIRM namespace (`airm-secret-init`):
+#    `get` is required to preserve existing credentials and validate keys.
+#    `create` initializes missing Secrets.
+#    `patch` is required by `kubectl apply` both for creation retries and for
+#    synchronizing the two Kubernetes Secrets representing one Keycloak client.
+#
+# The Role grants access to Secrets as a resource type in the AIRM namespace;
+# Kubernetes RBAC cannot restrict create requests by resource name. Keeping the
+# Role namespaced and binding it only to this stage's ServiceAccount limits the
+# write boundary. No delete, list, or cluster-scoped permissions are granted.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-secret-init
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-secret-init-discovery
+  namespace: ${releaseNamespace}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-discovered
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-secret-init-discovery
+  namespace: ${releaseNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-secret-init-discovery
+subjects:
+- kind: ServiceAccount
+  name: airm-secret-init
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-secret-init
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-secret-init
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-secret-init
+subjects:
+- kind: ServiceAccount
+  name: airm-secret-init
+  namespace: ${releaseNamespace}
+---

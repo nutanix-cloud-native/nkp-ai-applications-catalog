@@ -1,0 +1,20 @@
+# Stage 07 — Agent CRD Kustomize assembly
+#
+# This file packages agent-crds.sh into an executable ConfigMap and applies its
+# cluster-scoped ServiceAccount/RBAC before creating the installation Job. The
+# generated script is mounted read-only by agent-crds-job.yaml.
+#
+# Flux starts this stage after RabbitMQ's initial topology is configured and
+# waits for the `airm-agent-crds` Job health check. Management/bootstrap and the
+# agent can therefore assume the Kaiwo/AIM APIs and KaiwoQueueConfig seed exist.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - agent-crds.sh
+  name: airm-agent-crds-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- agent-crds-job.yaml
+---

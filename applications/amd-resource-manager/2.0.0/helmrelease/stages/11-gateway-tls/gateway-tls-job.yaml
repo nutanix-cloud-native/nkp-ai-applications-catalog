@@ -1,0 +1,97 @@
+# Stage 11 — Gateway TLS and external verification Job
+#
+# This two-container Job reproduces installer step 11 without requiring one
+# oversized image:
+# - The init container uses a digest-pinned openssl image to generate a
+#   self-signed wildcard certificate for the discovered domain.
+# - The main cluster-tool container creates the TLS Secret only when absent,
+#   waits for Gateway/HTTPRoute readiness, and probes the external HTTPS URLs.
+#
+# Certificate files pass through a memory-backed emptyDir and are mounted
+# read-only in the main container. An existing Secret is preserved, allowing
+# operators to provide a trusted certificate instead of the generated fallback.
+# gateway-tls.sh is packaged by kustomization.yaml and mounted read-only.
+#
+# The dedicated ServiceAccount can inspect the named Gateway/routes and
+# get/create the named TLS Secret in the release namespace. The 20-minute Job
+# deadline and Flux health check make external ingress a required gate before
+# agent installation.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 1200
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: gateway-tls
+        airm.nutanix.com/stage: 11-gateway-tls
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-gateway-tls
+      initContainers:
+      - name: generate-tls
+        image: ${opensslImage:=docker.io/alpine/openssl@sha256:42c7389ef077aed0eb4e96d0abbd094083d701bbaff1313073b061c0c9cd8278}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DOMAIN
+          value: ${airmDomain}
+        command:
+        - /bin/sh
+        - -ec
+        - |
+          if [ -z "$DOMAIN" ]; then
+            echo "ERROR: DOMAIN / airmDomain is empty or unset" >&2
+            exit 1
+          fi
+
+          openssl req -new -x509 -newkey rsa:2048 -nodes \
+            -keyout /tls/tls.key -out /tls/tls.crt \
+            -days 365 \
+            -subj "/CN=*.$DOMAIN/O=AMD Enterprise AI" \
+            -addext "subjectAltName=DNS:$DOMAIN,DNS:*.$DOMAIN"
+        volumeMounts:
+        - mountPath: /tls
+          name: tls
+      containers:
+      - name: gateway-tls
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DOMAIN
+          value: ${airmDomain}
+        - name: GATEWAY_NAME
+          value: ${gatewayName:=airm-https}
+        - name: GATEWAY_LISTENER_NAME
+          value: ${gatewayListenerName:=websecure}
+        - name: GATEWAY_NAMESPACE
+          value: ${releaseNamespace}
+        - name: TLS_SECRET
+          value: ${gatewayTlsSecretName:=airm-gateway-tls}
+        - name: AIRM_NAMESPACE
+          value: ${airmNamespace:=airm}
+        - name: KEYCLOAK_NAMESPACE
+          value: ${keycloakNamespace:=keycloak}
+        command:
+        - /bin/sh
+        - /scripts/gateway-tls.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: gateway-tls-script
+          readOnly: true
+        - mountPath: /tls
+          name: tls
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-gateway-tls-script
+        name: gateway-tls-script
+      - emptyDir:
+          medium: Memory
+        name: tls
+---

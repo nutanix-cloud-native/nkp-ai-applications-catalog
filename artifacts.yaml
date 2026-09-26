@@ -9,6 +9,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1-beta.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/amd-resource-manager:2.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-central-dashboard:1.10.0
@@ -96,6 +97,28 @@ applications:
       - docker.io/rocm/network-operator:v1.2.0
       - ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2
       - registry.k8s.io/nfd/node-feature-discovery:v0.16.1
+  - name: amd-resource-manager
+    version: 2.0.0
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/amd-resource-manager:2.0.0
+      - oci://registry-1.docker.io/amdenterpriseai/airm-api-chart:2.0.0
+      - oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart:2.0.0
+      - oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart:2.0.0
+      - docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032
+      - docker.io/amdenterpriseai/airm-api:2.0.0
+      - docker.io/amdenterpriseai/airm-ui:2.0.0
+      - docker.io/amdenterpriseai/airm-agent:2.0.0
+      - docker.io/amdenterpriseai/cluster-tool@sha256:26f250b6b9941f777f25a6ba5f06bb1d369855a48bc0fee74ae754621228a7c5
+      - docker.io/bitnamilegacy/keycloak:26.3.3-debian-12-r0
+      - docker.io/bitnamilegacy/postgresql:17.6.0-debian-12-r0
+      - docker.io/curlimages/curl:8.16.0
+      - docker.io/library/busybox:1.37.0
+      - docker.io/library/postgres:17-alpine
+      - docker.io/library/rabbitmq:4.3.4-management
+      - docker.io/liquibase/liquibase:4.31
+      - ghcr.io/cloudnative-pg/cloudnative-pg:1.27.0
+      - ghcr.io/cloudnative-pg/postgresql:17.2
+      - ghcr.io/rabbitmq/cluster-operator:2.22.5
   - name: jupyterhub
     version: 4.3.2
     images:

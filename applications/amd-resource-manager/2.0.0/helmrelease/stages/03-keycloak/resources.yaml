@@ -1,0 +1,115 @@
+# Stage 03 — Keycloak platform resources
+#
+# These resources implement the installation and exposure portions of
+# installer step 7 declaratively:
+#
+# - Namespace: owns the isolated Keycloak workload.
+# - OCIRepository: fetches the configured Keycloak chart by immutable digest.
+# - HelmRelease: installs Keycloak with its internal PostgreSQL database,
+#   ClusterIP Service, proxy headers, public hostname, and explicitly pinned
+#   image repositories/tags.
+# - HTTPRoute: exposes the internal Keycloak Service as `kc.${airmDomain}` on
+#   stage 02's HTTPS Gateway listener.
+#
+# Compared with the installer, Flux replaces `helm repo add` and host-side
+# `helm upgrade --install`; the chart and images are pinned for reproducibility
+# instead of relying on repository state. The script passed a generated admin
+# password explicitly, while this HelmRelease lets the chart manage its
+# bootstrap admin Secret, which keycloak-config.sh reads. The imperative
+# step-7c `kubectl apply` is represented by the HTTPRoute below.
+#
+# `KC_HOSTNAME` and forwarded proxy headers are required because Traefik
+# terminates TLS. Without them Keycloak can emit internal HTTP URLs, breaking
+# browser/OIDC redirects. The Service remains private; only the HTTPRoute is
+# externally reachable.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${keycloakNamespace:=keycloak}
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: airm-keycloak-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 24h
+  ref:
+    digest: ${keycloakChartDigest}
+  url: ${keycloakChartUrl}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airm-keycloak
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: airm-keycloak-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+    timeout: 10m
+  interval: 15m
+  releaseName: keycloak
+  targetNamespace: ${keycloakNamespace:=keycloak}
+  upgrade:
+    remediation:
+      retries: 3
+    timeout: 10m
+  values:
+    auth:
+      adminUser: admin
+    extraEnvVars:
+    - name: KC_HOSTNAME
+      value: https://kc.${airmDomain}
+    - name: KC_PROXY_HEADERS
+      value: xforwarded
+    image:
+      repository: ${keycloakImageRepository}
+      tag: ${keycloakImageTag}
+    keycloakConfigCli:
+      image:
+        repository: ${keycloakConfigCliRepository}
+        tag: ${keycloakConfigCliTag}
+    postgresql:
+      enabled: true
+      image:
+        repository: ${keycloakPostgresqlRepository}
+        tag: ${keycloakPostgresqlTag}
+      metrics:
+        image:
+          repository: ${keycloakPostgresExporterRepository}
+          tag: ${keycloakPostgresExporterTag}
+      volumePermissions:
+        image:
+          repository: ${keycloakOsShellRepository}
+          tag: ${keycloakOsShellTag}
+    proxyHeaders: xforwarded
+    service:
+      type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak-route
+  namespace: ${keycloakNamespace:=keycloak}
+spec:
+  parentRefs:
+  - name: ${gatewayName:=airm-https}
+    namespace: ${releaseNamespace}
+    sectionName: ${gatewayListenerName:=websecure}
+  hostnames:
+  - kc.${airmDomain:=airm.example.com}
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: keycloak
+      port: 80
+---

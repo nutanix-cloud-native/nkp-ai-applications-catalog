@@ -1,0 +1,20 @@
+# Stage 00 — Kustomize assembly
+#
+# This file packages discovery.sh into an executable ConfigMap and applies the
+# least-privilege ServiceAccount/RBAC before creating the discovery Job. The
+# generated script ConfigMap is mounted read-only by discovery-job.yaml.
+#
+# Flux reconciles this directory as the first AIRM stage and waits for the
+# `airm-discovery` Job health check defined by the orchestration chart before
+# allowing dependent stages to start.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - discovery.sh
+  name: airm-discovery-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- discovery-job.yaml
+---

@@ -1,0 +1,15 @@
+# Stage 12 — Agent Kustomize assembly
+#
+# This stage contains the declarative OCIRepository and HelmRelease for the
+# standalone local AIRM agent. There is no Job-hosted shell script; Flux
+# retrieves and reconciles the pinned chart.
+#
+# It starts only after stage 11 verifies Gateway TLS and external endpoints;
+# stages 09 and 10 have already registered the cluster and synchronized its
+# RabbitMQ identity. Parent health checks wait for the agent HelmRelease and
+# `airm-agent-agent` Deployment before post-install verification begins.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- agent.yaml
+---

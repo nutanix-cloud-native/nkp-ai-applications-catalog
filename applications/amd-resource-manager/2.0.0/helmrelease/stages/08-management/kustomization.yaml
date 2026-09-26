@@ -1,0 +1,15 @@
+# Stage 08 — Management-plane Kustomize assembly
+#
+# This stage contains the declarative OCIRepository and HelmRelease for the
+# AIRM API/UI management plane. There is no Job-hosted shell script: Flux
+# retrieves the pinned chart, applies Traefik post-render patches, and
+# reconciles the release.
+#
+# It starts after Kaiwo/AIM APIs are established. Parent health checks wait for
+# the management HelmRelease plus `airm-api` and `airm-ui` Deployments before
+# stage 09 attempts authentication and local-cluster registration.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- management.yaml
+---

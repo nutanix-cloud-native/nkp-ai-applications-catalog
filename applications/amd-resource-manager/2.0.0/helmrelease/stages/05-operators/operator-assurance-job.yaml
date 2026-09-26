@@ -1,0 +1,60 @@
+# Stage 05 — Operator assurance Job
+#
+# This Job verifies that the CloudNativePG and RabbitMQ Cluster operators are
+# installed and Ready, installing pinned fallback manifests only when they are
+# absent. The versions and expected SHA-256 digests come from the orchestration
+# chart so downloaded cluster-scoped resources are integrity checked.
+#
+# operators.sh is generated into `airm-operator-assurance-script` by
+# kustomization.yaml and mounted read-only. The Job's ServiceAccount currently
+# receives cluster-admin because complete upstream operator manifests contain
+# namespaces, CRDs, admission configuration, RBAC, Services, and workloads
+# across multiple API groups and namespaces; see rbac.yaml for the security
+# boundary and follow-up considerations.
+#
+# The ten-minute deadline covers downloads plus both rollout waits. Flux
+# health-checks this Job and blocks infrastructure creation until both
+# controllers are operational.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-operator-assurance
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: operator-assurance
+        airm.nutanix.com/stage: 05-operators
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-operator-assurance
+      containers:
+      - name: operator-assurance
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CNPG_VERSION
+          value: ${cnpgOperatorVersion}
+        - name: CNPG_MANIFEST_DIGEST
+          value: ${cnpgOperatorManifestDigest}
+        - name: RABBITMQ_VERSION
+          value: ${rabbitmqOperatorVersion}
+        - name: RABBITMQ_MANIFEST_DIGEST
+          value: ${rabbitmqOperatorManifestDigest}
+        command:
+        - /bin/sh
+        - /scripts/operators.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: operator-assurance-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-operator-assurance-script
+        name: operator-assurance-script
+---

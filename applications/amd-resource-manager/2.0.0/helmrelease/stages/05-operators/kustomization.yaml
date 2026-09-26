@@ -1,0 +1,21 @@
+# Stage 05 — Operator assurance Kustomize assembly
+#
+# This file packages operators.sh into an executable ConfigMap and applies the
+# dedicated ServiceAccount/binding before creating the assurance Job. The
+# generated script is mounted read-only by operator-assurance-job.yaml.
+#
+# Flux starts this stage after storage compatibility is established and waits
+# for the `airm-operator-assurance` Job health check. Stage
+# `05-infrastructure` depends on this stage, preventing CNPG and RabbitMQ custom
+# resources from being submitted before their controllers are Ready.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - operators.sh
+  name: airm-operator-assurance-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- operator-assurance-job.yaml
+---

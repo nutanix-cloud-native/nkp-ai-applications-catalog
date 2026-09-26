@@ -1,0 +1,48 @@
+# Stage 04 — StorageClass compatibility permissions
+#
+# StorageClasses are cluster-scoped, so this Job requires a ClusterRole even
+# though the Job and ServiceAccount run in `${releaseNamespace}`:
+#
+# - `get` checks whether `default` and the discovered source class exist and
+#   reads the source definition that will be cloned.
+# - `create` permits the first creation of the `default` alias.
+# - `patch` is required by `kubectl apply` if an apply operation must reconcile
+#   an existing object.
+#
+# No list, update, delete, or access to PVCs/PVs is granted. The script exits
+# immediately when `default` already exists, so normal reconciliations do not
+# mutate any StorageClass. The ClusterRoleBinding is limited to this stage's
+# dedicated ServiceAccount.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-storage
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ${releaseName}-airm-storage
+rules:
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${releaseName}-airm-storage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ${releaseName}-airm-storage
+subjects:
+- kind: ServiceAccount
+  name: airm-storage
+  namespace: ${releaseNamespace}
+---

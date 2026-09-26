@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  # Only Flux-substituted wiring belongs here.
+  # airm / gateway / versions defaults live in charts/amd-resource-manager/values.yaml.
+  # NKP configOverrides (or helm --set) merge on top of chart defaults; omit a key
+  # here so the chart value is used.
+  values.yaml: |
+    catalog:
+      sourceName: ${releaseName}-source
+      sourceNamespace: ${releaseNamespace}
+      releaseName: ${releaseName}
+      releaseNamespace: ${releaseNamespace}
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-config-defaults
+  namespace: ${releaseNamespace}
+---

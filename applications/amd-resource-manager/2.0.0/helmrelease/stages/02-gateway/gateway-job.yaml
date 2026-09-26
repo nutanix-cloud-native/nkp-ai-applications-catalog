@@ -1,0 +1,71 @@
+# Stage 02 — Gateway setup Job
+#
+# This Job executes gateway.sh after discovery and Secret initialization. It
+# upgrades/assures the Gateway API CRDs and creates the Traefik-backed Gateway
+# that later Keycloak and AIRM HTTPRoutes reference.
+#
+# Cluster-specific and configurable values are passed as environment variables:
+# the domain comes from stage 00 through Flux substitution, while Gateway,
+# listener, TLS Secret, namespace, and API-version defaults come from the
+# orchestration chart. The script is generated into `airm-gateway-script` by
+# kustomization.yaml and mounted read-only.
+#
+# The Job uses a dedicated ServiceAccount with only Gateway/CRD mutation and
+# discovery-ConfigMap read permissions. Its retry/deadline settings permit
+# transient download or API failures without allowing an indefinite stage.
+# Completion is a Flux health gate for Keycloak and all later HTTPRoutes.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-gateway
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 1800
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: gateway
+        airm.nutanix.com/stage: 02-gateway
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-gateway
+      containers:
+      - name: gateway
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RELEASE_NAMESPACE
+          value: ${releaseNamespace}
+        - name: GATEWAY_NAMESPACE
+          value: ${releaseNamespace}
+        - name: GATEWAY_NAME
+          value: ${gatewayName:=airm-https}
+        - name: GATEWAY_CLASS_NAME
+          value: ${gatewayClassName:=traefik}
+        - name: GATEWAY_LISTENER_NAME
+          value: ${gatewayListenerName:=websecure}
+        - name: GATEWAY_TLS_SECRET_NAME
+          value: ${gatewayTlsSecretName:=airm-gateway-tls}
+        - name: AIRM_NAMESPACE
+          value: ${airmNamespace:=airm}
+        - name: KEYCLOAK_NAMESPACE
+          value: ${keycloakNamespace:=keycloak}
+        - name: DOMAIN
+          value: ${airmDomain}
+        - name: GATEWAY_API_VERSION
+          value: ${gatewayApiVersion:=v1.4.0}
+        command:
+        - /bin/sh
+        - /scripts/gateway.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: gateway-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-gateway-script
+        name: gateway-script
+---
