@@ -1,0 +1,11 @@
+apiVersion: v2
+name: amd-resource-manager
+description: |
+  Catalog orchestration chart for AMD Resource Manager on NKP.
+  Renders staged Flux Kustomizations for all mode (management plane + local agent).
+  Hand-authored first-party chart (no upstream bake).
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+sources:
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog

@@ -1,0 +1,101 @@
+# Stage 02 — Gateway setup permissions
+#
+# The Job performs one cluster-scoped operation and one namespaced operation:
+#
+# 1. Gateway API CRDs:
+#    CustomResourceDefinitions are cluster-scoped. `get`/`list` allow
+#    server-side comparison and discovery; `create` installs missing CRDs; and
+#    `update`/`patch` let `kubectl apply` upgrade older NKP definitions to the
+#    configured compatible release. Delete permission is intentionally absent.
+#
+# 2. Gateway:
+#    The same apply workflow needs get/list/create/update/patch for Gateway
+#    resources. The Gateway namespace is selected from the catalog release at
+#    deployment time. These permissions are currently carried in the combined
+#    ClusterRole used by this Job; no access to HTTPRoutes, Secrets, Services,
+#    or other workload resources is granted.
+#
+# A separate namespaced Role permits `get` only on the specifically named
+# `airm-discovered` ConfigMap. The current script does not read that ConfigMap:
+# Flux resolves `${airmDomain}` through `postBuild.substituteFrom` before the
+# Job is created. This permission is therefore not required by the present
+# implementation and is retained only as existing stage RBAC; it can be removed
+# in a least-privilege cleanup unless direct runtime discovery is added.
+#
+# Both bindings target only the `airm-gateway` ServiceAccount. The permissions
+# are mutation-capable because this stage replaces installer steps 5 and 6,
+# which use `kubectl apply` for both CRDs and the Gateway.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-gateway
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ${releaseName}-airm-gateway
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - patch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${releaseName}-airm-gateway
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ${releaseName}-airm-gateway
+subjects:
+- kind: ServiceAccount
+  name: airm-gateway
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-gateway-discovery
+  namespace: ${releaseNamespace}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-discovered
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-gateway-discovery
+  namespace: ${releaseNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-gateway-discovery
+subjects:
+- kind: ServiceAccount
+  name: airm-gateway
+  namespace: ${releaseNamespace}
+---

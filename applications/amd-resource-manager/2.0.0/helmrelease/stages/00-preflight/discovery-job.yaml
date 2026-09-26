@@ -1,0 +1,65 @@
+# Stage 00 — preflight discovery Job
+#
+# This Job runs once before every other AIRM stage. It validates access to the
+# Kubernetes API and required NKP services, discovers cluster-specific values
+# that cannot be fixed in the catalog (domain, StorageClass, and Prometheus
+# URL), and writes them to the `airm-discovered` ConfigMap in the catalog
+# release namespace. Later Flux Kustomizations consume that ConfigMap through
+# `postBuild.substituteFrom`.
+#
+# The script is supplied by the `airm-discovery-script` ConfigMap generated in
+# kustomization.yaml and is mounted read-only at /scripts. Optional values from
+# the orchestration chart are passed as overrides; empty values tell the script
+# to perform discovery. The dedicated ServiceAccount is intentionally limited
+# by rbac.yaml to read cluster metadata and update only ConfigMaps in the
+# release namespace.
+#
+# Failure is a stage gate: Flux does not continue when API connectivity,
+# cert-manager, Gateway API CRDs, domain discovery, or storage discovery fails.
+# The deadline and retry limit prevent an indefinitely running preflight, while
+# the one-day TTL retains the completed Job long enough for troubleshooting.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-discovery
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: preflight
+        airm.nutanix.com/stage: 00-preflight
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-discovery
+      containers:
+      - name: discovery
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RELEASE_NAMESPACE
+          value: ${releaseNamespace}
+        - name: DOMAIN_OVERRIDE
+          value: "${discoveryDomain}"
+        - name: STORAGE_CLASS_OVERRIDE
+          value: "${discoveryStorageClass}"
+        - name: PROMETHEUS_URL_OVERRIDE
+          value: "${discoveryPrometheusUrl}"
+        - name: GATEWAY_CLASS_NAME
+          value: ${gatewayClassName:=traefik}
+        command:
+        - /bin/sh
+        - /scripts/discovery.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: discovery-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-discovery-script
+        name: discovery-script
+---

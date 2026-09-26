@@ -1,0 +1,21 @@
+# Stage 01 — Kustomize assembly
+#
+# This file packages secret-init.sh into an executable ConfigMap and applies
+# the ServiceAccount/RBAC before creating the Secret initialization Job. The
+# generated ConfigMap is mounted read-only by secret-init-job.yaml.
+#
+# Flux starts this stage after 00-preflight and waits for the
+# `airm-secret-init` Job health check before starting stages that consume these
+# credentials. Script content changes alter the generated ConfigMap, allowing
+# the stage resources to reconcile with the catalog source.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - secret-init.sh
+  name: airm-secret-init-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- secret-init-job.yaml
+---

@@ -1,0 +1,60 @@
+# Stage 03 — Keycloak application configuration Job
+#
+# The HelmRelease in resources.yaml installs Keycloak; this Job then configures
+# AIRM-specific state that is not part of the generic chart: realm, clients,
+# users, roles, service-account access, and synchronized Kubernetes Secrets.
+#
+# It runs from the catalog release namespace but reaches Keycloak through its
+# internal ClusterIP Service. Namespace and client-ID values are passed from
+# the orchestration chart. keycloak-config.sh is generated into a ConfigMap by
+# kustomization.yaml and mounted read-only at /scripts.
+#
+# The dedicated ServiceAccount can read the chart-generated bootstrap Secret,
+# maintain `keycloak-kcadmin`, and read/patch only the three named AIRM Secrets
+# needed for client and user configuration. Retries are safe because the
+# script reconciles existing Keycloak objects and preserves stable credentials.
+#
+# Flux health-checks both the Keycloak HelmRelease and this Job, so stage 04
+# cannot begin until Keycloak is installed and a real AIRM password grant has
+# succeeded.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-keycloak-config
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 1800
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: keycloak-config
+        airm.nutanix.com/stage: 03-keycloak
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-keycloak-config
+      containers:
+      - name: keycloak-config
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: KEYCLOAK_NAMESPACE
+          value: ${keycloakNamespace:=keycloak}
+        - name: AIRM_NAMESPACE
+          value: ${airmNamespace:=airm}
+        - name: KEYCLOAK_CLIENT_ID
+          value: ${keycloakAdminClientId:=354a0fa1-35ac-4a6d-9c4d-d661129c2cd0}
+        command:
+        - /bin/sh
+        - /scripts/keycloak-config.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: keycloak-config-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-keycloak-config-script
+        name: keycloak-config-script
+---

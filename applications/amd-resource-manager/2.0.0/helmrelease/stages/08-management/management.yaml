@@ -1,0 +1,128 @@
+# Stage 08 — AIRM management plane (API and UI)
+#
+# These Flux resources install the AIRM API/UI management plane and adapt its
+# HTTPRoutes for NKP's Traefik Gateway. They correspond to the management half
+# of installer step 10, step 10b, and the HTTPRoute template patch performed in
+# installer step 2.
+#
+# The API chart is fetched from OCI by immutable digest. Its runtime values wire
+# AIRM to the domain discovered in stage 00, the Gateway from stage 02, Keycloak
+# from stage 03, PostgreSQL/RabbitMQ from stage 05, and the discovered
+# Prometheus endpoint. API and frontend image tags remain catalog-configurable.
+#
+# Differences from the original installer:
+# 1. The all-mode installer deployed the local umbrella `airm` chart, which
+#    included API, UI, agent, and configure Job. This stage deploys only the
+#    digest-pinned `airm-api-chart`; agent deployment is intentionally deferred
+#    until after registration and RabbitMQ identity synchronization.
+# 2. `airm.includeDemoSetup` is false. The chart's configure Job is replaced by
+#    explicit stages 09-bootstrap and 10-identity-sync, avoiding a race where
+#    the agent starts with the temporary `airm-user` credentials.
+# 3. Flux continuously installs/upgrades/remediates the release instead of
+#    host-side Helm deleting old Jobs and running `helm upgrade --install`.
+# 4. Installer step 2 edited the checked-out HTTPRoute template with sed to
+#    remove unsupported Host-header regex matches. Here Helm post-renderer
+#    patches remove those fields without modifying the upstream chart artifact.
+# 5. Installer step 10b patched route hostnames after Helm completed. The same
+#    hostnames and explicit `websecure` listener binding are added during
+#    rendering, so the applied resources are already Traefik-compatible.
+# 6. Readiness is enforced by parent Flux health checks for this HelmRelease
+#    and the API/UI Deployments rather than solely by `helm --wait`.
+#
+# This stage contains no custom shell script or stage-specific RBAC. Flux
+# source-controller and helm-controller own retrieval and reconciliation.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: airm-management-chart
+  namespace: ${releaseNamespace}
+  annotations:
+    airm.nutanix.com/chart-version: ${airmApiChartVersion}
+spec:
+  interval: 24h
+  ref:
+    digest: ${airmApiChartDigest}
+  url: ${airmApiChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-api-chart}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airm-management
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: airm-management-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  interval: 15m
+  releaseName: airm
+  targetNamespace: ${airmNamespace:=airm}
+  timeout: 10m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    gateway:
+      namespace: ${releaseNamespace}
+      gatewayName: ${gatewayName:=airm-https}
+    airm:
+      appDomain: ${airmDomain}
+      # Stages 09 and 10 replace the chart's configure Job so the agent starts
+      # only after bootstrap and RabbitMQ identity synchronization complete.
+      includeDemoSetup: false
+      keycloak:
+        internalUrl: http://keycloak.${keycloakNamespace:=keycloak}.svc.cluster.local:80
+      postgresql:
+        host: airm-infra-cnpg-cnpg-rw.${airmNamespace:=airm}.svc.cluster.local
+      rabbitmq:
+        host: airm-infra-rabbitmq-rabbitmq.${airmNamespace:=airm}.svc.cluster.local
+      prometheus:
+        url: ${airmPrometheusUrl}
+      frontend:
+        image:
+          tag: ${airmImageTag}
+      backend:
+        image:
+          tag: ${airmImageTag}
+  postRenderers:
+  - kustomize:
+      # Script step 2 removes unsupported Host-header regex matches. Explicit
+      # hostnames and listener binding preserve the step 10b route behavior.
+      patches:
+      - target:
+          group: gateway.networking.k8s.io
+          version: v1
+          kind: HTTPRoute
+          name: airmapi-route
+        patch: |
+          - op: add
+            path: /spec/hostnames
+            value:
+            - airmapi.${airmDomain:=airm.example.com}
+          - op: add
+            path: /spec/parentRefs/0/sectionName
+            value: ${gatewayListenerName:=websecure}
+          - op: remove
+            path: /spec/rules/0/matches/0/headers
+          - op: remove
+            path: /spec/rules/1/matches/0/headers
+      - target:
+          group: gateway.networking.k8s.io
+          version: v1
+          kind: HTTPRoute
+          name: airmui-route
+        patch: |
+          - op: add
+            path: /spec/hostnames
+            value:
+            - airmui.${airmDomain:=airm.example.com}
+          - op: add
+            path: /spec/parentRefs/0/sectionName
+            value: ${gatewayListenerName:=websecure}
+          - op: remove
+            path: /spec/rules/0/matches/0/headers
+---

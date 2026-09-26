@@ -1,0 +1,64 @@
+# Stage 05 — AIRM PostgreSQL infrastructure
+#
+# These Flux resources replace installer step 9c, which ran:
+# `helm upgrade --install airm-infra-cnpg <local-chart>`.
+#
+# The OCIRepository retrieves AMD's AIRM CNPG chart using an immutable digest;
+# the version annotation remains visible for operators but the digest is the
+# actual source pin. The HelmRelease deploys into the dedicated AIRM namespace
+# and creates the CloudNativePG Cluster used by the AIRM management API.
+#
+# Differences from the original installer step 9c:
+# - The chart comes directly from a digest-pinned OCI artifact rather than the
+#   mutable local tree cloned by installer step 2.
+# - Flux performs install/upgrade and remediation instead of host-side Helm.
+# - Reconciliation is continuous; an existing release is brought to the
+#   declared state rather than detected and skipped.
+# - Namespace creation and retry policy are expressed in the HelmRelease.
+# - Both data and WAL storage retain the script's literal `default`
+#   StorageClass setting, which stage 04 assures before this stage.
+# - Readiness is enforced by the parent orchestration health checks for this
+#   HelmRelease and its generated CNPG Cluster, not by `helm --wait` here.
+#
+# No shell script or Kubernetes RBAC is required in this stage: Flux source and
+# Helm controllers perform all chart retrieval and installation operations.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: airm-infra-cnpg
+  namespace: ${releaseNamespace}
+  annotations:
+    airm.nutanix.com/chart-version: ${airmCnpgChartVersion}
+spec:
+  interval: 24h
+  ref:
+    digest: ${airmCnpgChartDigest}
+  url: ${airmCnpgChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airm-infra-cnpg
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: airm-infra-cnpg
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  interval: 15m
+  releaseName: airm-infra-cnpg
+  targetNamespace: ${airmNamespace:=airm}
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    storage:
+      storageClass: default
+    walStorage:
+      storageClass: default
+---

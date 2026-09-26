@@ -1,0 +1,129 @@
+# Stage 11 — Gateway TLS and route verification permissions
+#
+# Release/Gateway namespace:
+# - `get` on the specifically named TLS Secret determines whether an
+#   operator-provided or previous certificate must be preserved.
+# - `create` on Secrets permits first creation of that TLS Secret. Kubernetes
+#   cannot constrain create by resourceName because authorization occurs before
+#   the object exists, so this is intentionally namespace-wide but bound only
+#   to this stage's ServiceAccount. Patch/update/delete are not granted.
+# - `get` on the named Gateway reads listener conditions and its address.
+#
+# AIRM namespace:
+# - `get` only on `airmapi-route` and `airmui-route` verifies Accepted and
+#   ResolvedRefs conditions.
+#
+# Keycloak namespace:
+# - `get` only on `keycloak-route` performs the same readiness verification.
+#
+# No certificate private key is read back from Kubernetes, no routes/Gateway
+# are mutated, and there is no cluster-scoped access. External HTTPS probes
+# require network access but no additional Kubernetes RBAC.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - ${gatewayTlsSecretName:=airm-gateway-tls}
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+- apiGroups:
+  - gateway.networking.k8s.io
+  resourceNames:
+  - ${gatewayName:=airm-https}
+  resources:
+  - gateways
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-gateway-tls
+subjects:
+- kind: ServiceAccount
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-gateway-tls
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - gateway.networking.k8s.io
+  resourceNames:
+  - airmapi-route
+  - airmui-route
+  resources:
+  - httproutes
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-gateway-tls
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-gateway-tls
+subjects:
+- kind: ServiceAccount
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-gateway-tls
+  namespace: ${keycloakNamespace:=keycloak}
+rules:
+- apiGroups:
+  - gateway.networking.k8s.io
+  resourceNames:
+  - keycloak-route
+  resources:
+  - httproutes
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-gateway-tls
+  namespace: ${keycloakNamespace:=keycloak}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-gateway-tls
+subjects:
+- kind: ServiceAccount
+  name: airm-gateway-tls
+  namespace: ${releaseNamespace}
+---

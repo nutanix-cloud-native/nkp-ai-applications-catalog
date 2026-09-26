@@ -1,0 +1,115 @@
+# Stage 00 — preflight discovery permissions
+#
+# The discovery Job needs two deliberately separated permission scopes:
+#
+# 1. Namespaced write access:
+#    The Role permits get/create/patch on ConfigMaps only in
+#    `${releaseNamespace}`. These verbs are required by
+#    `kubectl create ... --dry-run | kubectl apply` when the Job creates or
+#    updates `airm-discovered`. No Secret or workload write access is granted.
+#
+# 2. Cluster-wide read access:
+#    Discovery must inspect resources that are cluster-scoped or may live in
+#    namespaces other than the catalog release namespace:
+#    - Services: locate Traefik and Prometheus endpoints.
+#    - StorageClasses: select `default`, the annotated default, or a fallback.
+#    - Deployments: verify cert-manager and detect CloudNativePG.
+#    - CustomResourceDefinitions: verify Gateway API CRDs.
+#    - GatewayClasses: verify the configured Traefik GatewayClass.
+#    - MetalLB IPAddressPools: derive the nip.io domain from an address pool.
+#
+# The ClusterRole is read-only (`get`/`list`). RoleBindings attach both scopes
+# exclusively to the `airm-discovery` ServiceAccount used by discovery-job.yaml.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-discovery
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-discovery-config
+  namespace: ${releaseNamespace}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-discovery-config
+  namespace: ${releaseNamespace}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-discovery-config
+subjects:
+- kind: ServiceAccount
+  name: airm-discovery
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ${releaseName}-airm-discovery
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gatewayclasses
+  verbs:
+  - get
+- apiGroups:
+  - metallb.io
+  resources:
+  - ipaddresspools
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${releaseName}-airm-discovery
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ${releaseName}-airm-discovery
+subjects:
+- kind: ServiceAccount
+  name: airm-discovery
+  namespace: ${releaseNamespace}
+---

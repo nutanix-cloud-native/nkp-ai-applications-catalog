@@ -1,0 +1,149 @@
+{{- if eq .Values.airm.mode "all" }}
+{{- if and .Values.catalog.sourceName .Values.catalog.sourceNamespace }}
+{{- $root := . }}
+{{- $sourceName := .Values.catalog.sourceName }}
+{{- $sourceNamespace := .Values.catalog.sourceNamespace }}
+{{- $releaseName := default .Release.Name .Values.catalog.releaseName }}
+{{- $releaseNamespace := include "amd-resource-manager.releaseNamespace" . }}
+{{- range $stage := .Values.allModeStages }}
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: {{ printf "%s-%s" $releaseName $stage.name | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $releaseNamespace }}
+  labels:
+    {{- include "amd-resource-manager.labels" $root | nindent 4 }}
+    airm.nutanix.com/stage: {{ $stage.name | quote }}
+spec:
+  interval: {{ $root.Values.stages.interval }}
+  retryInterval: {{ $root.Values.stages.retryInterval }}
+  timeout: {{ default $root.Values.stages.timeout $stage.timeout }}
+  prune: {{ $root.Values.stages.prune }}
+  wait: {{ $root.Values.stages.wait }}
+  force: true
+  path: ./helmrelease/stages/{{ $stage.name }}
+  sourceRef:
+    kind: OCIRepository
+    name: {{ $sourceName }}
+    namespace: {{ $sourceNamespace }}
+  postBuild:
+    substitute:
+      releaseName: {{ $releaseName | quote }}
+      releaseNamespace: {{ $releaseNamespace | quote }}
+      discoveryDomain: {{ $root.Values.discovery.domain | quote }}
+      discoveryStorageClass: {{ $root.Values.discovery.storageClass | quote }}
+      discoveryPrometheusUrl: {{ $root.Values.discovery.prometheusUrl | quote }}
+      airmNamespace: {{ $root.Values.airm.namespace | quote }}
+      keycloakNamespace: {{ $root.Values.keycloak.namespace | quote }}
+      keycloakAdminClientId: {{ $root.Values.keycloak.adminClientId | quote }}
+      gatewayName: {{ $root.Values.gateway.name | quote }}
+      gatewayClassName: {{ $root.Values.gateway.gatewayClassName | quote }}
+      gatewayListenerName: {{ $root.Values.gateway.listenerName | quote }}
+      gatewayTlsSecretName: {{ $root.Values.gateway.tlsSecretName | quote }}
+      gatewayApiVersion: {{ $root.Values.versions.gatewayApi | quote }}
+      clusterToolImage: {{ $root.Values.toolImages.cluster | quote }}
+      opensslImage: {{ $root.Values.toolImages.openssl | quote }}
+      {{ if eq $stage.name "03-keycloak" -}}
+      keycloakChartUrl: {{ $root.Values.keycloak.chartUrl | quote }}
+      keycloakChartDigest: {{ $root.Values.versions.keycloakChartDigest | quote }}
+      keycloakImageRepository: {{ $root.Values.keycloak.images.keycloak.repository | quote }}
+      keycloakImageTag: {{ $root.Values.keycloak.images.keycloak.tag | quote }}
+      keycloakConfigCliRepository: {{ $root.Values.keycloak.images.configCli.repository | quote }}
+      keycloakConfigCliTag: {{ $root.Values.keycloak.images.configCli.tag | quote }}
+      keycloakPostgresqlRepository: {{ $root.Values.keycloak.images.postgresql.repository | quote }}
+      keycloakPostgresqlTag: {{ $root.Values.keycloak.images.postgresql.tag | quote }}
+      keycloakPostgresExporterRepository: {{ $root.Values.keycloak.images.postgresExporter.repository | quote }}
+      keycloakPostgresExporterTag: {{ $root.Values.keycloak.images.postgresExporter.tag | quote }}
+      keycloakOsShellRepository: {{ $root.Values.keycloak.images.osShell.repository | quote }}
+      keycloakOsShellTag: {{ $root.Values.keycloak.images.osShell.tag | quote }}
+      {{ end -}}
+      {{ if eq $stage.name "05-operators" -}}
+      cnpgOperatorVersion: {{ $root.Values.versions.cnpgOperator | quote }}
+      cnpgOperatorManifestDigest: {{ $root.Values.versions.cnpgOperatorManifestDigest | quote }}
+      rabbitmqOperatorVersion: {{ $root.Values.versions.rabbitmqOperator | quote }}
+      rabbitmqOperatorManifestDigest: {{ $root.Values.versions.rabbitmqOperatorManifestDigest | quote }}
+      {{ end -}}
+      {{ if eq $stage.name "05-infrastructure" -}}
+      airmCnpgChartUrl: {{ $root.Values.chartSources.airmCnpg | quote }}
+      airmCnpgChartVersion: {{ $root.Values.versions.airmCnpgChart | quote }}
+      airmCnpgChartDigest: {{ $root.Values.versions.airmCnpgChartDigest | quote }}
+      airmRabbitmqChartUrl: {{ $root.Values.chartSources.airmRabbitmq | quote }}
+      airmRabbitmqChartVersion: {{ $root.Values.versions.airmRabbitmqChart | quote }}
+      airmRabbitmqChartDigest: {{ $root.Values.versions.airmRabbitmqChartDigest | quote }}
+      {{ end -}}
+      {{ if eq $stage.name "07-agent-crds" -}}
+      kaiwoVersion: {{ $root.Values.versions.kaiwo | quote }}
+      kaiwoManifestDigest: {{ $root.Values.versions.kaiwoManifestDigest | quote }}
+      aimEngineVersion: {{ $root.Values.versions.aimEngine | quote }}
+      aimEngineCrdsDigest: {{ $root.Values.versions.aimEngineCrdsDigest | quote }}
+      {{ end -}}
+      {{ if eq $stage.name "08-management" -}}
+      airmApiChartUrl: {{ $root.Values.chartSources.airmApi | quote }}
+      airmApiChartVersion: {{ $root.Values.versions.airmApiChart | quote }}
+      airmApiChartDigest: {{ $root.Values.versions.airmApiChartDigest | quote }}
+      airmImageTag: {{ $root.Values.airm.imageTag | quote }}
+      {{ end -}}
+      {{ if eq $stage.name "12-agent" -}}
+      airmAgentChartUrl: {{ required "chartSources.airmAgent is required for stage 12-agent" $root.Values.chartSources.airmAgent | quote }}
+      airmAgentChartVersion: {{ required "versions.airmAgentChart is required for stage 12-agent" $root.Values.versions.airmAgentChart | quote }}
+      airmAgentChartDigest: {{ required "versions.airmAgentChartDigest is required for stage 12-agent" $root.Values.versions.airmAgentChartDigest | quote }}
+      airmImageTag: {{ required "airm.imageTag is required for stage 12-agent" $root.Values.airm.imageTag | quote }}
+      {{ end -}}
+    {{- if ne $stage.name "00-preflight" }}
+    substituteFrom:
+      - kind: ConfigMap
+        name: airm-discovered
+        optional: true
+    {{- end }}
+  {{- if $stage.dependsOn }}
+  dependsOn:
+  {{- range $dep := $stage.dependsOn }}
+    - name: {{ printf "%s-%s" $releaseName $dep | trunc 63 | trimSuffix "-" }}
+      namespace: {{ $releaseNamespace }}
+  {{- end }}
+  {{- end }}
+  {{- if eq $stage.name "00-preflight" }}
+  healthChecks:
+    - apiVersion: batch/v1
+      kind: Job
+      name: airm-discovery
+      namespace: {{ $releaseNamespace }}
+  {{- else if eq $stage.name "01-secrets" }}
+  healthChecks:
+    - apiVersion: batch/v1
+      kind: Job
+      name: airm-secret-init
+      namespace: {{ $releaseNamespace }}
+  {{- else if eq $stage.name "02-gateway" }}
+  healthChecks:
+    - apiVersion: batch/v1
+      kind: Job
+      name: airm-gateway
+      namespace: {{ $releaseNamespace }}
+  {{- else if eq $stage.name "03-keycloak" }}
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: airm-keycloak
+      namespace: {{ $releaseNamespace }}
+    - apiVersion: batch/v1
+      kind: Job
+      name: airm-keycloak-config
+      namespace: {{ $releaseNamespace }}
+  {{- else }}
+  {{- with $stage.healthChecks }}
+  healthChecks:
+  {{- range . }}
+    - apiVersion: {{ .apiVersion }}
+      kind: {{ .kind }}
+      name: {{ .name }}
+      namespace: {{ default $releaseNamespace .namespace }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- else }}
+{{- fail (printf "airm.mode %q is not implemented in this chart version; only all mode is supported" .Values.airm.mode) }}
+{{- end }}
