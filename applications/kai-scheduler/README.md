@@ -30,6 +30,8 @@ Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-sh
 - [Chart Source](#chart-source)
 - [Dependencies](#dependencies)
 - [Smoke Test Validation](#smoke-test-validation)
+- [Release Features](#release-features)
+  - [v0.17.0](#v0170)
 - [Links](#links)
 
 ## Introduction
@@ -516,6 +518,20 @@ kubectl delete namespace kai-test
 ### Conclusion
 
 KAI Scheduler installation and queue-based CPU scheduling are validated. GPU scheduling remains blocked by cluster GPU resource exposure/capacity, not by KAI deployment manifests.
+
+## Release Features
+
+This section summarizes the main user-facing features included in each cataloged KAI Scheduler release.
+
+### v0.17.0
+
+- **Preemption delay:** Configure a minimum pending time before a workload can trigger preemption, reclaim, or consolidation, giving cluster autoscalers time to provision capacity.
+- **Topology aliases:** Use friendly aliases for topology levels in workload placement constraints.
+- **Karta fallback podgrouper:** Translate Karta gang-scheduling definitions into KAI PodGroups while preserving native KAI plugin precedence.
+- **DRA-backed extended resources:** Schedule workloads that request extended resources provided through Kubernetes Dynamic Resource Allocation.
+- **FIPS image variants:** Use FIPS-enabled KAI images through the `global.fips` Helm value.
+- **GitOps support:** Render `kai-config` as a tracked resource for GitOps tools such as Argo CD.
+- **Operational improvements:** Add configurable priority classes, NUMA-aware scoring, resource-reservation controls, and PodDisruptionBudget settings.
 
 ## Links
 

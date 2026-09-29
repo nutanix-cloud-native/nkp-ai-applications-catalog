@@ -11,6 +11,7 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
+      - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.17.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kubeflow-pipelines:2.15.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kuberay:1.7.0
       - oci://<registry-url>/nkp-ai-applications-catalog/kueue:0.18.0
@@ -119,6 +120,22 @@ applications:
       - ghcr.io/kai-scheduler/kai-scheduler/podgrouper:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/queuecontroller:v0.15.2
       - ghcr.io/kai-scheduler/kai-scheduler/scheduler:v0.15.2
+  - name: kai-scheduler
+    version: 0.17.0
+    images:
+      - oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/admission:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/binder:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/nodescaleadjuster:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/numa-placement-exporter:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/operator:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/podgroupcontroller:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/podgrouper:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/queuecontroller:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/resourcereservation:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/scalingpod:v0.17.0
+      - ghcr.io/kai-scheduler/kai-scheduler/scheduler:v0.17.0
   - name: kubeflow-pipelines
     version: 2.15.0
     images:
