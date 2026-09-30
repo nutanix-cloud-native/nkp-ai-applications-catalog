@@ -49,7 +49,7 @@ login:
 
 # Base OCI registry for Helm chart pushes. Override for testing:
 #   OCI_REGISTRY=oci://my-registry.com/charts just push-ollama
-OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/charts')
+OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts')
 
 # Mirror a chart from a Helm repository to our OCI registry
 # Usage: just mirror-chart-from-repo <repo-url> <chart> <version> [oci-registry]
