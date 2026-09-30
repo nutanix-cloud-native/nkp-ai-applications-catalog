@@ -413,12 +413,12 @@ to `oci://ghcr.io/nutanix-cloud-native/charts`.
 
 ### Manual CI publish for first-party charts
 
-Use `Publish First-Party Charts to GHCR` for hand-authored charts such as
-`kubeflow-platform` (no bake step).
+Use `Publish First-Party Charts to GHCR` for hand-authored charts under `charts/`
+(no bake step).
 
-- Trigger it manually and set `chart` (default `kubeflow-platform`).
+- Trigger it manually and set `chart` to the directory name under `charts/`.
 - The workflow runs `helm lint`, then `helm package` / `helm push`.
-- Local equivalent: `just login && helm package charts/kubeflow-platform && helm push kubeflow-platform-*.tgz oci://ghcr.io/nutanix-cloud-native/charts`.
+- Local equivalent: `just login && helm package charts/<chart> && helm push <chart>-*.tgz oci://ghcr.io/nutanix-cloud-native/charts`.
 
 ## Sample Apps (Demo)
 
@@ -428,7 +428,7 @@ Use `Publish First-Party Charts to GHCR` for hand-authored charts such as
 
 These apps demonstrate catalog composability and dependency flow. See [docs/demo-script.md](docs/demo-script.md) for the full demo walkthrough.
 
-**Kubeflow:** All Kubeflow components use [kubeflow/manifests v1.11.0](https://github.com/kubeflow/manifests/releases/tag/v1.11.0). See [docs/KUBEFLOW-V1.11-MIGRATION.md](docs/KUBEFLOW-V1.11-MIGRATION.md) for migration notes and required fixes.
+**Kubeflow:** Catalog ships standalone ClusterIP [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) from [kubeflow/manifests v1.11.0](https://github.com/kubeflow/manifests/releases/tag/v1.11.0) (`platform-agnostic`). No SSO, dedicated ingress, Central Dashboard, or Training Operator.
 
 ## Existing Applications
 
@@ -467,9 +467,9 @@ All helper scripts live in `scripts/` and are orchestrated via a [`justfile`](ht
 | `just add-<app>` | Push chart + generate scaffold (e.g. `add-ollama`, `add-weaviate`) — see dev-commands.md |
 | `just bake <app> [version]` | Render a Kustomize-only app into an air-gappable manifest + chart (see [tools/bake](tools/bake/README.md)) |
 | `just bake-check` | Re-bake all apps; fail if committed artifacts drifted |
-| `just push-baked-chart <app>` | Package and push `kubeflow-pipelines` or `kubeflow-central-dashboard` |
+| `just push-baked-chart <app>` | Package and push `kubeflow-pipelines` |
 | `Publish Baked Charts to GHCR` (GitHub Actions) | Manual CI workflow to bake and push changed baked charts to GHCR using CI credentials |
-| `Publish First-Party Charts to GHCR` (GitHub Actions) | Manual CI workflow to lint and push hand-authored charts (for example `kubeflow-platform`) |
+| `Publish First-Party Charts to GHCR` (GitHub Actions) | Manual CI workflow to lint and push hand-authored charts under `charts/` |
 | `just create-bundle [tag]` | Create catalog bundle (default: `v0.1.0`) |
 | `just push-bundle [registry]` | Push bundle to OCI registry |
 | `just add-to-cluster [workspace] [tag]` | Deploy catalog to NKP cluster |

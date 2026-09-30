@@ -206,6 +206,11 @@ Apps declare the platform apps they need (Istio, cert-manager, ...) in
 suites read that list and provision a lightweight stand-in for each entry before
 install, so metadata is the single source of truth -- tests never hardcode a
 per-app dependency list.
+`dependsOn` in their `metadata.yaml` (`optional: false` for hard deps). Both the
+Helm and Kustomize suites read that list and provision a lightweight stand-in
+for each hard entry before install, so metadata is the single source of truth --
+tests never hardcode a per-app dependency list. Soft deps (`optional: true`) are
+not provisioned. Apps with no dependencies omit `dependsOn`.
 
 Supported dependencies live in the `dependencyProvisioners` registry in
 `apptests/suites/dependencies.go`. To support a heavier dependency, add one

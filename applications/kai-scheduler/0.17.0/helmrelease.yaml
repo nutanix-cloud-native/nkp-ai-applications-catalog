@@ -16,6 +16,6 @@ spec:
     kind: OCIRepository
     name: ${releaseName}-source
     namespace: ${releaseNamespace}
-  timeout: 10m0s
+  timeout: 1m0s
   wait: true
 ---

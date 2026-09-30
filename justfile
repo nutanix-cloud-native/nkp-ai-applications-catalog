@@ -56,8 +56,8 @@ OCI_REGISTRY := env_var_or_default('OCI_REGISTRY', 'oci://ghcr.io/nutanix-cloud-
 mirror-chart-from-repo repo-url chart version oci-registry=OCI_REGISTRY:
     ./scripts/push-helm-to-oci.sh {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
-# Push the generated kubeflow-central-dashboard chart to OCI.
-push-kubeflow-central-dashboard: (push-baked-chart "kubeflow-central-dashboard")
+# Push the generated kubeflow-pipelines chart to OCI.
+push-kubeflow-pipelines: (push-baked-chart "kubeflow-pipelines")
 
 # Mirror a chart from an upstream OCI registry to our OCI registry
 # Usage: just mirror-chart-from-oci oci://upstream-registry/chart <version> [oci-registry]

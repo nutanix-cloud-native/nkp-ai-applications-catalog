@@ -1,7 +1,0 @@
-workloads:
-  centraldashboard:
-    replicas: 1
-    resources: {}
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}

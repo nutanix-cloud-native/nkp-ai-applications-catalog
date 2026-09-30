@@ -57,6 +57,10 @@ scope:
 dependencies: []
 requiredDependencies:
   - kuberay
+dependsOn:
+  - type: Application
+    name: kuberay
+    optional: false
 supportLink: https://docs.ray.io/en/latest/cluster/kubernetes/index.html
 type: nkp-catalog
 nkpVersionSupport: ">=2.19.0"

@@ -1,35 +1,37 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ${releaseName}-${appVersion}-chart
+  name: ${releaseName}-chart
   namespace: ${releaseNamespace}
 spec:
   interval: 24h
   ref:
-    tag: 1.11.0
-  url: oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-platform
+    tag: v0.17.0
+  url: oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: kubeflow-platform
+  name: kai-scheduler
   namespace: ${releaseNamespace}
 spec:
   chartRef:
     kind: OCIRepository
-    name: ${releaseName}-${appVersion}-chart
+    name: ${releaseName}-chart
     namespace: ${releaseNamespace}
   install:
+    crds: CreateReplace
     createNamespace: true
     remediation:
-      retries: 60
+      retries: 30
+    timeout: 10m0s
   interval: 15s
-  # createNamespace makes the shared kubeflow namespace without the chart owning it,
-  # so disabling the app won't prune it.
-  targetNamespace: kubeflow
+  targetNamespace: kai-scheduler
   upgrade:
+    crds: CreateReplace
     remediation:
-      retries: 60
+      retries: 30
+    timeout: 10m0s
   valuesFrom:
   - kind: ConfigMap
     name: ${releaseName}-${appVersion}-defaults
