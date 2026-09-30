@@ -230,7 +230,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}pcie_max_speed{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}",
+              "expr": "$${g_metrics_prefix}pcie_max_speed{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "__auto",
@@ -316,7 +316,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "sum(delta($${g_metrics_prefix}pcie_recovery_count{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}pcie_recovery_count{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": true,
@@ -333,7 +333,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "sum(delta($${g_metrics_prefix}pcie_replay_count{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}pcie_replay_count{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -351,7 +351,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "sum(delta($${g_metrics_prefix}pcie_replay_rollover_count{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}pcie_replay_rollover_count{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -369,7 +369,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "sum(delta($${g_metrics_prefix}pcie_nack_received_count{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}pcie_nack_received_count{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -387,7 +387,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "sum(delta($${g_metrics_prefix}pcie_nack_sent_count{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}pcie_nack_sent_count{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -471,7 +471,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "topk(5, $${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\"})",
+              "expr": "topk(5, $${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": true,
@@ -488,7 +488,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "topk(5, $${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+              "expr": "topk(5, $${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -573,7 +573,7 @@
               "disableTextWrap": false,
               "editorMode": "builder",
               "exemplar": false,
-              "expr": "topk(5, $${g_metrics_prefix}gpu_used_vram{hostname=~\"$g_hostname\"})",
+              "expr": "topk(5, $${g_metrics_prefix}gpu_used_vram{hostname=~\"$$g_hostname\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": true,
@@ -645,7 +645,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "sum($${g_metrics_prefix}gpu_package_power{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}) or vector(0)",
+              "expr": "sum($${g_metrics_prefix}gpu_package_power{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}) or vector(0)",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -661,7 +661,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "sum($${g_metrics_prefix}gpu_package_power{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}) or vector(0)",
+              "expr": "sum($${g_metrics_prefix}gpu_package_power{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}) or vector(0)",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -676,7 +676,7 @@
                 "type": "__expr__",
                 "uid": "$${DS_EXPRESSION}"
               },
-              "expression": "$A+$B",
+              "expression": "$$A+$$B",
               "hide": false,
               "refId": "Total Package Power Usage",
               "type": "math"
@@ -743,7 +743,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}pcie_bandwidth{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}pcie_bandwidth{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "Total current PCIe bandwidth",
@@ -817,7 +817,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}gpu_used_vram{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}gpu_used_vram{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -833,7 +833,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}gpu_total_vram{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}gpu_total_vram{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -848,7 +848,7 @@
                 "type": "__expr__",
                 "uid": "$${DS_EXPRESSION}"
               },
-              "expression": "($A / $B) * 100",
+              "expression": "($$A / $$B) * 100",
               "hide": false,
               "refId": "Memory Usage",
               "type": "math"
@@ -951,7 +951,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}pcie_bandwidth{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}pcie_bandwidth{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "__auto",
@@ -1024,7 +1024,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum(delta($${g_metrics_prefix}gpu_ecc_correct_total{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}gpu_ecc_correct_total{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "Correctable",
@@ -1039,7 +1039,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum(delta($${g_metrics_prefix}gpu_ecc_uncorrect_total{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}gpu_ecc_uncorrect_total{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1115,7 +1115,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum(delta($${g_metrics_prefix}gpu_energy_consumed{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}gpu_energy_consumed{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -1129,7 +1129,7 @@
                 "type": "__expr__",
                 "uid": "$${DS_EXPRESSION}"
               },
-              "expression": "$A / 1000000",
+              "expression": "$$A / 1000000",
               "hide": false,
               "refId": "Joules",
               "type": "math"
@@ -1232,7 +1232,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "__auto",
@@ -1247,7 +1247,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1355,7 +1355,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}gpu_used_vram{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}gpu_used_vram{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -1371,7 +1371,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}gpu_total_vram{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "sum($${g_metrics_prefix}gpu_total_vram{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": true,
               "includeNullMetadata": true,
@@ -1386,7 +1386,7 @@
                 "type": "__expr__",
                 "uid": "$${DS_EXPRESSION}"
               },
-              "expression": "($A / $B) * 100",
+              "expression": "($$A / $$B) * 100",
               "hide": false,
               "refId": "C",
               "type": "math"
@@ -1489,7 +1489,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_package_power{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_package_power{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "__auto",
@@ -1504,7 +1504,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_package_power{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_package_power{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1637,7 +1637,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1653,7 +1653,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model=~\"102-G30211-00|102-G30211-0C|102-G30211-4C|102-G30212-0C|102-G30213-00|102-G30213-0C|102-G39205-00|102-G36220-0C|102-G36221-0C|102-G39206-00\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1761,7 +1761,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "__auto",
@@ -1866,7 +1866,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_memory_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "legendFormat": "HBM Temperature",
@@ -1881,7 +1881,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1898,7 +1898,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"})",
+              "expr": "avg($${g_metrics_prefix}gpu_junction_temperature{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -1958,7 +1958,7 @@
                     "value": [
                       {
                         "title": "Filter by Hostname",
-                        "url": "/d/$${__dashboard.uid}\ufeff\ufeff/\ufeff\ufeff$${__dashboard.url:raw}\ufeff\ufeff?\ufeff\ufeff$${g_metrics_prefix:queryparam}\ufeff\ufeff\ufeff\ufeff&var-g_hostname=\ufeff\ufeff$${__data.fields.HOSTNAME}\ufeff\ufeff&var-g_gpu_id=$__all&var-g_gpu_partition_id=$__all"
+                        "url": "/d/$${__dashboard.uid}\ufeff\ufeff/\ufeff\ufeff$${__dashboard.url:raw}\ufeff\ufeff?\ufeff\ufeff$${g_metrics_prefix:queryparam}\ufeff\ufeff\ufeff\ufeff&var-g_hostname=\ufeff\ufeff$${__data.fields.HOSTNAME}\ufeff\ufeff&var-g_gpu_id=$$__all&var-g_gpu_partition_id=$$__all"
                       }
                     ]
                   }
@@ -2061,7 +2061,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_health{hostname=~\"$g_hostname\"}",
+              "expr": "$${g_metrics_prefix}gpu_health{hostname=~\"$$g_hostname\"}",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -2183,7 +2183,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Number of jobs running on this compute node",
           "fieldConfig": {
@@ -2241,12 +2241,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}))",
+              "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}))",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": true,
@@ -2258,12 +2258,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+              "expr": "sum(group by(job_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2276,11 +2276,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}))",
+              "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}))",
               "hide": false,
               "instant": true,
               "legendFormat": "Jobs (Pods)",
@@ -2290,11 +2290,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+              "expr": "sum(group by(pod) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
               "hide": false,
               "instant": true,
               "legendFormat": "Jobs (Pods)",
@@ -2308,7 +2308,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "\\# of GPUs allocated by jobs",
           "fieldConfig": {
@@ -2379,12 +2379,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2397,12 +2397,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2415,12 +2415,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"}))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"}))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2433,12 +2433,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"}))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2451,12 +2451,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"} > 0))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_activity{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"} > 0))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2469,12 +2469,12 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
+              "expr": "sum(group by(gpu_id) ($${g_metrics_prefix}gpu_gfx_busy_instantaneous{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\", card_model!~\"102-D65208-0C|102-D67305-00|102-D65209-0C\"} > 0))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -2487,11 +2487,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "count($${g_metrics_prefix}gpu_health{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\", gpu_partition_id=~\"$g_gpu_partition_id\"} < 1)",
+              "expr": "count($${g_metrics_prefix}gpu_health{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\", gpu_partition_id=~\"$$g_gpu_partition_id\"} < 1)",
               "hide": false,
               "instant": true,
               "legendFormat": "Unhealthy GPUs",
@@ -2519,7 +2519,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "fieldConfig": {
             "defaults": {
@@ -2604,10 +2604,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_sm_active{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_sm_active{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -2615,10 +2615,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_sm_active{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_sm_active{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -2631,7 +2631,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Mean wavefront occupancy per compute unit across all CUs. Average number of wavefronts resident on each CU including idle CUs. \n\nUnit: wavefronts \n\nHigher values indicate better GPU utilization and latency hiding capability.",
           "fieldConfig": {
@@ -2712,10 +2712,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_cu{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_cu{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -2723,10 +2723,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_cu{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_cu{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -2739,7 +2739,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "fieldConfig": {
             "defaults": {
@@ -2824,10 +2824,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_simd_utilization{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_simd_utilization{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -2835,10 +2835,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_simd_utilization{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_simd_utilization{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -2851,7 +2851,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "fieldConfig": {
             "defaults": {
@@ -2936,10 +2936,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_tensor_active_percent{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_tensor_active_percent{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -2947,10 +2947,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_tensor_active_percent{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_tensor_active_percent{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -2963,7 +2963,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Mean wavefront occupancy per active compute unit. Average number of wavefronts resident on CUs that have at least one active wavefront. \n\nUnit: wavefronts \n\nCDNA2 CUs support up to 32 wavefronts (4 SIMDs x 8 wavefronts each). Higher occupancy helps hide memory latency.\nUnit: wavefronts \n\nHigher values indicate better GPU utilization and latency hiding capability.",
           "fieldConfig": {
@@ -3044,10 +3044,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_active_cu{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_active_cu{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -3055,10 +3055,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_active_cu{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_occupancy_per_active_cu{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -3071,7 +3071,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "fieldConfig": {
             "defaults": {
@@ -3156,10 +3156,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_gui_util_percent{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_gui_util_percent{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
               "refId": "A"
@@ -3167,10 +3167,10 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}gpu_prof_gui_util_percent{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"}",
+              "expr": "$${g_metrics_prefix}gpu_prof_gui_util_percent{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"}",
               "hide": false,
               "legendFormat": "GPU: {{gpu_id}} - Job: {{pod}}",
               "range": true,
@@ -3252,7 +3252,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3269,7 +3269,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -3285,7 +3285,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3302,7 +3302,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3405,7 +3405,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_broadcast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_broadcast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -3421,7 +3421,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_multicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_multicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3438,7 +3438,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3541,7 +3541,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_broadcast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_broadcast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -3557,7 +3557,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_multicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_multicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3574,7 +3574,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3676,7 +3676,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_dma_errors{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_rx_dma_errors{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -3692,7 +3692,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_dma_errors{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "avg($${g_metrics_prefix}nic_lif_stats_tx_dma_errors{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3791,7 +3791,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_port_stats_octets_rx_ok{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_port_stats_octets_rx_ok{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3809,7 +3809,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_port_stats_octets_rx_ok{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_port_stats_octets_rx_ok{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3827,7 +3827,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3845,7 +3845,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3863,7 +3863,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3882,7 +3882,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3955,7 +3955,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_port_stats_octets_tx_ok{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_port_stats_octets_tx_ok{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3973,7 +3973,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_port_stats_octets_tx_ok{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_port_stats_octets_tx_ok{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -3991,7 +3991,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4009,7 +4009,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4027,7 +4027,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4046,7 +4046,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4129,7 +4129,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4146,7 +4146,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"})",
+              "expr": "sum($${g_metrics_prefix}nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"})",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -4162,7 +4162,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}[$__interval]))",
+              "expr": "sum(delta($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}[$$__interval]))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4179,7 +4179,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"})",
+              "expr": "sum($${g_metrics_prefix}nic_lif_stats_tx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"})",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4280,7 +4280,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_broadcast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_broadcast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -4296,7 +4296,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_multicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_multicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4313,7 +4313,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4414,7 +4414,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_broadcast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_broadcast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -4430,7 +4430,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_multicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_multicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4447,7 +4447,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_unicast_drop_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4547,7 +4547,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_dma_errors{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_rx_dma_errors{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -4563,7 +4563,7 @@
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_dma_errors{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=\"$g_eth_intf_name\"}",
+              "expr": "$${g_metrics_prefix}nic_lif_stats_tx_dma_errors{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=\"$$g_eth_intf_name\"}",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": true,
@@ -4579,13 +4579,13 @@
         }
       ],
       "repeat": "g_eth_intf_name",
-      "title": "LIF: $g_eth_intf_name",
+      "title": "LIF: $$g_eth_intf_name",
       "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "description": "CN - Congestion Notification\nECN - Explicit Congestion Notification",
       "fieldConfig": {
@@ -4637,12 +4637,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_ucast_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_ucast_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4656,12 +4656,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}rdma_rx_ucast_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}rdma_rx_ucast_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4674,12 +4674,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_cnp_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_cnp_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4692,12 +4692,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}rdma_rx_cnp_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}rdma_rx_cnp_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4710,12 +4710,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_ecn_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}rdma_rx_ecn_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4728,12 +4728,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}rdma_rx_ecn_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}rdma_rx_ecn_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4750,7 +4750,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "description": "CN - Congestion Notification",
       "fieldConfig": {
@@ -4802,12 +4802,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}rdma_tx_ucast_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}rdma_tx_ucast_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4821,12 +4821,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}rdma_tx_ucast_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}rdma_tx_ucast_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4839,12 +4839,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(delta($${g_metrics_prefix}rdma_tx_cnp_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}[$__interval]))",
+          "expr": "sum(delta($${g_metrics_prefix}rdma_tx_cnp_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}[$$__interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4857,12 +4857,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum($${g_metrics_prefix}rdma_tx_cnp_pkts{hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"})",
+          "expr": "sum($${g_metrics_prefix}rdma_tx_cnp_pkts{hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"})",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -4879,7 +4879,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -4973,12 +4973,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "{__name__=~\".*rdma_req_rx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\".*rdma_req_rx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5054,7 +5054,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5148,12 +5148,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\".*rdma_req_tx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\".*rdma_req_tx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5229,7 +5229,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5323,12 +5323,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\".*rdma_resp_rx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\".*rdma_resp_rx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5404,7 +5404,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5498,12 +5498,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\".*rdma_resp_tx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\".*rdma_resp_tx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5579,7 +5579,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5673,12 +5673,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\"nic_port_stats_frames_rx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\"nic_port_stats_frames_rx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5754,7 +5754,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5848,12 +5848,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\"nic_port_stats_frames_tx_.*\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\"nic_port_stats_frames_tx_.*\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -5929,7 +5929,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_AINIC-PROMETHEUS}"
+        "uid": "$${DS_AINIC-PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -6023,12 +6023,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_AINIC-PROMETHEUS}"
+            "uid": "$${DS_AINIC-PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "{__name__=~\"nic_lif_stats_rx_.*_drop_packets\", hostname=~\"$g_nic_hostname|$g_hostname\", eth_intf_name=~\"$g_eth_intf_name\"}",
+          "expr": "{__name__=~\"nic_lif_stats_rx_.*_drop_packets\", hostname=~\"$$g_nic_hostname|$$g_hostname\", eth_intf_name=~\"$$g_eth_intf_name\"}",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -6160,7 +6160,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(gpu_health{hostname=~\"$g_hostname\"},gpu_id)",
+        "definition": "label_values(gpu_health{hostname=~\"$$g_hostname\"},gpu_id)",
         "hide": 0,
         "includeAll": true,
         "label": "GPU ID",
@@ -6169,7 +6169,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(gpu_health{hostname=~\"$g_hostname\"},gpu_id)",
+          "query": "label_values(gpu_health{hostname=~\"$$g_hostname\"},gpu_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -6184,7 +6184,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(gpu_health{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"},gpu_partition_id)",
+        "definition": "label_values(gpu_health{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"},gpu_partition_id)",
         "hide": 0,
         "includeAll": true,
         "label": "Partition",
@@ -6193,7 +6193,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(gpu_health{hostname=~\"$g_hostname\", gpu_id=~\"$g_gpu_id\"},gpu_partition_id)",
+          "query": "label_values(gpu_health{hostname=~\"$$g_hostname\", gpu_id=~\"$$g_gpu_id\"},gpu_partition_id)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -6208,7 +6208,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_hostname\"},hostname)",
+        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_hostname\"},hostname)",
         "hide": 2,
         "includeAll": true,
         "label": "NIC Hostname",
@@ -6217,7 +6217,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_hostname\"},hostname)",
+          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_hostname\"},hostname)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -6232,7 +6232,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\"},eth_intf_name)",
+        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\"},eth_intf_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Interface Name",
@@ -6241,7 +6241,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\"},eth_intf_name)",
+          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\"},eth_intf_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -6256,7 +6256,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\"},hostname)",
+        "definition": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\"},hostname)",
         "hide": 2,
         "includeAll": true,
         "label": "NIC Pod",
@@ -6265,7 +6265,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$g_nic_hostname|$g_hostname\"},hostname)",
+          "query": "label_values(nic_lif_stats_rx_unicast_packets{hostname=~\"$$g_nic_hostname|$$g_hostname\"},hostname)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
