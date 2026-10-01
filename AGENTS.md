@@ -49,6 +49,19 @@ nkp create catalog-bundle --collection-tag v0.1.0
 nkp push bundle --bundle ./nkp-ai-applications-catalog.tar --to-registry <registry>
 ```
 
+### Stable release pin list
+
+A release entry with an `applications` list ships only those name and version pairs. Adding `applications/<app>/<version>/` does not put that version into the release.
+
+For each version that should ship, add the same `name` and `version` under the target tag in:
+
+1. **`.release/stable.yaml`** — online catalog artifact published to GHCR.
+2. **`.release/stable-bundles.yaml`** — airgap bundle that vendors container images. Its list can be a subset of `stable.yaml` (only add the version here when that bundle should contain the app).
+
+Leave frozen tags (`2.18`, `2.18.0`) unchanged unless that already-shipped release should gain the version.
+
+A release that sets `constraints.nkpVersion` instead of `applications` (stable tag `2.20`, and `.release/dev.yaml` / `.release/dev-bundles.yaml`) includes every app whose `metadata.yaml` `nkpVersionSupport` matches. Those tags need no list edit.
+
 ### Deploying the Catalog on a Cluster
 
 ```bash
@@ -254,6 +267,7 @@ Every application must deploy workloads to its **own dedicated namespace** (`oll
 - For Kustomize-based apps (GitRepository + Flux Kustomization): forgetting to include `namespace.yaml` in helmrelease/kustomization.yaml — Flux does not create the target namespace; the namespace must be created by our manifests.
 - For Helm-based apps that need charts pushed to OCI: forgetting to add `push-<app>` and `add-<app>` to the justfile and dev-commands.md.
 - Rebuilding the bundle without deleting the previous `nkp-ai-applications-catalog.tar` — `nkp create catalog-bundle` skips and reuses the existing file, so your edits never make it into the pushed bundle.
+- Adding an application version under `applications/` without adding that `name` and `version` to the `applications` list in `.release/stable.yaml` and `.release/stable-bundles.yaml` for a pinned release (for example `2.19`). The release build omits it.
 
 ## Commit Messages
 
