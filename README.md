@@ -52,7 +52,7 @@ The workflow diagram shows the flow from trigger (push or manual dispatch) throu
 
 `.release/stable.yaml` and `.release/stable-bundles.yaml` decide which application versions ship.
 
-A release entry with an `applications` list includes only those name and version pairs. Adding the app under `applications/<app>/<version>/` leaves it out of that release until the list names it. Add the version to `.release/stable.yaml` so it is in the online catalog published to GHCR. Add it to `.release/stable-bundles.yaml` as well when the airgap bundle for that release should vendor the app's container images. The bundle list can be a subset of the catalog list. Frozen tags (`2.18`, `2.18.0`) stay unchanged unless that release should gain the version.
+A release entry with an `applications` list includes only those name and version pairs. Adding the app under `applications/<app>/<version>/` leaves it out of that release until the list names it. Add the version to `.release/stable.yaml` so it is in the online catalog published to GHCR. Add it to `.release/stable-bundles.yaml` as well when the airgap bundle for that release should vendor the app's container images. The bundle list can be a subset of the catalog list.
 
 A release entry that sets `constraints.nkpVersion` (stable tag `2.20`, and `.release/dev.yaml` / `.release/dev-bundles.yaml`) includes every app whose `nkpVersionSupport` matches that NKP version. Those tags need no list edit.
 

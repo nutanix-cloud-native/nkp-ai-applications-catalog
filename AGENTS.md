@@ -58,8 +58,6 @@ For each version that should ship, add the same `name` and `version` under the t
 1. **`.release/stable.yaml`** — online catalog artifact published to GHCR.
 2. **`.release/stable-bundles.yaml`** — airgap bundle that vendors container images. Its list can be a subset of `stable.yaml` (only add the version here when that bundle should contain the app).
 
-Leave frozen tags (`2.18`, `2.18.0`) unchanged unless that already-shipped release should gain the version.
-
 A release that sets `constraints.nkpVersion` instead of `applications` (stable tag `2.20`, and `.release/dev.yaml` / `.release/dev-bundles.yaml`) includes every app whose `metadata.yaml` `nkpVersionSupport` matches. Those tags need no list edit.
 
 ### Deploying the Catalog on a Cluster
