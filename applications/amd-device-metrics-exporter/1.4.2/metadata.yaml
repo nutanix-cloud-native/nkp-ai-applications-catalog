@@ -5,7 +5,7 @@ appScreens:
 description: Exports Prometheus-format metrics from AMD GPUs (and optionally NICs) for monitoring in HPC and AI environments.
 category:
   - accelerated-infrastructure
-type: nkp-core-platform
+type: nkp-catalog
 allowMultipleInstances: false
 scope:
   - workspace
