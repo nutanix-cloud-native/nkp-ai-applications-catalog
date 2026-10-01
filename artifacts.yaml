@@ -2,11 +2,8 @@ applications:
   - name: ""
     version: ""
     images:
-      - oci://<registry-url>/nkp-ai-applications-catalog/amd-device-metrics-exporter:1.4.2
-      - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.4.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1
-      - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1-beta.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
@@ -21,20 +18,6 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/open-webui:16.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/ray-cluster:1.7.0
       - oci://<registry-url>/nkp-ai-applications-catalog/slurm-operator:1.1.1
-  - name: amd-device-metrics-exporter
-    version: 1.4.2
-    images:
-      - oci://ghcr.io/mesosphere/charts/device-metrics-exporter-charts:v1.4.2
-      - docker.io/library/busybox:1.36
-      - docker.io/rocm/device-metrics-exporter:v1.4.2
-  - name: amd-gpu-operator
-    version: 1.4.1
-    images:
-      - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.4.1
-      - docker.io/rocm/gpu-operator:v1.4.1
-      - docker.io/rocm/kernel-module-management-operator:v1.0.0
-      - docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
-      - registry.k8s.io/nfd/node-feature-discovery:v0.16.1
   - name: amd-gpu-operator
     version: 1.5.0
     images:
@@ -59,20 +42,6 @@ applications:
       - docker.io/rocm/k8s-device-plugin:1.31.0.10
       - docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
       - docker.io/rocm/k8s-gpu-dra-driver:v1.0.1
-      - docker.io/rocm/kernel-module-management-operator:v1.0.0
-      - docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
-      - quay.io/argoproj/workflow-controller:v4.0.3
-      - registry.k8s.io/nfd/node-feature-discovery:v0.18.3
-  - name: amd-gpu-operator
-    version: 1.5.1-beta.0
-    images:
-      - oci://ghcr.io/nutanix-cloud-native/charts/gpu-operator-charts:v1.5.1-beta.0
-      - docker.io/rocm/device-metrics-exporter:v1.5.1-beta.0
-      - docker.io/rocm/gpu-operator-utils:v1.5.1-beta.0
-      - docker.io/rocm/gpu-operator:v1.5.1-beta.0
-      - docker.io/rocm/k8s-device-plugin:1.31.0.10
-      - docker.io/rocm/k8s-device-plugin:labeller-1.31.0.10
-      - docker.io/rocm/k8s-gpu-dra-driver:v1.0.0
       - docker.io/rocm/kernel-module-management-operator:v1.0.0
       - docker.io/rocm/kernel-module-management-webhook-server:v1.0.0
       - quay.io/argoproj/workflow-controller:v4.0.3
