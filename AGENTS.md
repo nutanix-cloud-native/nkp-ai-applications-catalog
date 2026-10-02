@@ -211,13 +211,13 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 2. **Validate manifests first**
    - Run: `nkp validate catalog-repository --repo-dir=.`
 
-3. **Create the airgapped bundle** (renders `.release/full.yaml.tmpl` with `includeApplicationImages: true`)
-   - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-full.tar`:
-     - `just create-application-airgapped-bundle <app> <version>`
-     - Example: `just create-application-airgapped-bundle kai-scheduler 0.15.2`
-   - Full collection → writes `nkp-ai-applications-catalog-<tag>-full.tar` (the `<collection-tag>` must exist in `.release/dev.yaml`, e.g. `2.19-dev`):
-     - `just create-collection-airgapped-bundle <collection-tag>`
-     - Example: `just create-collection-airgapped-bundle 2.19-dev`
+3. **Create the full bundle** (renders a release spec with `includeApplicationImages: true`)
+    - Single app/version (recommended for CI or troubleshooting) → writes `<app>-<version>-full.tar`:
+      - `just create-application-full-bundle <app> <version>`
+      - Example: `just create-application-full-bundle kai-scheduler 0.15.2`
+    - Full collection → writes `nkp-ai-applications-catalog-<tag>-full.tar` (the `<collection-tag>` must exist in `.release/dev-bundles.yaml`, e.g. `2.20`):
+      - `just create-collection-full-bundle <collection-tag>`
+      - Example: `just create-collection-full-bundle 2.20 "" .release/dev-bundles.yaml`
 
 4. **Push the bundle to an OCI registry**
    - Authenticate to your registry first.
@@ -237,7 +237,7 @@ Use this flow to create, push, and validate disconnected (airgapped) catalog bun
 
 Every application must deploy workloads to its **own dedicated namespace** (`ollama`), not `${releaseNamespace}`. For HelmRelease: set `targetNamespace: <app-namespace>` and `install.createNamespace: true`. For Flux Kustomization (GitRepository-based apps): set `targetNamespace: <app-namespace>`.
 
-**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, kubeflow-central-dashboard, katib, tensorboard-controller, training-operator, spark-operator.
+**Kustomize-based apps (GitRepository + Flux Kustomization):** Flux Kustomization's `targetNamespace` only rewrites the namespace in manifests; it does **not** create the namespace. Always include `namespace.yaml` in `helmrelease/kustomization.yaml` (listed first) so the namespace is created automatically before the Flux Kustomization deploys. Document in `metadata.yaml`: "Namespace — Created automatically via `namespace.yaml`." Apps that use this pattern: kubeflow-model-registry, kubeflow-pipelines, katib, tensorboard-controller, spark-operator.
 
 ## Dependencies
 

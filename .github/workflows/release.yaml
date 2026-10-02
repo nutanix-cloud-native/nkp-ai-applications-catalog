@@ -20,6 +20,9 @@ on:
       - ".release/**"
       - "applications/**"
 
+permissions:
+  contents: read
+
 jobs:
   publish-oci-artifacts:
     name: Publish OCI Artifacts
@@ -36,13 +39,13 @@ jobs:
         uses: cachix/install-nix-action@v31
 
       - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.13.0
+        uses: jetify-com/devbox-install-action@v0.15.0
         with:
           enable-cache: true
           skip-nix-installation: true
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -57,8 +60,8 @@ jobs:
         if: github.ref_name == 'main' && (github.event_name == 'push' || github.event.inputs.release_spec == 'stable')
         run: devbox run -- just publish-artifacts ./.release/stable.yaml ghcr.io/nutanix-cloud-native
 
-  publish-airgapped-bundles:
-    name: Publish Airgapped Bundles
+  publish-bundles:
+    name: Publish Bundles
     runs-on:
       - self-hosted-nutanix-medium
     permissions:
@@ -72,13 +75,13 @@ jobs:
         uses: cachix/install-nix-action@v31
 
       - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.13.0
+        uses: jetify-com/devbox-install-action@v0.15.0
         with:
           enable-cache: true
           skip-nix-installation: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: docker.io
           username: d2iqsre
@@ -91,30 +94,30 @@ jobs:
           role-to-assume: arn:aws:iam::139475575661:role/nkp-ai-applications-catalog
           aws-region: us-west-2
 
-      # Outputs: steps.spec.outputs.name (dev|stable), steps.spec.outputs.release-spec-file (./.release/<name>.yaml)
+      # Outputs: steps.spec.outputs.name (dev|stable), steps.spec.outputs.release-spec-file (./.release/<name>-bundles.yaml)
       - name: Determine release spec
         id: spec
         run: |
           if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "name=dev" >> "$GITHUB_OUTPUT"
-            echo "release-spec-file=./.release/dev.yaml" >> "$GITHUB_OUTPUT"
+            echo "release-spec-file=./.release/dev-bundles.yaml" >> "$GITHUB_OUTPUT"
           else
             echo "name=${{ github.event.inputs.release_spec }}" >> "$GITHUB_OUTPUT"
-            echo "release-spec-file=./.release/${{ github.event.inputs.release_spec }}.yaml" >> "$GITHUB_OUTPUT"
+            echo "release-spec-file=./.release/${{ github.event.inputs.release_spec }}-bundles.yaml" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build Airgapped Bundles
-        run: devbox run -- just build-airgapped-bundles ${{ steps.spec.outputs.release-spec-file }} ./airgapped-bundles
+      - name: Build Bundles
+        run: devbox run -- just build-full-bundles "${{ steps.spec.outputs.release-spec-file }}" ./bundles
 
       - name: Upload Bundles to S3 and Generate Summary
         env:
           # S3 destination defined in nutanix-ncn/artifacts-store/infra/terraform/terraform.tfvars
-          S3_DEST: s3://ncn-artifacts.infra.nkp.sh/nkp-ai-applications-catalog/airgapped-bundles/${{ steps.spec.outputs.name }}
-          DOWNLOAD_BASE: https://artifacts.infra.nkp.sh/nkp-ai-applications-catalog/airgapped-bundles/${{ steps.spec.outputs.name }}
+          S3_DEST: s3://ncn-artifacts.infra.nkp.sh/nkp-ai-applications-catalog/bundles/${{ steps.spec.outputs.name }}
+          DOWNLOAD_BASE: https://artifacts.infra.nkp.sh/nkp-ai-applications-catalog/bundles/${{ steps.spec.outputs.name }}
           SPEC_NAME: ${{ steps.spec.outputs.name }}
         run: |
           artifacts=()
-          for bundle in ./airgapped-bundles/*.tar; do
+          for bundle in ./bundles/*.tar; do
             [ -f "$bundle" ] || continue
             filename=$(basename "$bundle")
             echo "Uploading $bundle -> ${S3_DEST}/${filename}"
@@ -124,7 +127,7 @@ jobs:
 
           # GitHub Step Summary
           {
-            echo "## Airgapped Bundle Artifacts (${SPEC_NAME})"
+            echo "## Bundle Artifacts (${SPEC_NAME})"
             echo ""
             echo "| Bundle | Download URL |"
             echo "|--------|-------------|"
@@ -136,13 +139,13 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           # HTML summary
-          html_file="./airgapped-bundles/summary.html"
+          html_file="./bundles/summary.html"
           cat > "$html_file" <<EOF
           <!DOCTYPE html>
           <html lang="en">
           <head>
           <meta charset="utf-8">
-          <title>NKP AI - Airgapped Bundle Artifacts (${SPEC_NAME})</title>
+          <title>NKP AI Applications Catalog - Bundle Artifacts (${SPEC_NAME})</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #24292f; }
             h1 { border-bottom: 2px solid #0969da; padding-bottom: .5rem; }
@@ -156,7 +159,7 @@ jobs:
           </style>
           </head>
           <body>
-          <h1>Airgapped Bundle Artifacts (${SPEC_NAME})</h1>
+          <h1>Bundle Artifacts (${SPEC_NAME})</h1>
           <p class="meta">Commit: <code>${{ github.sha }}</code> &middot; Spec: <code>${SPEC_NAME}</code> &middot; Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)</p>
           <table>
           <thead><tr><th>Bundle</th><th>Download URL</th></tr></thead>
@@ -179,5 +182,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: airgapped-bundle-summary
-          path: ./airgapped-bundles/summary.html
+          name: bundle-summary
+          path: ./bundles/summary.html

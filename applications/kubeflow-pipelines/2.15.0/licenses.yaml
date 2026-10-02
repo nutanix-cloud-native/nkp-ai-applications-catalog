@@ -8,6 +8,10 @@ resources:
   sources:
   - ref: master
     url: https://github.com/docker-library/mysql.git
+- container_image: docker.io/library/python:3.9
+  sources:
+  - ref: master
+    url: https://github.com/docker-library/python.git
 - container_image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
   sources:
   - ref: v${image_tag}

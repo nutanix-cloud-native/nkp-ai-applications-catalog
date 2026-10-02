@@ -8,6 +8,16 @@ data:
     persistentVolume:
       enabled: true
       size: 30Gi
+    # Baseline resource defaults so inference cannot exhaust node capacity.
+    # Override via Workspace Configuration / App Config Overrides for GPU or larger models.
+    # Chart path: top-level resources (otwld/ollama-helm).
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: "4"
+        memory: 8Gi
 kind: ConfigMap
 metadata:
   name: ${releaseName}-${appVersion}-defaults

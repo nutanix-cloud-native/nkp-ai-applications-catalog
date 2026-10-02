@@ -15,13 +15,20 @@ licensing:
   - Ultimate
 certifications:
   - qualified
-requiredDependencies: []
 dependencies:
   - amd-kmm-operator
+requiredDependencies: []
+dependsOn:
+  - type: Application
+    name: amd-kmm-operator
+    optional: true
 nkpVersionSupport: ">=2.18.0"
 overview: |-
   # Overview
   The AMD GPU Operator uses the operator framework within Kubernetes to automate the management of AMD software components needed to provision GPUs. For a detailed overview of the operator's architecture and components, see the [GPU Operator Overview](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/overview.html).
+
+  ## Prerequisites
+  - **ROCm v7.14.0 or newer** is required for application compatibility. Workloads such as vLLM, training, and inference containers must be built against ROCm v7.14.0+ libraries or images.
 
   ## What's New in v1.5.1
   v1.5.1 is a maintenance release that builds on the v1.5.0 feature set (DRA, ANR, NPD integration, enhanced KMM configuration, global image pull secrets, custom package repositories, and metrics exporter enhancements — all described below). It bumps the operator controller, utils, and device metrics exporter images to `v1.5.1`, and the DRA driver to `v1.0.1`. DRA driver `v1.0.1` is required with amdgpu driver `6.19.14` / release `31.40` and later. The device plugin (`1.31.0.10`), KMM (`v1.0.0`), and NFD (`v0.18.3`) components are unchanged.

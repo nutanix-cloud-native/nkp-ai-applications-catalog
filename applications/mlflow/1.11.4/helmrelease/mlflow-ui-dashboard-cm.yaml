@@ -1,0 +1,14 @@
+# ConfigMap for the NKP Launch button.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${releaseNamespace}
+  labels:
+    kommander.d2iq.io/application: ${releaseName}
+data:
+  name: ${releaseName}
+  dashboardLink: "/nkp/mlflow/"
+  docsLink: "https://mlflow.org/docs/latest/"
+  version: "1.11.4"
+---

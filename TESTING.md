@@ -118,12 +118,12 @@ When a test fails in CI, the workflow automatically:
 
 You can download these from the workflow run's **Artifacts** section.
 
-### Airgapped bundle artifacts
+### Full bundle artifacts
 
 When an app's E2E test passes, the workflow also builds an **airgapped** catalog
 bundle for the `app/version` under test by running
-`just create-application-airgapped-bundle <app> <version>`. That recipe renders
-`.release/full.yaml.tmpl` (`includeApplicationImages: true`) for the single
+`just create-application-full-bundle <app> <version>`. That recipe generates
+a release spec from scratch (`includeApplicationImages: true`) for the single
 app, so the tarball includes the container images and OCI artifacts needed to
 deploy on a disconnected cluster — not just the manifests and image references.
 The generated `<app>-<version>-full.tar` is uploaded as a GitHub Actions
@@ -206,6 +206,11 @@ Apps declare the platform apps they need (Istio, cert-manager, ...) in
 suites read that list and provision a lightweight stand-in for each entry before
 install, so metadata is the single source of truth -- tests never hardcode a
 per-app dependency list.
+`dependsOn` in their `metadata.yaml` (`optional: false` for hard deps). Both the
+Helm and Kustomize suites read that list and provision a lightweight stand-in
+for each hard entry before install, so metadata is the single source of truth --
+tests never hardcode a per-app dependency list. Soft deps (`optional: true`) are
+not provisioned. Apps with no dependencies omit `dependsOn`.
 
 Supported dependencies live in the `dependencyProvisioners` registry in
 `apptests/suites/dependencies.go`. To support a heavier dependency, add one
