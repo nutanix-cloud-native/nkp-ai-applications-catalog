@@ -1,0 +1,73 @@
+# Stage 12 — AIRM local workload agent
+#
+# These Flux resources install the AIRM agent only after management,
+# registration, RabbitMQ identity synchronization, and external Gateway checks
+# have succeeded. The agent connects to the local RabbitMQ cluster using the
+# registered identity stored in `airm-rabbitmq-common-vhost-user`.
+#
+# Relationship to installer step 10:
+# - In script `--mode all`, the agent was installed as part of the umbrella
+#   `airm` chart at the same time as API/UI. The patched configure Job then
+#   replaced its temporary Secret and restarted the running agent.
+# - In script `--mode agent`, the standalone `airm-agent` chart connected to a
+#   remote management RabbitMQ address supplied by command-line arguments.
+# - This catalog release is all-mode only, but uses the standalone agent chart
+#   so startup can be ordered after local registration and broker provisioning.
+#
+# Differences from the original installer:
+# 1. The chart is fetched from OCI by immutable digest rather than from the
+#    local checkout produced by installer step 2.
+# 2. Agent installation is deliberately deferred instead of relying on a
+#    post-registration rollout restart. Its first startup sees final credentials.
+# 3. RabbitMQ host/port are the in-cluster all-mode Service, not remote
+#    `MGMT_RMQ_HOST`/`MGMT_RMQ_PORT` parameters.
+# 4. The identity Secret name is explicit in declared Helm values.
+# 5. Flux continuously installs/upgrades/remediates the release; parent health
+#    checks wait for both this HelmRelease and the agent Deployment.
+#
+# There is no stage shell script or stage-specific Kubernetes RBAC. Any runtime
+# permissions required by the agent are created by the upstream agent chart.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: airm-agent-chart
+  namespace: ${releaseNamespace}
+  annotations:
+    airm.nutanix.com/chart-version: ${airmAgentChartVersion}
+spec:
+  interval: 24h
+  ref:
+    digest: ${airmAgentChartDigest}
+  url: ${airmAgentChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-agent-chart}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airm-agent
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: airm-agent-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  interval: 15m
+  releaseName: airm-agent
+  targetNamespace: ${airmNamespace:=airm}
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    airm:
+      image:
+        tag: ${airmImageTag}
+      agent:
+        rabbitmq:
+          host: airm-infra-rabbitmq-rabbitmq.${airmNamespace:=airm}.svc.cluster.local
+          port: 5672
+          userSecretName: airm-rabbitmq-common-vhost-user
+---

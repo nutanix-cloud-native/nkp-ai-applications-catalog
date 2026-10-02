@@ -1,0 +1,226 @@
+# AMD Resource Manager orchestration chart values.
+# Current implementation scope: all mode only.
+#
+# Source of truth for airm / gateway / versions pins.
+# applications/.../helmrelease/cm.yaml only injects Flux-substituted catalog.*
+# wiring. Omit overrides there so these defaults apply; configOverrides/--set win.
+
+airm:
+  # Allowed values: all | management | agent
+  # Only "all" is implemented in this chart version.
+  mode: all
+  imageTag: "2.0.0"
+  # Script all-mode behavior: includeDemoSetup=true
+  includeDemoSetup: true
+  namespace: airm
+
+catalog:
+  # Filled at deploy by applications/.../helmrelease/cm.yaml (Flux postBuild).
+  # Empty here so local helm template/lint still works with --set.
+  sourceName: ""
+  sourceNamespace: ""
+  releaseName: ""
+  releaseNamespace: ""
+
+gateway:
+  name: airm-https
+  # Empty → use catalog.releaseNamespace (release namespace), not hardcoded kommander.
+  namespace: ""
+  tlsSecretName: airm-gateway-tls
+  gatewayClassName: traefik
+  listenerName: websecure
+
+# Optional cluster-specific overrides. Empty values are discovered by 00-preflight.
+# The discovery Job name is hashed from job settings, overrides, discovery.sh,
+# and the rendered RBAC template so relevant changes create a new Job.
+discovery:
+  domain: ""
+  storageClass: ""
+  prometheusUrl: ""
+
+keycloak:
+  namespace: keycloak
+  adminClientId: "354a0fa1-35ac-4a6d-9c4d-d661129c2cd0"
+  chartUrl: oci://registry-1.docker.io/bitnamicharts/keycloak
+  images:
+    keycloak:
+      repository: bitnamilegacy/keycloak
+      tag: 26.3.3-debian-12-r0
+    configCli:
+      repository: bitnamilegacy/keycloak-config-cli
+      tag: 6.4.0-debian-12-r11
+    postgresql:
+      repository: bitnamilegacy/postgresql
+      tag: 17.6.0-debian-12-r0
+    postgresExporter:
+      repository: bitnamilegacy/postgres-exporter
+      tag: 0.17.1-debian-12-r15
+    osShell:
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r50
+
+toolImages:
+  cluster: docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032
+  openssl: docker.io/alpine/openssl@sha256:42c7389ef077aed0eb4e96d0abbd094083d701bbaff1313073b061c0c9cd8278
+
+chartSources:
+  airmApi: oci://registry-1.docker.io/amdenterpriseai/airm-api-chart
+  airmAgent: oci://registry-1.docker.io/amdenterpriseai/airm-agent-chart
+  airmCnpg: oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart
+  airmRabbitmq: oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart
+
+# Pinned versions — AIRM charts/images confirmed; others filled in the versions todo.
+versions:
+  airmChart: "2.0.0"
+  airmApiChart: "2.0.0"
+  airmApiChartDigest: "sha256:4a11cc82bba4904b9c8f0e2986aaa294be29a7432c0640ea6047239c89b6fa8d"
+  airmAgentChart: "2.0.0"
+  airmAgentChartDigest: "sha256:9c461be4baeaae8be67403206d42c40ace45182745c557c95f21731d9882f5ce"
+  airmCnpgChart: "2.0.0"
+  airmRabbitmqChart: "2.0.0"
+  kaiwo: "v0.1.9"
+  kaiwoManifestDigest: "sha256:e1bfb64db02ad3a0bd6fbcc728fad37a294b7c065c7810f3606b647d086cc8ed"
+  aimEngine: "v0.2.1"
+  aimEngineCrdsDigest: "sha256:f5bbaedc7f61e78883775ffb226780c2de3b2d5b18601fad638809cf34c976f0"
+  gatewayApi: "v1.4.0"
+  keycloakChart: "25.2.0"
+  keycloakChartDigest: "sha256:3e12451e0300902bafa1e588e62cce8ad3467dc3d6bf15352c25a0393a75fc6e"
+  cnpgOperator: "v1.27.0"
+  cnpgOperatorManifestDigest: "sha256:7be449085a4c5941ff05d2c4aca47d4f1c4c87698181fe2c19c47a9f6a43b268"
+  rabbitmqOperator: "v2.22.5"
+  rabbitmqOperatorManifestDigest: "sha256:f7d3a549a2514ea3de3a91b231a969dbfee0520f467d2fbe91821b9388f48dbe"
+  airmCnpgChartDigest: "sha256:cfe8203c9b816bcbea0c110a209fe19673513f4d38acf6bc8c2d6a6d669c7c47"
+  airmRabbitmqChartDigest: "sha256:442e8d0e9713af342a52b39fdd078314ff0b89412e22270e13ebb44c2e8de191"
+
+# Stage Flux Kustomizations reconcile paths under the catalog application OCI source.
+stages:
+  interval: 1m
+  timeout: 5m
+  retryInterval: 1m
+  prune: true
+  wait: true
+
+# All-mode stage order matching the plan / script side effects.
+allModeStages:
+  - name: 00-preflight
+    dependsOn: []
+  - name: 01-secrets
+    dependsOn:
+      - 00-preflight
+  - name: 02-gateway
+    dependsOn:
+      - 01-secrets
+  - name: 03-keycloak
+    dependsOn:
+      - 01-secrets
+      - 02-gateway
+  - name: 04-storage
+    dependsOn:
+      - 03-keycloak
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-storage
+  - name: 05-operators
+    dependsOn:
+      - 04-storage
+    timeout: 12m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-operator-assurance
+  - name: 05-infrastructure
+    dependsOn:
+      - 05-operators
+    timeout: 12m
+    healthChecks:
+      - apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        name: airm-infra-cnpg
+      - apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        name: airm-infra-rabbitmq
+      - apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        name: airm-infra-cnpg-cnpg
+        namespace: airm
+      - apiVersion: rabbitmq.com/v1beta1
+        kind: RabbitmqCluster
+        name: airm-infra-rabbitmq-rabbitmq
+        namespace: airm
+  - name: 06-rabbitmq-config
+    dependsOn:
+      - 05-infrastructure
+    timeout: 12m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-rabbitmq-config
+  - name: 07-agent-crds
+    dependsOn:
+      - 06-rabbitmq-config
+    timeout: 12m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-agent-crds
+  - name: 08-management
+    dependsOn:
+      - 07-agent-crds
+    timeout: 12m
+    healthChecks:
+      - apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        name: airm-management
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: airm-api
+        namespace: airm
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: airm-ui
+        namespace: airm
+  - name: 09-bootstrap
+    dependsOn:
+      - 08-management
+    timeout: 15m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-registration
+  - name: 10-identity-sync
+    dependsOn:
+      - 09-bootstrap
+    timeout: 12m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-identity-sync
+  - name: 11-gateway-tls
+    dependsOn:
+      - 10-identity-sync
+    timeout: 20m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-gateway-tls
+  - name: 12-agent
+    dependsOn:
+      - 11-gateway-tls
+    timeout: 10m
+    healthChecks:
+      - apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        name: airm-agent
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: airm-agent-agent
+        namespace: airm
+  - name: 13-post-install
+    dependsOn:
+      - 12-agent
+    timeout: 12m
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-post-install

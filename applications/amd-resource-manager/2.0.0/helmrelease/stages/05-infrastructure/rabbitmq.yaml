@@ -1,0 +1,63 @@
+# Stage 05 — AIRM RabbitMQ infrastructure
+#
+# These Flux resources replace installer step 9d, which ran:
+# `helm upgrade --install airm-infra-rabbitmq <local-chart>`.
+#
+# The OCIRepository retrieves AMD's AIRM RabbitMQ chart by immutable digest.
+# The HelmRelease deploys the RabbitmqCluster into the dedicated AIRM namespace;
+# stage 06 subsequently creates the application user, vhosts, permissions, and
+# temporary consumer queue that the operator does not provision.
+#
+# Differences from the original installer step 9d:
+# - The chart comes from a digest-pinned OCI artifact rather than installer
+#   step 2's local git checkout.
+# - Flux owns install, upgrade, retry, and drift reconciliation instead of
+#   host-side Helm and “already installed—skip” logic.
+# - Persistence keeps the script's `storageClassName: default` override, backed
+#   by the compatibility class assured in stage 04.
+# - Readiness is checked by the parent orchestration against both this
+#   HelmRelease and its RabbitmqCluster rather than only `helm --wait`.
+# - Script step 9e's RabbitMQ application configuration is intentionally split
+#   into stage 06; step 9f's external LoadBalancer is management-mode behavior
+#   and is outside this catalog release's all-mode scope.
+#
+# No shell script or stage-specific RBAC is needed here because Flux controllers
+# retrieve and install the chart.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: airm-infra-rabbitmq
+  namespace: ${releaseNamespace}
+  annotations:
+    airm.nutanix.com/chart-version: ${airmRabbitmqChartVersion}
+spec:
+  interval: 24h
+  ref:
+    digest: ${airmRabbitmqChartDigest}
+  url: ${airmRabbitmqChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: airm-infra-rabbitmq
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: airm-infra-rabbitmq
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  interval: 15m
+  releaseName: airm-infra-rabbitmq
+  targetNamespace: ${airmNamespace:=airm}
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    persistence:
+      storageClassName: default
+---

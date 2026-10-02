@@ -1,0 +1,21 @@
+# Stage 02 — Kustomize assembly
+#
+# This file packages gateway.sh into an executable ConfigMap and applies the
+# dedicated ServiceAccount/RBAC before creating the Gateway setup Job. The
+# generated script ConfigMap is mounted read-only by gateway-job.yaml.
+#
+# Flux starts this stage after 01-secrets and waits for the `airm-gateway` Job
+# health check. Successful completion guarantees that compatible Gateway API
+# CRDs and the shared Gateway have been applied before stage 03 creates the
+# Keycloak HTTPRoute.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - gateway.sh
+  name: airm-gateway-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- gateway-job.yaml
+---

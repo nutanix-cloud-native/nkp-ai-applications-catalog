@@ -1,0 +1,54 @@
+# Stage 06 — RabbitMQ configuration Job
+#
+# Stage 05-infrastructure creates the RabbitMQ cluster; this Job enters the
+# first broker pod and configures the users, vhosts, permissions, and temporary
+# durable queue required by AIRM. It replaces installer step 9e.
+#
+# The AIRM namespace and deterministic operator-generated pod name are passed
+# to rabbitmq-config.sh. Kustomize packages that script into an executable
+# ConfigMap mounted read-only at /scripts. Credentials are read at runtime from
+# the named Secrets created in stage 01.
+#
+# The dedicated ServiceAccount can read only those credentials, inspect only
+# the expected RabbitMQ pod, and open pod exec sessions in the AIRM namespace.
+# A ten-minute deadline covers broker readiness and configuration. Flux blocks
+# CRD/application stages until this Job verifies the initial topology.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-rabbitmq-config
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: rabbitmq-config
+        airm.nutanix.com/stage: 06-rabbitmq-config
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-rabbitmq-config
+      containers:
+      - name: rabbitmq-config
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: AIRM_NAMESPACE
+          value: ${airmNamespace:=airm}
+        - name: RABBITMQ_POD
+          value: airm-infra-rabbitmq-rabbitmq-server-0
+        command:
+        - /bin/sh
+        - /scripts/rabbitmq-config.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: rabbitmq-config-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-rabbitmq-config-script
+        name: rabbitmq-config-script
+---

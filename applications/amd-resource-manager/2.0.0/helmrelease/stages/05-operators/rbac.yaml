@@ -1,0 +1,42 @@
+# Stage 05 — Operator assurance permissions
+#
+# This stage conditionally applies complete upstream CloudNativePG and RabbitMQ
+# Cluster Operator release manifests. Those bundles create and reconcile a
+# broad, version-dependent set of cluster resources: Namespaces, CRDs,
+# ClusterRoles/Bindings, Roles/Bindings, Services, Deployments, ServiceAccounts,
+# Secrets, and admission webhook configuration. They also use server-side
+# apply, which needs read/create/patch/update access to each included type.
+#
+# For that reason the current implementation binds this dedicated, short-lived
+# Job ServiceAccount to the built-in `cluster-admin` ClusterRole. This is
+# materially broader than the RBAC in other stages and should not be interpreted
+# as least privilege. Risk is reduced—but not eliminated—by:
+# - downloading fixed operator versions;
+# - verifying each manifest against a catalog-pinned SHA-256 digest;
+# - skipping installation when NKP already provides the operator;
+# - running no user-supplied manifest through this identity.
+#
+# A future hardening option is to vendor/render the exact operator resources
+# into the catalog or maintain a purpose-built role matching the pinned
+# manifests. Until then, cluster-admin is necessary for applying the unmodified
+# multi-resource upstream bundles reliably; the binding grants no credentials
+# to later AIRM workloads.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-operator-assurance
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${releaseName}-airm-operator-assurance
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: airm-operator-assurance
+  namespace: ${releaseNamespace}
+---

@@ -1,0 +1,21 @@
+# Stage 09 — Local registration Kustomize assembly
+#
+# This file packages register.sh into an executable ConfigMap and applies its
+# namespaced ServiceAccount/RBAC before creating the registration Job. The
+# generated script is mounted read-only by registration-job.yaml.
+#
+# Flux starts this stage after the AIRM API/UI health checks pass and waits for
+# the `airm-registration` Job. Stage 10 cannot provision the real RabbitMQ
+# identity until this stage has replaced the temporary `airm-user` Secret with
+# the cluster ID and one-time secret returned by AIRM.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - register.sh
+  name: airm-registration-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- registration-job.yaml
+---

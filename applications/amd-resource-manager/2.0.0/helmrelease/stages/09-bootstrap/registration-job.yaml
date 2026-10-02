@@ -1,0 +1,59 @@
+# Stage 09 — Local-cluster registration Job
+#
+# After the API/UI management plane is Ready, this Job authenticates through
+# Keycloak, registers the current cluster with AIRM, and persists the returned
+# RabbitMQ identity in the existing AIRM Secret. Stage 10 uses that identity to
+# configure the broker before the agent starts.
+#
+# Namespace, domain, and Keycloak client ID are supplied by the orchestration
+# chart. register.sh is packaged into an executable ConfigMap by
+# kustomization.yaml and mounted read-only. Internal Service URLs are derived by
+# the script, so registration does not depend on external DNS or Gateway TLS.
+#
+# The ServiceAccount can read only the three credential Secrets involved and
+# patch their existing Secret objects. The 15-minute deadline covers API
+# readiness plus registration retries. Flux treats completion as a health gate
+# before RabbitMQ identity synchronization.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-registration
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 900
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: registration
+        airm.nutanix.com/stage: 09-bootstrap
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-registration
+      containers:
+      - name: registration
+        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: AIRM_NAMESPACE
+          value: ${airmNamespace:=airm}
+        - name: KEYCLOAK_NAMESPACE
+          value: ${keycloakNamespace:=keycloak}
+        - name: DOMAIN
+          value: ${airmDomain}
+        - name: KEYCLOAK_CLIENT_ID
+          value: ${keycloakAdminClientId:=354a0fa1-35ac-4a6d-9c4d-d661129c2cd0}
+        command:
+        - /bin/sh
+        - /scripts/register.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: registration-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-registration-script
+        name: registration-script
+---
