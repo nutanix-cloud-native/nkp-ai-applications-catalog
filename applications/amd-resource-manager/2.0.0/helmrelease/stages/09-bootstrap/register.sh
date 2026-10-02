@@ -125,8 +125,8 @@ cluster_id="$(printf '%s' "$clusters" | jq -r \
     | select((.kubeApiUrl // .kube_api_url // "") == $kube_api)
     | .id
   ' | head -n 1)"
-[ -z "$cluster_id" ] \
-  || fail "cluster '$cluster_id' is already registered for $expected_kube_api_url but its one-time identity is not available in airm-rabbitmq-common-vhost-user"
+[ -z "$cluster_id" ] ||
+  fail "cluster '$cluster_id' is already registered for $expected_kube_api_url but its one-time identity is not available in airm-rabbitmq-common-vhost-user"
 
 log "Registering the local cluster"
 payload="$(jq -n \
@@ -140,12 +140,11 @@ status="$(curl -sS -o "$response_file" -w '%{http_code}' \
   -H "Content-Type: application/json" \
   -d "$payload")"
 case "$status" in
-  200|201)
-    ;;
-  *)
-    cat "$response_file" >&2
-    fail "cluster registration failed with HTTP $status"
-    ;;
+200 | 201) ;;
+*)
+  cat "$response_file" >&2
+  fail "cluster registration failed with HTTP $status"
+  ;;
 esac
 
 cluster_id="$(jq -r '.id // empty' "$response_file")"
@@ -161,6 +160,6 @@ kubectl create secret generic airm-rabbitmq-common-vhost-user \
   --from-literal="password=$cluster_secret" \
   -n "$AIRM_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-[ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] \
-  || fail "registered cluster identity was not persisted"
+[ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] ||
+  fail "registered cluster identity was not persisted"
 log "Registered local cluster '$cluster_id' and persisted its RabbitMQ identity"

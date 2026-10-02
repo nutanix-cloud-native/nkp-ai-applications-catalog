@@ -55,8 +55,8 @@ GATEWAY_API_VERSION="$${GATEWAY_API_VERSION:?GATEWAY_API_VERSION is required}"
 # Script step 5: Traefik v3.6+ needs BackendTLSPolicy at v1 (Gateway API v1.4.0+).
 log "Applying Gateway API $${GATEWAY_API_VERSION} standard CRDs"
 kubectl apply -f \
-  "https://github.com/kubernetes-sigs/gateway-api/releases/download/$${GATEWAY_API_VERSION}/standard-install.yaml" \
-  || fail "failed to apply Gateway API CRDs"
+  "https://github.com/kubernetes-sigs/gateway-api/releases/download/$${GATEWAY_API_VERSION}/standard-install.yaml" ||
+  fail "failed to apply Gateway API CRDs"
 
 # Script step 6: Traefik-backed Gateway (listener ports = Traefik entrypoints).
 log "Creating/updating Gateway $${GATEWAY_NAME} in $${GATEWAY_NAMESPACE}"

@@ -71,8 +71,8 @@ PY
 
 kaiwo_crd_count="$(grep -c 'kind: CustomResourceDefinition' \
   /tmp/kaiwo-crds.yaml || true)"
-[ "$kaiwo_crd_count" -gt 0 ] \
-  || fail "Kaiwo release contained no CustomResourceDefinitions"
+[ "$kaiwo_crd_count" -gt 0 ] ||
+  fail "Kaiwo release contained no CustomResourceDefinitions"
 kubectl apply --server-side -f /tmp/kaiwo-crds.yaml
 log "Applied $kaiwo_crd_count Kaiwo CRDs"
 
@@ -101,6 +101,6 @@ spec:
   workloadPriorityClasses: []
 EOF
 
-kubectl get kaiwoqueueconfig.kaiwo.silogen.ai kaiwo >/dev/null \
-  || fail "KaiwoQueueConfig 'kaiwo' was not created"
+kubectl get kaiwoqueueconfig.kaiwo.silogen.ai kaiwo >/dev/null ||
+  fail "KaiwoQueueConfig 'kaiwo' was not created"
 log "Kaiwo and AIM Engine CRDs are established"

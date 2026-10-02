@@ -45,8 +45,8 @@ fail() {
 }
 
 gateway_ready() {
-  kubectl get gateway "$GATEWAY_NAME" -n "$GATEWAY_NAMESPACE" -o json \
-    | jq -e --arg listener "$GATEWAY_LISTENER_NAME" '
+  kubectl get gateway "$GATEWAY_NAME" -n "$GATEWAY_NAMESPACE" -o json |
+    jq -e --arg listener "$GATEWAY_LISTENER_NAME" '
         any(.status.listeners[]?;
           .name == $listener
           and any(.conditions[]?;
@@ -60,8 +60,8 @@ gateway_ready() {
 route_ready() {
   namespace=$1
   name=$2
-  kubectl get httproute "$name" -n "$namespace" -o json \
-    | jq -e '
+  kubectl get httproute "$name" -n "$namespace" -o json |
+    jq -e '
         any(.status.parents[]?;
           any(.conditions[]?;
             .type == "Accepted" and .status == "True")

@@ -66,14 +66,14 @@ cluster_id="$(read_secret airm-rabbitmq-common-vhost-user username)"
 cluster_secret="$(read_secret airm-rabbitmq-common-vhost-user password)"
 admin_password="$(read_secret airm-rabbitmq-admin password)"
 [ -n "$cluster_id" ] || fail "registered cluster ID is empty"
-[ "$cluster_id" != "airm-user" ] \
-  || fail "temporary airm-user identity has not been replaced"
+[ "$cluster_id" != "airm-user" ] ||
+  fail "temporary airm-user identity has not been replaced"
 [ -n "$cluster_secret" ] || fail "registered cluster secret is empty"
 [ -n "$admin_password" ] || fail "RabbitMQ admin password is empty"
 
 log "Synchronizing RabbitMQ user '$cluster_id'"
-if rmq_exec rabbitmqctl list_users --no-table-headers \
-  | awk '{print $1}' | grep -Fxq "$cluster_id"; then
+if rmq_exec rabbitmqctl list_users --no-table-headers |
+  awk '{print $1}' | grep -Fxq "$cluster_id"; then
   rmq_exec rabbitmqctl change_password "$cluster_id" "$cluster_secret"
 else
   rmq_exec rabbitmqctl add_user "$cluster_id" "$cluster_secret"
@@ -83,8 +83,8 @@ rmq_exec rabbitmqctl set_permissions -p vh_airm_common \
   "$cluster_id" ".*" ".*" ".*"
 
 consumer_vhost="vh_$cluster_id"
-if ! rmq_exec rabbitmqctl list_vhosts --no-table-headers \
-  | grep -Fxq "$consumer_vhost"; then
+if ! rmq_exec rabbitmqctl list_vhosts --no-table-headers |
+  grep -Fxq "$consumer_vhost"; then
   rmq_exec rabbitmqctl add_vhost "$consumer_vhost"
 fi
 rmq_exec rabbitmqctl set_permissions -p "$consumer_vhost" \
@@ -103,34 +103,34 @@ if ! rmq_exec rabbitmqctl list_queues -p "$consumer_vhost" \
     --vhost="$consumer_vhost"
 fi
 
-rmq_exec rabbitmqctl list_users --no-table-headers \
-  | awk '{print $1}' | grep -Fxq "$cluster_id" \
-  || fail "RabbitMQ user '$cluster_id' is missing"
-rmq_exec rabbitmqctl list_vhosts --no-table-headers \
-  | grep -Fxq "$consumer_vhost" \
-  || fail "RabbitMQ vhost '$consumer_vhost' is missing"
+rmq_exec rabbitmqctl list_users --no-table-headers |
+  awk '{print $1}' | grep -Fxq "$cluster_id" ||
+  fail "RabbitMQ user '$cluster_id' is missing"
+rmq_exec rabbitmqctl list_vhosts --no-table-headers |
+  grep -Fxq "$consumer_vhost" ||
+  fail "RabbitMQ vhost '$consumer_vhost' is missing"
 rmq_exec rabbitmqctl list_permissions -p vh_airm_common \
-  --no-table-headers \
-  | awk -v user="$cluster_id" \
+  --no-table-headers |
+  awk -v user="$cluster_id" \
     '$1 == user && $2 == ".*" && $3 == ".*" && $4 == ".*" {
       found = 1
-    } END { exit !found }' \
-  || fail "publisher permissions for '$cluster_id' are missing"
+    } END { exit !found }' ||
+  fail "publisher permissions for '$cluster_id' are missing"
 for user in "$cluster_id" admin; do
   rmq_exec rabbitmqctl list_permissions -p "$consumer_vhost" \
-    --no-table-headers \
-    | awk -v expected="$user" \
+    --no-table-headers |
+    awk -v expected="$user" \
       '$1 == expected && $2 == ".*" && $3 == ".*" && $4 == ".*" {
         found = 1
-      } END { exit !found }' \
-    || fail "consumer permissions for '$user' are missing"
+      } END { exit !found }' ||
+    fail "consumer permissions for '$user' are missing"
 done
 rmq_exec rabbitmqctl list_queues -p "$consumer_vhost" \
-  name durable --no-table-headers \
-  | awk -v queue="$cluster_id" \
-    '$1 == queue && $2 == "true" { found = 1 } END { exit !found }' \
-  || fail "durable queue '$cluster_id' is missing"
+  name durable --no-table-headers |
+  awk -v queue="$cluster_id" \
+    '$1 == queue && $2 == "true" { found = 1 } END { exit !found }' ||
+  fail "durable queue '$cluster_id' is missing"
 
-[ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] \
-  || fail "Kubernetes and RabbitMQ identities do not match"
+[ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] ||
+  fail "Kubernetes and RabbitMQ identities do not match"
 log "RabbitMQ identity '$cluster_id' is synchronized"

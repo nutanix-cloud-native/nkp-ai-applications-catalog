@@ -73,9 +73,9 @@ apply_secret() {
 }
 
 get_secret_value() {
-  kubectl get secret "$1" --namespace "$AIRM_NAMESPACE" -o json 2>/dev/null \
-    | jq -r --arg key "$2" '.data[$key] // empty' \
-    | base64 -d 2>/dev/null || true
+  kubectl get secret "$1" --namespace "$AIRM_NAMESPACE" -o json 2>/dev/null |
+    jq -r --arg key "$2" '.data[$key] // empty' |
+    base64 -d 2>/dev/null || true
 }
 
 require_secret_keys() {
@@ -103,8 +103,8 @@ KEYCLOAK_CLIENT_ID="$${KEYCLOAK_CLIENT_ID:?KEYCLOAK_CLIENT_ID is required}"
 # force http://localhost:8080 (kubernetes/kubernetes#93474). Discovery works
 # because it calls kubectl without those flags.
 log "Waiting for preflight discovery"
-kubectl version >/dev/null \
-  || fail "cannot connect to the Kubernetes API"
+kubectl version >/dev/null ||
+  fail "cannot connect to the Kubernetes API"
 
 for attempt in $(seq 1 120); do
   err_file="$(mktemp)"
@@ -138,8 +138,8 @@ ADMIN_CLIENT_SECRET="$(get_secret_value airm-keycloak-admin-client client-secret
 # admin-client secret. If both exist and disagree, keep the stage moving by
 # syncing the admin-client Secret to the UI value; the Keycloak configuration
 # stage later reconciles both Kubernetes Secrets from Keycloak itself.
-if [ -n "$UI_CLIENT_SECRET" ] && [ -n "$ADMIN_CLIENT_SECRET" ] \
-  && [ "$UI_CLIENT_SECRET" != "$ADMIN_CLIENT_SECRET" ]; then
+if [ -n "$UI_CLIENT_SECRET" ] && [ -n "$ADMIN_CLIENT_SECRET" ] &&
+  [ "$UI_CLIENT_SECRET" != "$ADMIN_CLIENT_SECRET" ]; then
   log "Keycloak client Kubernetes Secrets differ; using airm-keycloak-ui-creds as the temporary canonical value"
 fi
 

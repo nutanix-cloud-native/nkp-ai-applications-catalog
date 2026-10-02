@@ -40,8 +40,8 @@ command -v jq >/dev/null || fail "jq is unavailable"
 kubectl version >/dev/null || fail "cannot connect to the Kubernetes API"
 
 log "Validating required platform dependencies"
-kubectl get deployment -n cert-manager cert-manager >/dev/null \
-  || fail "cert-manager deployment is not available"
+kubectl get deployment -n cert-manager cert-manager >/dev/null ||
+  fail "cert-manager deployment is not available"
 if kubectl get deployments -A -l app.kubernetes.io/name=cloudnative-pg \
   -o name | grep -q .; then
   log "CloudNativePG operator found"
@@ -50,30 +50,30 @@ else
 fi
 kubectl get customresourcedefinition gatewayclasses.gateway.networking.k8s.io \
   >/dev/null || fail "Gateway API CRDs are not available"
-kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null \
-  || log "WARNING: GatewayClass $GATEWAY_CLASS_NAME is not available; gateway stage may fail"
+kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null ||
+  log "WARNING: GatewayClass $GATEWAY_CLASS_NAME is not available; gateway stage may fail"
 
 domain="$DOMAIN_OVERRIDE"
 if [ -z "$domain" ]; then
-  address="$(kubectl get ipaddresspools.metallb.io -A -o json 2>/dev/null \
-    | jq -r '.items[0].spec.addresses[0] // empty')"
+  address="$(kubectl get ipaddresspools.metallb.io -A -o json 2>/dev/null |
+    jq -r '.items[0].spec.addresses[0] // empty')"
   if [ -n "$address" ]; then
     domain="$(printf '%s' "$address" | cut -d/ -f1 | cut -d- -f1).nip.io"
   fi
 fi
 if [ -z "$domain" ]; then
   address="$(kubectl get services -A -l app.kubernetes.io/name=traefik \
-    -o json 2>/dev/null \
-    | jq -r '[.items[].status.loadBalancer.ingress[]? |
+    -o json 2>/dev/null |
+    jq -r '[.items[].status.loadBalancer.ingress[]? |
       (.ip // .hostname // empty)][0] // empty')"
   if [ -n "$address" ]; then
     case "$address" in
-      *[!0-9.]*)
-        domain="$address"
-        ;;
-      *)
-        domain="$address.nip.io"
-        ;;
+    *[!0-9.]*)
+      domain="$address"
+      ;;
+    *)
+      domain="$address.nip.io"
+      ;;
     esac
   fi
 fi
@@ -85,32 +85,32 @@ if [ -z "$storage_class" ]; then
   if kubectl get storageclass default >/dev/null 2>&1; then
     storage_class=default
   else
-    storage_class="$(kubectl get storageclasses -o json \
-      | jq -r '[.items[] | select(
+    storage_class="$(kubectl get storageclasses -o json |
+      jq -r '[.items[] | select(
         .metadata.annotations["storageclass.kubernetes.io/is-default-class"] == "true"
         or .metadata.annotations["storageclass.beta.kubernetes.io/is-default-class"] == "true"
       ) | .metadata.name][0] // empty')"
   fi
 fi
 if [ -z "$storage_class" ]; then
-  storage_class="$(kubectl get storageclasses -o json \
-    | jq -r '.items[0].metadata.name // empty')"
+  storage_class="$(kubectl get storageclasses -o json |
+    jq -r '.items[0].metadata.name // empty')"
 fi
 [ -n "$storage_class" ] || fail "no StorageClass is available"
 
 prometheus_url="$PROMETHEUS_URL_OVERRIDE"
 if [ -z "$prometheus_url" ]; then
   service="$(kubectl get service -n kommander \
-    kube-prometheus-stack-prometheus -o json 2>/dev/null \
-    | jq -r '.metadata.name // empty')"
+    kube-prometheus-stack-prometheus -o json 2>/dev/null |
+    jq -r '.metadata.name // empty')"
   if [ -n "$service" ]; then
     prometheus_url="http://$service.kommander.svc.cluster.local:9090"
   fi
 fi
 if [ -z "$prometheus_url" ]; then
   service_data="$(kubectl get services -A \
-    -l app.kubernetes.io/name=prometheus -o json 2>/dev/null \
-    | jq -r '.items[0] |
+    -l app.kubernetes.io/name=prometheus -o json 2>/dev/null |
+    jq -r '.items[0] |
       if . then "\(.metadata.name) \(.metadata.namespace)" else "" end')"
   if [ -n "$service_data" ]; then
     service="$(printf '%s' "$service_data" | cut -d' ' -f1)"

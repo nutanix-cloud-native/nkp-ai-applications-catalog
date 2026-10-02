@@ -79,8 +79,8 @@ for attempt in $(seq 1 12); do
     --data-urlencode client_id=admin-cli \
     --data-urlencode username=admin \
     --data-urlencode "password=$KC_ADMIN_PASS" \
-    --data-urlencode grant_type=password 2>/dev/null \
-    | jq -r '.access_token // empty')"
+    --data-urlencode grant_type=password 2>/dev/null |
+    jq -r '.access_token // empty')"
   [ -n "$TOKEN" ] && break
   [ "$attempt" -lt 12 ] || fail "failed to obtain Keycloak admin token"
   sleep 5
@@ -110,18 +110,18 @@ kc_write_idempotent() {
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
     -d "$data")" || {
-      rm -f "$response_file"
-      fail "Keycloak API request failed: $method $path"
-    }
+    rm -f "$response_file"
+    fail "Keycloak API request failed: $method $path"
+  }
   case "$status" in
-    2??|409)
-      rm -f "$response_file"
-      ;;
-    *)
-      cat "$response_file" >&2
-      rm -f "$response_file"
-      fail "Keycloak API request failed ($status): $method $path"
-      ;;
+  2?? | 409)
+    rm -f "$response_file"
+    ;;
+  *)
+    cat "$response_file" >&2
+    rm -f "$response_file"
+    fail "Keycloak API request failed ($status): $method $path"
+    ;;
   esac
 }
 
@@ -133,8 +133,8 @@ UI_CLIENT_SECRET="$(kubectl get secret airm-keycloak-ui-creds \
 [ -n "$UI_CLIENT_SECRET" ] || fail "airm-keycloak-ui-creds is empty"
 
 ADMIN_INTERNAL_ID="$(kc_get \
-  "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" \
-  | jq -r '.[0].id // empty')"
+  "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" |
+  jq -r '.[0].id // empty')"
 if [ -z "$ADMIN_INTERNAL_ID" ]; then
   log "Creating AIRM admin client"
   kc_write_idempotent POST /admin/realms/airm/clients "{
@@ -150,14 +150,14 @@ if [ -z "$ADMIN_INTERNAL_ID" ]; then
     \"webOrigins\":[\"*\"]
   }"
   ADMIN_INTERNAL_ID="$(kc_get \
-    "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" \
-    | jq -r '.[0].id // empty')"
+    "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" |
+    jq -r '.[0].id // empty')"
 fi
 [ -n "$ADMIN_INTERNAL_ID" ] || fail "AIRM admin client was not created"
 
 ADMIN_CLIENT_JSON="$(kc_get \
-  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID" \
-  | jq --arg client_id "$KEYCLOAK_CLIENT_ID" '
+  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID" |
+  jq --arg client_id "$KEYCLOAK_CLIENT_ID" '
     .clientId = $client_id
     | .enabled = true
     | .protocol = "openid-connect"
@@ -172,8 +172,8 @@ kc_write PUT "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID" \
   "$ADMIN_CLIENT_JSON" >/dev/null
 
 KC_CLIENT_SECRET="$(kc_get \
-  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/client-secret" \
-  | jq -r '.value // empty')"
+  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/client-secret" |
+  jq -r '.value // empty')"
 [ -n "$KC_CLIENT_SECRET" ] || fail "Keycloak client secret is unavailable"
 
 log "Synchronizing Keycloak client Secrets"
@@ -188,11 +188,11 @@ kubectl create secret generic airm-keycloak-ui-creds \
   --dry-run=client -o yaml | kubectl apply -f -
 
 REALM_MGMT_ID="$(kc_get \
-  '/admin/realms/airm/clients?clientId=realm-management' \
-  | jq -r '.[0].id // empty')"
+  '/admin/realms/airm/clients?clientId=realm-management' |
+  jq -r '.[0].id // empty')"
 SA_USER_ID="$(kc_get \
-  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/service-account-user" \
-  | jq -r '.id // empty')"
+  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/service-account-user" |
+  jq -r '.id // empty')"
 [ -n "$REALM_MGMT_ID" ] || fail "realm-management client is unavailable"
 [ -n "$SA_USER_ID" ] || fail "AIRM client service account is unavailable"
 REALM_ADMIN_ROLE="$(kc_get \
@@ -201,8 +201,8 @@ kc_write_idempotent POST \
   "/admin/realms/airm/users/$SA_USER_ID/role-mappings/clients/$REALM_MGMT_ID" \
   "[$REALM_ADMIN_ROLE]"
 
-UI_INTERNAL_ID="$(kc_get '/admin/realms/airm/clients?clientId=airm-ui' \
-  | jq -r '.[0].id // empty')"
+UI_INTERNAL_ID="$(kc_get '/admin/realms/airm/clients?clientId=airm-ui' |
+  jq -r '.[0].id // empty')"
 if [ -z "$UI_INTERNAL_ID" ]; then
   log "Creating AIRM UI client"
   kc_write_idempotent POST /admin/realms/airm/clients "{
@@ -215,12 +215,12 @@ if [ -z "$UI_INTERNAL_ID" ]; then
     \"redirectUris\":[\"*\"],
     \"webOrigins\":[\"*\"]
   }"
-  UI_INTERNAL_ID="$(kc_get '/admin/realms/airm/clients?clientId=airm-ui' \
-    | jq -r '.[0].id // empty')"
+  UI_INTERNAL_ID="$(kc_get '/admin/realms/airm/clients?clientId=airm-ui' |
+    jq -r '.[0].id // empty')"
 fi
 [ -n "$UI_INTERNAL_ID" ] || fail "AIRM UI client was not created"
-UI_CLIENT_JSON="$(kc_get "/admin/realms/airm/clients/$UI_INTERNAL_ID" \
-  | jq --arg secret "$KC_CLIENT_SECRET" '
+UI_CLIENT_JSON="$(kc_get "/admin/realms/airm/clients/$UI_INTERNAL_ID" |
+  jq --arg secret "$KC_CLIENT_SECRET" '
     .clientId = "airm-ui"
     | .enabled = true
     | .protocol = "openid-connect"
@@ -234,22 +234,22 @@ kc_write PUT "/admin/realms/airm/clients/$UI_INTERNAL_ID" \
   "$UI_CLIENT_JSON" >/dev/null
 
 KCADMIN_PASS="$(kubectl get secret keycloak-kcadmin \
-  -n "$KEYCLOAK_NAMESPACE" -o jsonpath='{.data.password}' 2>/dev/null \
-  | base64 -d 2>/dev/null || true)"
+  -n "$KEYCLOAK_NAMESPACE" -o jsonpath='{.data.password}' 2>/dev/null |
+  base64 -d 2>/dev/null || true)"
 [ -n "$KCADMIN_PASS" ] || KCADMIN_PASS="$(rand_hex 12)"
 KCADMIN_ID="$(kc_get \
-  '/admin/realms/master/users?username=kcadmin&exact=true' \
-  | jq -r '.[0].id // empty')"
+  '/admin/realms/master/users?username=kcadmin&exact=true' |
+  jq -r '.[0].id // empty')"
 if [ -z "$KCADMIN_ID" ]; then
   log "Creating permanent Keycloak administrator"
-  kc_write_idempotent POST /admin/realms/master/users "{
-    \"username\":\"kcadmin\",
-    \"enabled\":true,
-    \"emailVerified\":true
-  }"
+  kc_write_idempotent POST /admin/realms/master/users '{
+    "username":"kcadmin",
+    "enabled":true,
+    "emailVerified":true
+  }'
   KCADMIN_ID="$(kc_get \
-    '/admin/realms/master/users?username=kcadmin&exact=true' \
-    | jq -r '.[0].id // empty')"
+    '/admin/realms/master/users?username=kcadmin&exact=true' |
+    jq -r '.[0].id // empty')"
 fi
 [ -n "$KCADMIN_ID" ] || fail "kcadmin user was not created"
 kc_write PUT \
@@ -274,8 +274,8 @@ AIRM_USER_PASS="$(kubectl get secret airm-user-credentials \
 [ -n "$AIRM_USER_PASS" ] || fail "AIRM user password is unavailable"
 AIRM_USER_QUERY="$(printf '%s' "$AIRM_USER_EMAIL" | jq -sRr @uri)"
 AIRM_USER_ID="$(kc_get \
-  "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" \
-  | jq -r '.[0].id // empty')"
+  "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" |
+  jq -r '.[0].id // empty')"
 if [ -z "$AIRM_USER_ID" ]; then
   log "Creating default AIRM user"
   kc_write_idempotent POST /admin/realms/airm/users "{
@@ -293,12 +293,12 @@ if [ -z "$AIRM_USER_ID" ]; then
     }]
   }"
   AIRM_USER_ID="$(kc_get \
-    "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" \
-    | jq -r '.[0].id // empty')"
+    "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" |
+    jq -r '.[0].id // empty')"
 fi
 [ -n "$AIRM_USER_ID" ] || fail "default AIRM user was not created"
-AIRM_USER_JSON="$(kc_get "/admin/realms/airm/users/$AIRM_USER_ID" \
-  | jq --arg email "$AIRM_USER_EMAIL" '
+AIRM_USER_JSON="$(kc_get "/admin/realms/airm/users/$AIRM_USER_ID" |
+  jq --arg email "$AIRM_USER_EMAIL" '
     .username = $email
     | .email = $email
     | .firstName = "AIRM"
@@ -329,24 +329,24 @@ kc_write_idempotent POST \
   "[$PA_ROLE]"
 
 log "Verifying Keycloak configuration"
-[ "$(kc_get /admin/realms/airm | jq -r '.realm')" = "airm" ] \
-  || fail "AIRM realm verification failed"
-[ -n "$(kc_get "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" \
-  | jq -r '.[0].id // empty')" ] || fail "AIRM client verification failed"
+[ "$(kc_get /admin/realms/airm | jq -r '.realm')" = "airm" ] ||
+  fail "AIRM realm verification failed"
+[ -n "$(kc_get "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" |
+  jq -r '.[0].id // empty')" ] || fail "AIRM client verification failed"
 [ -n "$(kc_get \
-  "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" \
-  | jq -r '.[0].id // empty')" ] || fail "AIRM user verification failed"
-[ "$(kc_get "/admin/realms/airm/users/$AIRM_USER_ID" \
-  | jq -r '.requiredActions | length')" = "0" ] \
-  || fail "AIRM user still has required account actions"
+  "/admin/realms/airm/users?username=$AIRM_USER_QUERY&exact=true" |
+  jq -r '.[0].id // empty')" ] || fail "AIRM user verification failed"
+[ "$(kc_get "/admin/realms/airm/users/$AIRM_USER_ID" |
+  jq -r '.requiredActions | length')" = "0" ] ||
+  fail "AIRM user still has required account actions"
 [ "$(kc_get \
-  "/admin/realms/airm/users/$AIRM_USER_ID/role-mappings/realm" \
-  | jq -r 'any(.[]; .name == "Platform Administrator")')" = "true" ] \
-  || fail "Platform Administrator user assignment verification failed"
+  "/admin/realms/airm/users/$AIRM_USER_ID/role-mappings/realm" |
+  jq -r 'any(.[]; .name == "Platform Administrator")')" = "true" ] ||
+  fail "Platform Administrator user assignment verification failed"
 [ "$(kc_get \
-  "/admin/realms/airm/users/$SA_USER_ID/role-mappings/realm" \
-  | jq -r 'any(.[]; .name == "Platform Administrator")')" = "true" ] \
-  || fail "Platform Administrator service-account assignment verification failed"
+  "/admin/realms/airm/users/$SA_USER_ID/role-mappings/realm" |
+  jq -r 'any(.[]; .name == "Platform Administrator")')" = "true" ] ||
+  fail "Platform Administrator service-account assignment verification failed"
 
 log "Verifying default AIRM user password grant"
 AIRM_USER_TOKEN="$(curl -fsS -X POST \
@@ -355,9 +355,9 @@ AIRM_USER_TOKEN="$(curl -fsS -X POST \
   --data-urlencode "username=$AIRM_USER_EMAIL" \
   --data-urlencode "password=$AIRM_USER_PASS" \
   --data-urlencode grant_type=password \
-  --data-urlencode "client_secret=$KC_CLIENT_SECRET" \
-  | jq -r '.access_token // empty')"
-[ -n "$AIRM_USER_TOKEN" ] \
-  || fail "default AIRM user password grant verification failed"
+  --data-urlencode "client_secret=$KC_CLIENT_SECRET" |
+  jq -r '.access_token // empty')"
+[ -n "$AIRM_USER_TOKEN" ] ||
+  fail "default AIRM user password grant verification failed"
 
 log "AIRM Keycloak configuration completed"

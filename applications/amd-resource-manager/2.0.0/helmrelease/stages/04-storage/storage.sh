@@ -47,12 +47,12 @@ kubectl get storageclass "$STORAGE_CLASS" >/dev/null 2>&1 || fail \
   "StorageClass '$STORAGE_CLASS' does not exist"
 
 log "Creating 'default' StorageClass as alias to '$STORAGE_CLASS'"
-kubectl get storageclass "$STORAGE_CLASS" -o json \
-  | jq '.metadata.name = "default" |
+kubectl get storageclass "$STORAGE_CLASS" -o json |
+  jq '.metadata.name = "default" |
         del(.metadata.annotations["storageclass.kubernetes.io/is-default-class"]) |
         del(.metadata.creationTimestamp, .metadata.resourceVersion,
-            .metadata.uid, .metadata.managedFields)' \
-  | kubectl apply -f -
+            .metadata.uid, .metadata.managedFields)' |
+  kubectl apply -f -
 
 kubectl get storageclass default >/dev/null 2>&1 || fail \
   "'default' StorageClass was not created"

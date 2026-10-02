@@ -62,8 +62,8 @@ for attempt in $(seq 1 60); do
   log "RabbitMQ pod is not ready yet ($attempt/60)"
   sleep 5
 done
-[ "$RABBITMQ_READY" = "true" ] \
-  || fail "RabbitMQ pod '$RABBITMQ_POD' was not ready after 300s"
+[ "$RABBITMQ_READY" = "true" ] ||
+  fail "RabbitMQ pod '$RABBITMQ_POD' was not ready after 300s"
 
 RMQ_USER_PASS="$(kubectl get secret airm-rabbitmq-common-vhost-user \
   -n "$AIRM_NAMESPACE" -o jsonpath='{.data.password}' | base64 -d)"
@@ -74,16 +74,16 @@ RMQ_ADMIN_PASS="$(kubectl get secret airm-rabbitmq-admin \
 
 log "Synchronizing RabbitMQ users"
 rmq_exec rabbitmqctl change_password admin "$RMQ_ADMIN_PASS"
-if rmq_exec rabbitmqctl list_users --no-table-headers \
-  | awk '{print $1}' | grep -Fxq airm-user; then
+if rmq_exec rabbitmqctl list_users --no-table-headers |
+  awk '{print $1}' | grep -Fxq airm-user; then
   rmq_exec rabbitmqctl change_password airm-user "$RMQ_USER_PASS"
 else
   rmq_exec rabbitmqctl add_user airm-user "$RMQ_USER_PASS"
 fi
 
 for vhost in vh_airm_common vh_airm-user; do
-  if ! rmq_exec rabbitmqctl list_vhosts --no-table-headers \
-    | grep -Fxq "$vhost"; then
+  if ! rmq_exec rabbitmqctl list_vhosts --no-table-headers |
+    grep -Fxq "$vhost"; then
     rmq_exec rabbitmqctl add_vhost "$vhost"
   fi
 done
@@ -104,17 +104,17 @@ log "Declaring durable consumer queue 'airm-user'"
 rmq_exec rabbitmqadmin -u admin -p "$RMQ_ADMIN_PASS" \
   declare queue --name=airm-user --durable=true --vhost=vh_airm-user
 
-rmq_exec rabbitmqctl list_users --no-table-headers \
-  | awk '{print $1}' | grep -Fxq airm-user \
-  || fail "RabbitMQ user 'airm-user' was not created"
+rmq_exec rabbitmqctl list_users --no-table-headers |
+  awk '{print $1}' | grep -Fxq airm-user ||
+  fail "RabbitMQ user 'airm-user' was not created"
 for vhost in vh_airm_common vh_airm-user; do
-  rmq_exec rabbitmqctl list_vhosts --no-table-headers \
-    | grep -Fxq "$vhost" \
-    || fail "RabbitMQ vhost '$vhost' was not created"
+  rmq_exec rabbitmqctl list_vhosts --no-table-headers |
+    grep -Fxq "$vhost" ||
+    fail "RabbitMQ vhost '$vhost' was not created"
 done
 rmq_exec rabbitmqctl list_queues -p vh_airm-user \
-  name durable --no-table-headers \
-  | awk '$1 == "airm-user" && $2 == "true" { found = 1 } END { exit !found }' \
-  || fail "durable queue 'airm-user' was not created"
+  name durable --no-table-headers |
+  awk '$1 == "airm-user" && $2 == "true" { found = 1 } END { exit !found }' ||
+  fail "durable queue 'airm-user' was not created"
 
 log "RabbitMQ users, vhosts, permissions, and queue are configured"

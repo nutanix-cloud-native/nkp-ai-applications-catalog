@@ -25,4 +25,3 @@ airm.nutanix.com/mode: {{ .Values.airm.mode | quote }}
 {{- define "amd-resource-manager.stageKustomizationName" -}}
 {{- printf "%s-%s" (default .Values.catalog.releaseName .Release.Name) .stage | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
-
