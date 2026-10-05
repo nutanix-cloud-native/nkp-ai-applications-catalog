@@ -46,7 +46,7 @@ spec:
       opensslImage: {{ $root.Values.toolImages.openssl | quote }}
       {{ if eq $stage.name "03-keycloak" -}}
       keycloakChartUrl: {{ $root.Values.keycloak.chartUrl | quote }}
-      keycloakChartDigest: {{ $root.Values.versions.keycloakChartDigest | quote }}
+      keycloakChartVersion: {{ $root.Values.versions.keycloakChart | quote }}
       keycloakImageRepository: {{ $root.Values.keycloak.images.keycloak.repository | quote }}
       keycloakImageTag: {{ $root.Values.keycloak.images.keycloak.tag | quote }}
       keycloakConfigCliRepository: {{ $root.Values.keycloak.images.configCli.repository | quote }}
@@ -67,10 +67,8 @@ spec:
       {{ if eq $stage.name "05-infrastructure" -}}
       airmCnpgChartUrl: {{ $root.Values.chartSources.airmCnpg | quote }}
       airmCnpgChartVersion: {{ $root.Values.versions.airmCnpgChart | quote }}
-      airmCnpgChartDigest: {{ $root.Values.versions.airmCnpgChartDigest | quote }}
       airmRabbitmqChartUrl: {{ $root.Values.chartSources.airmRabbitmq | quote }}
       airmRabbitmqChartVersion: {{ $root.Values.versions.airmRabbitmqChart | quote }}
-      airmRabbitmqChartDigest: {{ $root.Values.versions.airmRabbitmqChartDigest | quote }}
       {{ end -}}
       {{ if eq $stage.name "07-agent-crds" -}}
       kaiwoVersion: {{ $root.Values.versions.kaiwo | quote }}
@@ -81,13 +79,11 @@ spec:
       {{ if eq $stage.name "08-management" -}}
       airmApiChartUrl: {{ $root.Values.chartSources.airmApi | quote }}
       airmApiChartVersion: {{ $root.Values.versions.airmApiChart | quote }}
-      airmApiChartDigest: {{ $root.Values.versions.airmApiChartDigest | quote }}
       airmImageTag: {{ $root.Values.airm.imageTag | quote }}
       {{ end -}}
       {{ if eq $stage.name "12-agent" -}}
       airmAgentChartUrl: {{ required "chartSources.airmAgent is required for stage 12-agent" $root.Values.chartSources.airmAgent | quote }}
       airmAgentChartVersion: {{ required "versions.airmAgentChart is required for stage 12-agent" $root.Values.versions.airmAgentChart | quote }}
-      airmAgentChartDigest: {{ required "versions.airmAgentChartDigest is required for stage 12-agent" $root.Values.versions.airmAgentChartDigest | quote }}
       airmImageTag: {{ required "airm.imageTag is required for stage 12-agent" $root.Values.airm.imageTag | quote }}
       {{ end -}}
     {{- if ne $stage.name "00-preflight" }}

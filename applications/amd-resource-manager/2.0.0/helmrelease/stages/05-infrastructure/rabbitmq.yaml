@@ -3,13 +3,13 @@
 # These Flux resources replace installer step 9d, which ran:
 # `helm upgrade --install airm-infra-rabbitmq <local-chart>`.
 #
-# The OCIRepository retrieves AMD's AIRM RabbitMQ chart by immutable digest.
+# The OCIRepository retrieves AMD's AIRM RabbitMQ chart by explicit version tag.
 # The HelmRelease deploys the RabbitmqCluster into the dedicated AIRM namespace;
 # stage 06 subsequently creates the application user, vhosts, permissions, and
 # temporary consumer queue that the operator does not provision.
 #
 # Differences from the original installer step 9d:
-# - The chart comes from a digest-pinned OCI artifact rather than installer
+# - The chart comes from a version-pinned OCI artifact rather than installer
 #   step 2's local git checkout.
 # - Flux owns install, upgrade, retry, and drift reconciliation instead of
 #   host-side Helm and “already installed—skip” logic.
@@ -33,7 +33,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    digest: ${airmRabbitmqChartDigest}
+    tag: ${airmRabbitmqChartVersion}
   url: ${airmRabbitmqChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2

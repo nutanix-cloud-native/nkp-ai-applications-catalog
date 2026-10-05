@@ -15,7 +15,7 @@
 #   so startup can be ordered after local registration and broker provisioning.
 #
 # Differences from the original installer:
-# 1. The chart is fetched from OCI by immutable digest rather than from the
+# 1. The chart is fetched from OCI by explicit version tag rather than from the
 #    local checkout produced by installer step 2.
 # 2. Agent installation is deliberately deferred instead of relying on a
 #    post-registration rollout restart. Its first startup sees final credentials.
@@ -37,7 +37,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    digest: ${airmAgentChartDigest}
+    tag: ${airmAgentChartVersion}
   url: ${airmAgentChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-agent-chart}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
