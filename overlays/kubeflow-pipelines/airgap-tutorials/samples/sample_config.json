@@ -1,0 +1,17 @@
+{
+  "loadSamplesOnRestart": true,
+  "pipelines": [
+    {
+      "name": "tutorial-data-passing-in-python-components-airgap",
+      "displayName": "[Tutorial] Data passing in python components",
+      "description": "[source code](https://github.com/kubeflow/pipelines/tree/unknown/samples/tutorials/Data%20passing%20in%20python%20components) Shows how to pass data between python components. Catalog airgap-ready rewrite (no runtime pip).",
+      "file": "/samples/tutorials/Data passing in python components/Data passing in python components - Files.py.yaml"
+    },
+    {
+      "name": "tutorial-dsl-control-structures-airgap",
+      "displayName": "[Tutorial] DSL - Control structures",
+      "description": "[source code](https://github.com/kubeflow/pipelines/tree/unknown/samples/tutorials/DSL%20-%20Control%20structures) Shows how to use conditional execution and exit handlers. This pipeline will randomly fail to demonstrate that the exit handler gets executed even in case of failure. Catalog airgap-ready rewrite (no runtime pip).",
+      "file": "/samples/tutorials/DSL - Control structures/DSL - Control structures.py.yaml"
+    }
+  ]
+}

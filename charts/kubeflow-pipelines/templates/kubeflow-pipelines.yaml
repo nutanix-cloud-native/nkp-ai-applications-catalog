@@ -5025,6 +5025,19 @@ spec:
               port: 8888
             periodSeconds: 5
             timeoutSeconds: 2
+          volumeMounts:
+            - name: kfp-airgap-tutorial-samples
+              mountPath: /samples/tutorials/Data passing in python components/Data passing in python components - Files.py.yaml
+              subPath: data-passing.py.yaml
+              readOnly: true
+            - name: kfp-airgap-tutorial-samples
+              mountPath: /samples/tutorials/DSL - Control structures/DSL - Control structures.py.yaml
+              subPath: dsl-control.py.yaml
+              readOnly: true
+            - name: kfp-airgap-tutorial-samples
+              mountPath: /config/sample_config.json
+              subPath: sample_config.json
+              readOnly: true
           {{- with .Values.workloads.mlpipeline.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -5033,6 +5046,10 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: ml-pipeline
+      volumes:
+        - name: kfp-airgap-tutorial-samples
+          configMap:
+            name: kfp-airgap-tutorial-samples
       {{- with .Values.workloads.mlpipeline.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -33,8 +33,8 @@ pre-commit:
     git fetch origin main
     pre-commit run --hook-stage manual gitlint-ci
 
-# Quick check: pre-commit only (no nkp CLI needed)
-check: pre-commit
+# Quick check: pre-commit + cheap catalog gates (no nkp CLI needed)
+check: pre-commit verify-kfp-airgap-tutorials
 
 # Full check: pre-commit + catalog validation (ready to push)
 check-all: pre-commit validate

@@ -136,7 +136,6 @@ applications:
       - oci://ghcr.io/nutanix-cloud-native/charts/kubeflow-pipelines:2.15.0
       - docker.io/chrislusf/seaweedfs:4.00
       - docker.io/library/mysql:8.4
-      - docker.io/library/python:3.9
       - gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
       - ghcr.io/containerd/busybox
       - ghcr.io/kubeflow/kfp-api-server:2.15.0
@@ -151,6 +150,7 @@ applications:
       - ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.15.0
       - ghcr.io/kubeflow/kfp-viewer-crd-controller:2.15.0
       - ghcr.io/kubeflow/kfp-visualization-server:2.15.0
+      - ghcr.io/nutanix-cloud-native/kfp-tutorial-runtime:2.15.0
       - quay.io/argoproj/argoexec:v3.7.3
       - quay.io/argoproj/workflow-controller:v3.7.3
   - name: kuberay

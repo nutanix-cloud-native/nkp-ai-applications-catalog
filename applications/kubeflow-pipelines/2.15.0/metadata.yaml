@@ -39,11 +39,14 @@ overview: |
   - **API/SDK** — In-cluster HTTP API is
     `http://ml-pipeline.kubeflow.svc.cluster.local:8888`. See
     [Connect the Pipelines SDK](https://www.kubeflow.org/docs/components/pipelines/user-guides/core-functions/connect-api/).
-  - **Air-gapped images** — Shipped UI tutorials default to
-    `python:3.9` for component pods; the airgap bundle mirrors that
-    image. If you want a different runtime image (or any custom
-    pipeline image), make that image available in your air-gapped
-    registry yourself — the catalog does not ship or rewrite it.
+  - **Air-gapped images** — Shipped UI tutorials use the catalog
+    `kfp-tutorial-runtime` image (`ghcr.io/nutanix-cloud-native/kfp-tutorial-runtime:2.15.0`)
+    with `kfp` preinstalled, so tutorial component pods do not call
+    PyPI at runtime. Custom/customer pipeline images are still not
+    rewritten by the catalog — mirror those yourself. If older broken
+    tutorial pipelines were already imported under upstream sample
+    names, delete them in the UI; the `*-airgap` sample names reload
+    on ml-pipeline restart.
 
   **Documentation:** [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) | **Project:** [kubeflow/manifests](https://github.com/kubeflow/manifests)
 scope:

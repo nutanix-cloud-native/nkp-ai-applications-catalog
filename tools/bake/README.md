@@ -120,7 +120,7 @@ Key fields:
 | `versions[].overlays` | kustomize overlay paths to build, in order |
 | `versions[].airgapImages` | images referenced only outside `image:` fields (lockfile) |
 | `versions[].chart.workloads` | workloads whose replicas/resources/scheduling become tunable values |
-| `versions[].chart.overlay` | rare hand-authored additions layered onto the generated chart deterministically |
+| `versions[].chart.overlay` | rare hand-authored additions layered onto the generated chart deterministically (`templates` copied into `templates/`; `injections` find/replace). Overlay **sources** must live outside `charts/<app>/` because bake `RemoveAll`s that directory. Kubeflow Pipelines airgap tutorials: `overlays/kubeflow-pipelines/airgap-tutorials/` + `just verify-kfp-airgap-tutorials`. |
 
 ## Usage
 

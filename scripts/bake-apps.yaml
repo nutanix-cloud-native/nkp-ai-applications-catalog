@@ -38,6 +38,9 @@ apps:
             - name: seaweedfs
               kind: Deployment
           overlay:
+            # Source lives outside charts/kubeflow-pipelines/ (bake RemoveAll that dir).
+            templates:
+              - overlays/kubeflow-pipelines/airgap-tutorials/kfp-airgap-tutorial-samples.yaml
             injections:
               # Keep PVCs across Helm uninstall, and size them from values so a later
               # expand is a configOverrides change instead of a live vs chart fight.
@@ -48,3 +51,6 @@ apps:
                 replace: "  name: mysql-pv-claim\n  namespace: kubeflow\n  annotations:\n    helm.sh/resource-policy: keep\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: {{ (index ((index .Values \"storage\") | default (dict)) \"mysql\") | default \"20Gi\" }}"
               - find: "  name: seaweedfs-pvc\n  namespace: kubeflow\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 20Gi"
                 replace: "  name: seaweedfs-pvc\n  namespace: kubeflow\n  annotations:\n    helm.sh/resource-policy: keep\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: {{ (index ((index .Values \"storage\") | default (dict)) \"seaweedfs\") | default \"10Gi\" }}"
+              # Mount airgap-ready tutorial samples + sample_config over api-server defaults (NCN-118204).
+              - find: "          {{- with .Values.workloads.mlpipeline.resources }}\n          resources:\n            {{- toYaml . | nindent 12 }}\n          {{- end }}\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      serviceAccountName: ml-pipeline"
+                replace: "          volumeMounts:\n            - name: kfp-airgap-tutorial-samples\n              mountPath: /samples/tutorials/Data passing in python components/Data passing in python components - Files.py.yaml\n              subPath: data-passing.py.yaml\n              readOnly: true\n            - name: kfp-airgap-tutorial-samples\n              mountPath: /samples/tutorials/DSL - Control structures/DSL - Control structures.py.yaml\n              subPath: dsl-control.py.yaml\n              readOnly: true\n            - name: kfp-airgap-tutorial-samples\n              mountPath: /config/sample_config.json\n              subPath: sample_config.json\n              readOnly: true\n          {{- with .Values.workloads.mlpipeline.resources }}\n          resources:\n            {{- toYaml . | nindent 12 }}\n          {{- end }}\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      serviceAccountName: ml-pipeline\n      volumes:\n        - name: kfp-airgap-tutorial-samples\n          configMap:\n            name: kfp-airgap-tutorial-samples"
