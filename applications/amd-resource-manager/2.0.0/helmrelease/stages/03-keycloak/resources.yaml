@@ -4,7 +4,7 @@
 # installer step 7 declaratively:
 #
 # - Namespace: owns the isolated Keycloak workload.
-# - OCIRepository: fetches the configured Keycloak chart by immutable digest.
+# - OCIRepository: fetches the configured Keycloak chart by explicit version tag.
 # - HelmRelease: installs Keycloak with its internal PostgreSQL database,
 #   ClusterIP Service, proxy headers, public hostname, and explicitly pinned
 #   image repositories/tags.
@@ -35,7 +35,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    digest: ${keycloakChartDigest}
+    tag: ${keycloakChartVersion}
   url: ${keycloakChartUrl}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2

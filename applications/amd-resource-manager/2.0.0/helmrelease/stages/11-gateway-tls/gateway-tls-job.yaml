@@ -2,7 +2,7 @@
 #
 # This two-container Job reproduces installer step 11 without requiring one
 # oversized image:
-# - The init container uses a digest-pinned openssl image to generate a
+# - The init container uses a version-pinned openssl image to generate a
 #   self-signed wildcard certificate for the discovered domain.
 # - The main cluster-tool container creates the TLS Secret only when absent,
 #   waits for Gateway/HTTPRoute readiness, and probes the external HTTPS URLs.
@@ -35,7 +35,7 @@ spec:
       serviceAccountName: airm-gateway-tls
       initContainers:
       - name: generate-tls
-        image: ${opensslImage:=docker.io/alpine/openssl@sha256:42c7389ef077aed0eb4e96d0abbd094083d701bbaff1313073b061c0c9cd8278}
+        image: ${opensslImage:=docker.io/alpine/openssl:3.5.4}
         imagePullPolicy: IfNotPresent
         env:
         - name: DOMAIN
@@ -59,7 +59,7 @@ spec:
           name: tls
       containers:
       - name: gateway-tls
-        image: ${clusterToolImage:=docker.io/alpine/k8s@sha256:18bc02c1e0df04451f4f9194eb7b7341c1165da5495459b52f85f72fb9545032}
+        image: ${clusterToolImage:=docker.io/alpine/k8s:1.35.0}
         imagePullPolicy: IfNotPresent
         env:
         - name: DOMAIN

@@ -5,7 +5,7 @@
 # of installer step 10, step 10b, and the HTTPRoute template patch performed in
 # installer step 2.
 #
-# The API chart is fetched from OCI by immutable digest. Its runtime values wire
+# The API chart is fetched from OCI by explicit version tag. Its runtime values wire
 # AIRM to the domain discovered in stage 00, the Gateway from stage 02, Keycloak
 # from stage 03, PostgreSQL/RabbitMQ from stage 05, and the discovered
 # Prometheus endpoint. API and frontend image tags remain catalog-configurable.
@@ -13,7 +13,7 @@
 # Differences from the original installer:
 # 1. The all-mode installer deployed the local umbrella `airm` chart, which
 #    included API, UI, agent, and configure Job. This stage deploys only the
-#    digest-pinned `airm-api-chart`; agent deployment is intentionally deferred
+#    version-pinned `airm-api-chart`; agent deployment is intentionally deferred
 #    until after registration and RabbitMQ identity synchronization.
 # 2. `airm.includeDemoSetup` is false. The chart's configure Job is replaced by
 #    explicit stages 09-bootstrap and 10-identity-sync, avoiding a race where
@@ -41,7 +41,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    digest: ${airmApiChartDigest}
+    tag: ${airmApiChartVersion}
   url: ${airmApiChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-api-chart}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2

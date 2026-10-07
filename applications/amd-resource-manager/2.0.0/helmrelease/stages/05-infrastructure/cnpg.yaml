@@ -3,13 +3,12 @@
 # These Flux resources replace installer step 9c, which ran:
 # `helm upgrade --install airm-infra-cnpg <local-chart>`.
 #
-# The OCIRepository retrieves AMD's AIRM CNPG chart using an immutable digest;
-# the version annotation remains visible for operators but the digest is the
-# actual source pin. The HelmRelease deploys into the dedicated AIRM namespace
+# The OCIRepository retrieves AMD's AIRM CNPG chart using an explicit version
+# tag. The HelmRelease deploys into the dedicated AIRM namespace
 # and creates the CloudNativePG Cluster used by the AIRM management API.
 #
 # Differences from the original installer step 9c:
-# - The chart comes directly from a digest-pinned OCI artifact rather than the
+# - The chart comes directly from a version-pinned OCI artifact rather than the
 #   mutable local tree cloned by installer step 2.
 # - Flux performs install/upgrade and remediation instead of host-side Helm.
 # - Reconciliation is continuous; an existing release is brought to the
@@ -32,7 +31,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    digest: ${airmCnpgChartDigest}
+    tag: ${airmCnpgChartVersion}
   url: ${airmCnpgChartUrl:=oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
