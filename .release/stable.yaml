@@ -36,6 +36,8 @@ releases:
         version: 1.0.0
       - name: amd-gpu-operator
         version: 1.5.1
+      - name: amd-network-operator
+        version: 1.2.0
   - tagName: 2.18
     fileName: stable-nkp-ai-applications-catalog-2.18.tar
     collectionAnnotations:
@@ -53,3 +55,5 @@ releases:
         version: 1.0.0
       - name: amd-gpu-operator
         version: 1.5.1
+      - name: amd-network-operator
+        version: 1.2.0
