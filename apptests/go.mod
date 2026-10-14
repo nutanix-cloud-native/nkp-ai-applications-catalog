@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.3
-	github.com/mesosphere/kommander-applications v0.0.0-20260922222436-e78205ce52af
+	github.com/nutanix-cloud-native/nkp-catalog-tests v0.1.0
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
 	gopkg.in/yaml.v3 v3.0.1

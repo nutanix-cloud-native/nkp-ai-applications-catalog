@@ -10,16 +10,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mesosphere/kommander-applications/catalog"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/catalog"
 )
 
 const disableChartDigestTracking = "--feature-gates=DisableChartDigestTracking=true"
 
-// sharedBackend adapts kommander-applications/catalog to the Backend interface.
+// sharedBackend adapts nkp-catalog-tests/catalog to the Backend interface.
 type sharedBackend struct{}
 
 //nolint:gochecknoinits // wires the default backend before tests run

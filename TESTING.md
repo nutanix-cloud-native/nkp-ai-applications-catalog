@@ -70,7 +70,7 @@ cd apptests && NKP_CATALOG_DIR="$(git rev-parse --show-toplevel)" \
 ```
 
 `just e2e-test` sets `NKP_CATALOG_DIR` for you. The test framework is fetched
-from the public `kommander-applications` repository branch configured in
+from the public `nkp-catalog-tests` repository version configured in
 `apptests/go.mod`.
 
 ### Docker host
