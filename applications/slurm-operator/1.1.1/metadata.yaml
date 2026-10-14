@@ -16,6 +16,10 @@ licensing:
 dependencies: []
 requiredDependencies:
   - cert-manager
+dependsOn:
+  - type: Application
+    name: cert-manager
+    optional: false
 overview: |
   **Overview**
 

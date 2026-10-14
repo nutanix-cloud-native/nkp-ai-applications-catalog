@@ -1,0 +1,62 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: AMD Resource Manager
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - artificial-intelligence
+description: |
+  AMD Resource Manager (AIRM) deploys the management plane and local agent in all mode
+  for cluster registration, quotas, identity, and AI workload orchestration on NKP.
+icon: ""
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  AMD Resource Manager provides administrators with tools to oversee computational
+  resources and user access across AI clusters. This catalog application packages
+  AIRM `2.0.0` for NKP using Flux-managed stages that preserve the behavior of the
+  tested Helm installer script.
+
+  This release installs **all mode** only: management plane (API, UI, Keycloak,
+  PostgreSQL, RabbitMQ) and the local agent on the same cluster. Management-only
+  and remote agent modes are out of scope for this version.
+
+  **Key capabilities**
+
+  - Cluster registration and identity management
+  - Quotas and team access control for AI compute
+  - Local agent with Kaiwo and AIM Engine CRDs
+  - Automatic discovery of domain, StorageClass, and Prometheus endpoints
+
+  **Dependencies**
+
+  Requires platform apps: cert-manager, cloudnative-pg, gateway-api-crds,
+  kube-prometheus-stack, and traefik. RabbitMQ Cluster Operator and Keycloak are
+  installed by this application.
+
+  **Prerequisites**
+
+  - NKP workspace with the requiredDependencies enabled
+  - Default StorageClass (or a discoverable StorageClass)
+  - LoadBalancer VIP availability for Gateway HTTPS (for example MetalLB)
+
+  **Resources**
+
+  [AMD Resource Manager docs](https://enterprise-ai.docs.amd.com/en/v2.2.2/resource-manager/overview.html) ·
+  [Suite 2.2.2 release notes](https://enterprise-ai.docs.amd.com/en/v2.2.2/release-notes.html)
+scope:
+  - workspace
+dependencies: []
+requiredDependencies:
+  - cert-manager
+  - cloudnative-pg
+  - gateway-api-crds
+  - kube-prometheus-stack
+  - traefik
+nkpVersionSupport: ">=2.19.0"
+supportLink: https://enterprise-ai.docs.amd.com/en/v2.2.2/resource-manager/overview.html
+type: nkp-catalog
+---

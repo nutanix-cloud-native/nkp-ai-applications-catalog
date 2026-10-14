@@ -23,6 +23,18 @@ resources:
   sources:
   - ref: ${image_tag}
     url: https://github.com/ROCm/network-operator.git
+- container_image: docker.io/rocm/k8s-network-device-plugin:v1.2.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/k8s-network-device-plugin.git
+- container_image: docker.io/rocm/k8s-network-node-labeller:v1.2.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/network-operator.git
+- container_image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
+  sources:
+  - ref: ${image_tag}
+    url: https://github.com/ROCm/device-metrics-exporter.git
 # Multus is provided by NKP v2.18+ by default (multus.enabled: false),
 # but retained for users on NKP < v2.18 who re-enable the embedded subchart.
 - container_image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.2.2

@@ -1,0 +1,21 @@
+# Stage 11 — Gateway TLS Kustomize assembly
+#
+# This file packages gateway-tls.sh into an executable ConfigMap and applies
+# the three namespaced RBAC scopes before creating the TLS/readiness Job. The
+# generated script is mounted read-only by gateway-tls-job.yaml.
+#
+# Flux starts this stage after RabbitMQ identity synchronization. It waits for
+# `airm-gateway-tls` to prove the certificate Secret, Gateway listener,
+# AIRM/Keycloak routes, and public endpoints are usable before stage 12 starts
+# the agent.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - gateway-tls.sh
+  name: airm-gateway-tls-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- gateway-tls-job.yaml
+---

@@ -23,6 +23,7 @@ overview: |
   - **On-demand models** — Pull and serve models at runtime (e.g. `ollama pull llama3.2`).
   - **Persistence** — Optional persistent volume for model storage across restarts.
   - **Lightweight** — Runs on CPU-only clusters for development and testing.
+  - **Default resource caps** — the Ollama pod requests 500m CPU / 2Gi memory and is limited to 4 CPU / 8Gi memory by default, so uncapped inference cannot exhaust node capacity.
 
   **In-cluster usage**
 
@@ -38,6 +39,25 @@ overview: |
 
   - **GPU (optional)** — For GPU acceleration, install NVIDIA or AMD device plugins and set `ollama.gpu.enabled=true` in Helm values.
   - **Storage (optional)** — For persistent model storage, enable `persistentVolume.enabled=true`. After deploy, pull models via `kubectl exec -n <namespace> <ollama-pod> -- ollama pull <model>`.
+
+  **Resource defaults**
+
+  | Resource | Request | Limit |
+  |----------|---------|-------|
+  | CPU      | 500m    | 4     |
+  | Memory   | 2Gi     | 8Gi   |
+
+  Override for larger models or GPU nodes via **Workspace Configuration** / App Config Overrides:
+
+  ```yaml
+  resources:
+    requests:
+      cpu: "2"
+      memory: 8Gi
+    limits:
+      cpu: "8"
+      memory: 32Gi
+  ```
 
   **Resources**
 

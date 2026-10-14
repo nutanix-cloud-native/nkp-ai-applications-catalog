@@ -1,0 +1,12 @@
+ghcr.io/kai-scheduler/kai-scheduler/admission:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/binder:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/crd-upgrader:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/nodescaleadjuster:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/numa-placement-exporter:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/operator:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/podgroupcontroller:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/podgrouper:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/queuecontroller:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/resourcereservation:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/scalingpod:v0.17.0
+ghcr.io/kai-scheduler/kai-scheduler/scheduler:v0.17.0

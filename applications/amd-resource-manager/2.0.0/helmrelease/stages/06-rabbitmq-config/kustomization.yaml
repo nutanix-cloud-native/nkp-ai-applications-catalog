@@ -1,0 +1,21 @@
+# Stage 06 — RabbitMQ configuration Kustomize assembly
+#
+# This file packages rabbitmq-config.sh into an executable ConfigMap and
+# applies its namespaced ServiceAccount/RBAC before creating the configuration
+# Job. The generated script is mounted read-only by rabbitmq-config-job.yaml.
+#
+# Flux starts this stage only after the RabbitMQ HelmRelease and
+# RabbitmqCluster health checks pass. It then waits for the
+# `airm-rabbitmq-config` Job before installing agent CRDs or AIRM management
+# components, ensuring the initial broker identity and topology are usable.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - rabbitmq-config.sh
+  name: airm-rabbitmq-config-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- rabbitmq-config-job.yaml
+---

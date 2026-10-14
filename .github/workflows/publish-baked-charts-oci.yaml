@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       baked_chart_apps:
-        description: "Optional comma-separated baked chart app names to publish (for example: kubeflow-pipelines,kubeflow-central-dashboard). If empty, detect changed charts from compare refs."
+        description: "Optional comma-separated baked chart app names to publish (for example: kubeflow-pipelines). If empty, detect changed charts from compare refs."
         type: string
         required: false
       compare_base_ref:
@@ -76,7 +76,7 @@ jobs:
             selection_source="changed_charts"
           fi
 
-          apps_list="$(printf '%s\n' "$apps_list" | grep -E '^(kubeflow-pipelines|kubeflow-central-dashboard)$' || true)"
+          apps_list="$(printf '%s\n' "$apps_list" | grep -E '^kubeflow-pipelines$' || true)"
 
           if [[ -z "$apps_list" ]]; then
             apps_count=0

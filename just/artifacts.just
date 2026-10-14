@@ -1,13 +1,13 @@
 # Package a bake-generated chart (charts/<app>, produced by `just bake <app>`)
 # and push it to our OCI registry. Login first with `just login`.
-# Usage: just push-baked-chart kubeflow-central-dashboard [oci-registry]
+# Usage: just push-baked-chart kubeflow-pipelines [oci-registry]
 push-baked-chart app oci-registry=OCI_REGISTRY:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ app }}" in
-      kubeflow-pipelines|kubeflow-central-dashboard) ;;
+      kubeflow-pipelines) ;;
       *)
-        echo "push-baked-chart only accepts kubeflow-pipelines or kubeflow-central-dashboard" >&2
+        echo "push-baked-chart only accepts kubeflow-pipelines" >&2
         exit 1
         ;;
     esac

@@ -1,0 +1,4 @@
+docker.io/library/rabbitmq:4.3.4-management
+ghcr.io/cloudnative-pg/cloudnative-pg:1.27.0
+ghcr.io/cloudnative-pg/postgresql:17.2
+ghcr.io/rabbitmq/cluster-operator:2.22.5

@@ -1,0 +1,58 @@
+# Stage 09 — Local-cluster registration permissions
+#
+# Registration uses three existing Secrets in the AIRM namespace:
+# - `airm-user-credentials`: read the default AIRM username/password used for
+#   the Keycloak password grant.
+# - `airm-keycloak-ui-creds`: read the confidential OIDC client secret.
+# - `airm-rabbitmq-common-vhost-user`: read the current identity to detect a
+#   previous registration, then patch it with the returned cluster ID and
+#   one-time RabbitMQ secret.
+#
+# `get` is therefore required on all three names and `patch` is required by
+# `kubectl apply` for the RabbitMQ identity Secret. The current combined rule
+# also technically permits patching the two authentication-input Secrets even
+# though register.sh never does so; splitting read-only and mutable names into
+# separate rules is a valid least-privilege follow-up.
+#
+# Create is intentionally absent: stage 01 must have created these Secrets, and
+# registration should fail if its prerequisites are missing. There is no list,
+# delete, cluster-scoped, pod-exec, or workload mutation permission. Keycloak
+# and AIRM changes occur through their authenticated HTTP APIs.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-registration
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-registration
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-user-credentials
+  - airm-keycloak-ui-creds
+  - airm-rabbitmq-common-vhost-user
+  resources:
+  - secrets
+  verbs:
+  - get
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-registration
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-registration
+subjects:
+- kind: ServiceAccount
+  name: airm-registration
+  namespace: ${releaseNamespace}
+---
