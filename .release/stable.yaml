@@ -4,6 +4,15 @@ releases:
     fileName: stable-nkp-ai-applications-catalog-2.20.tar
     collectionAnnotations:
       org.opencontainers.image.source: https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
+    applications:
+      - name: kuberay
+        version: 1.7.0
+      - name: ray-cluster
+        version: 1.7.0
+      - name: mlflow
+        version: 1.11.4
+      - name: open-webui
+        version: 16.0.0
     constraints:
       nkpVersion: "2.20"
   - tagName: 2.19
