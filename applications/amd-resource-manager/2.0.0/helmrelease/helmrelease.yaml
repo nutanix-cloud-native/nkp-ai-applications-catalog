@@ -19,6 +19,10 @@ spec:
     kind: OCIRepository
     name: ${releaseName}-chart
     namespace: ${releaseNamespace}
+  # The chart renders the stage Kustomizations. Restore any stage that is
+  # manually deleted or modified instead of waiting for a chart/value change.
+  driftDetection:
+    mode: enabled
   install:
     createNamespace: true
     # The chart creates Flux Kustomizations whose readiness is managed by

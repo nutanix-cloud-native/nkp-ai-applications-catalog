@@ -4,10 +4,11 @@ appScreens:
   - ai
 allowMultipleInstances: false
 category:
+  - accelerated-infrastructure
   - artificial-intelligence
 description: |
   AMD Resource Manager (AIRM) deploys the management plane and local agent in all mode
-  for cluster registration, quotas, identity, and AI workload orchestration on NKP.
+  for cluster registration, quotas, identity, and AI resource management on NKP.
 icon: ""
 licensing:
   - Pro
@@ -30,18 +31,24 @@ overview: |
   - Quotas and team access control for AI compute
   - Local agent with Kaiwo and AIM Engine CRDs
   - Automatic discovery of domain, StorageClass, and Prometheus endpoints
+  - Optional project External Secrets when External Secrets Operator and a
+    ClusterSecretStore are available
 
   **Dependencies**
 
-  Requires platform apps: cert-manager, cloudnative-pg, gateway-api-crds,
-  kube-prometheus-stack, and traefik. RabbitMQ Cluster Operator and Keycloak are
-  installed by this application.
+  Uses NKP's built-in cert-manager and requires the cloudnative-pg,
+  gateway-api-crds, kube-prometheus-stack, and traefik platform apps. RabbitMQ
+  Cluster Operator and Keycloak are installed by this application. Soft
+  dependencies include amd-gpu-operator and external-secrets for optional
+  GPU and project-secret workflows.
 
   **Prerequisites**
 
   - NKP workspace with the requiredDependencies enabled
   - Default StorageClass (or a discoverable StorageClass)
   - LoadBalancer VIP availability for Gateway HTTPS (for example MetalLB)
+  - For project External Secrets: External Secrets Operator and a Ready
+    ClusterSecretStore
 
   **Resources**
 
@@ -49,9 +56,10 @@ overview: |
   [Suite 2.2.2 release notes](https://enterprise-ai.docs.amd.com/en/v2.2.2/release-notes.html)
 scope:
   - workspace
-dependencies: []
+dependencies:
+  - amd-gpu-operator
+  - external-secrets
 requiredDependencies:
-  - cert-manager
   - cloudnative-pg
   - gateway-api-crds
   - kube-prometheus-stack

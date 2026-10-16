@@ -59,8 +59,6 @@ spec:
       keycloakOsShellTag: {{ $root.Values.keycloak.images.osShell.tag | quote }}
       {{ end -}}
       {{ if eq $stage.name "05-operators" -}}
-      cnpgOperatorVersion: {{ $root.Values.versions.cnpgOperator | quote }}
-      cnpgOperatorManifestDigest: {{ $root.Values.versions.cnpgOperatorManifestDigest | quote }}
       rabbitmqOperatorVersion: {{ $root.Values.versions.rabbitmqOperator | quote }}
       rabbitmqOperatorManifestDigest: {{ $root.Values.versions.rabbitmqOperatorManifestDigest | quote }}
       {{ end -}}
@@ -85,9 +83,13 @@ spec:
       airmAgentChartUrl: {{ required "chartSources.airmAgent is required for stage 12-agent" $root.Values.chartSources.airmAgent | quote }}
       airmAgentChartVersion: {{ required "versions.airmAgentChart is required for stage 12-agent" $root.Values.versions.airmAgentChart | quote }}
       airmImageTag: {{ required "airm.imageTag is required for stage 12-agent" $root.Values.airm.imageTag | quote }}
+      clusterName: {{ required "airm.clusterName is required for stage 12-agent" $root.Values.airm.clusterName | quote }}
       {{ end -}}
     {{- if ne $stage.name "00-preflight" }}
     substituteFrom:
+      # Created dynamically by the stage 00 discovery Job. Keep optional for
+      # static catalog validation; dependsOn and the stage 01 readiness check
+      # prevent downstream installation before discovery completes at runtime.
       - kind: ConfigMap
         name: airm-discovered
         optional: true
