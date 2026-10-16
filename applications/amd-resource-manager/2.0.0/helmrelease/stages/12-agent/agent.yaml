@@ -66,6 +66,7 @@ spec:
       image:
         tag: ${airmImageTag}
       agent:
+        clusterName: ${clusterName}
         rabbitmq:
           host: airm-infra-rabbitmq-rabbitmq.${airmNamespace:=airm}.svc.cluster.local
           port: 5672

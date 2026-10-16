@@ -14,17 +14,18 @@
 # by rbac.yaml to read cluster metadata and update only ConfigMaps in the
 # release namespace.
 #
-# Failure is a stage gate: Flux does not continue when API connectivity,
-# cert-manager, Gateway API CRDs, domain discovery, or storage discovery fails.
-# The deadline and retry limit prevent an indefinitely running preflight, while
-# the one-day TTL retains the completed Job long enough for troubleshooting.
+# Failure is a stage gate: Flux does not continue when required NKP application
+# dependencies, domain discovery, or storage discovery fail. The deadline
+# allows the script's 15-minute dependency wait plus discovery work while still
+# preventing an indefinitely running preflight. The one-day TTL retains the
+# completed Job long enough for troubleshooting.
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: airm-discovery
   namespace: ${releaseNamespace}
 spec:
-  activeDeadlineSeconds: 300
+  activeDeadlineSeconds: 1200
   backoffLimit: 3
   ttlSecondsAfterFinished: 86400
   template:

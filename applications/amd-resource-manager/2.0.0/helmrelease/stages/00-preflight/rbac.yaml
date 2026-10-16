@@ -13,7 +13,8 @@
 #    namespaces other than the catalog release namespace:
 #    - Services: locate Traefik and Prometheus endpoints.
 #    - StorageClasses: select `default`, the annotated default, or a fallback.
-#    - Deployments: verify cert-manager and detect CloudNativePG.
+#    - Deployments: verify CloudNativePG and Traefik readiness.
+#    - StatefulSets: verify Prometheus readiness.
 #    - CustomResourceDefinitions: verify Gateway API CRDs.
 #    - GatewayClasses: verify the configured Traefik GatewayClass.
 #    - MetalLB IPAddressPools: derive the nip.io domain from an address pool.
@@ -78,6 +79,7 @@ rules:
   - apps
   resources:
   - deployments
+  - statefulsets
   verbs:
   - get
   - list

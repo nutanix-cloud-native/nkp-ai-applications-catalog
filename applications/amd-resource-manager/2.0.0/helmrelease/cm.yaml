@@ -5,6 +5,8 @@ data:
   # NKP configOverrides (or helm --set) merge on top of chart defaults; omit a key
   # here so the chart value is used.
   values.yaml: |
+    airm:
+      clusterName: ${clusterName}
     catalog:
       sourceName: ${releaseName}-source
       sourceNamespace: ${releaseNamespace}
