@@ -64,6 +64,8 @@ requiredDependencies:
   - gateway-api-crds
   - kube-prometheus-stack
   - traefik
+# NKP >=2.19.0 is required for ${clusterName} (introduced in 2.19):
+# https://nutanix-cloud-native.github.io/nkp-partner-catalog/docs/concepts/substitution-variables
 nkpVersionSupport: ">=2.19.0"
 supportLink: https://enterprise-ai.docs.amd.com/en/v2.2.2/resource-manager/overview.html
 type: nkp-catalog

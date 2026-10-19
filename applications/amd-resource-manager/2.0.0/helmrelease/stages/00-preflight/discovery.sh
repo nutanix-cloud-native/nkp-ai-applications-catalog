@@ -35,9 +35,11 @@ fail() {
   exit 1
 }
 
-command -v kubectl >/dev/null || fail "kubectl is unavailable"
-command -v jq >/dev/null || fail "jq is unavailable"
-kubectl version >/dev/null || fail "cannot connect to the Kubernetes API"
+crd_ready() {
+  for crd in "$@"; do
+    kubectl wait --timeout=120s --for=condition=Established "crd/$crd" || return 1
+  done
+}
 
 prometheus_service_data() {
   result="$(kubectl get services -A -o json 2>/dev/null |
@@ -72,12 +74,10 @@ dependencies_ready() {
     (.status.availableReplicas // 0) >= (.spec.replicas // 1)
   ' >/dev/null || return 1
 
-  kubectl get crd gatewayclasses.gateway.networking.k8s.io >/dev/null 2>&1 ||
-    return 1
-  kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1 ||
-    return 1
-  kubectl get crd httproutes.gateway.networking.k8s.io >/dev/null 2>&1 ||
-    return 1
+  crd_ready \
+    gatewayclasses.gateway.networking.k8s.io \
+    gateways.gateway.networking.k8s.io \
+    httproutes.gateway.networking.k8s.io || return 1
   kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null 2>&1 || return 1
 
   kubectl get statefulsets -A -l app.kubernetes.io/name=prometheus \

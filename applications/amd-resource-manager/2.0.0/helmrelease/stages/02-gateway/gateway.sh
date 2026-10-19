@@ -54,14 +54,18 @@ KEYCLOAK_NAMESPACE="$${KEYCLOAK_NAMESPACE:?KEYCLOAK_NAMESPACE is required}"
 DOMAIN="$${DOMAIN:?DOMAIN is required (from airm-discovered airmDomain)}"
 GATEWAY_API_VERSION="$${GATEWAY_API_VERSION:?GATEWAY_API_VERSION is required}"
 
+crd_ready() {
+  for crd in "$@"; do
+    kubectl wait --timeout=120s --for=condition=Established "crd/$crd" || return 1
+  done
+}
+
 gateway_api_ready() {
-  for crd in \
+  crd_ready \
     gatewayclasses.gateway.networking.k8s.io \
     gateways.gateway.networking.k8s.io \
     httproutes.gateway.networking.k8s.io \
-    backendtlspolicies.gateway.networking.k8s.io; do
-    kubectl wait --timeout=120s --for=condition=Established "crd/$crd" || return 1
-  done
+    backendtlspolicies.gateway.networking.k8s.io || return 1
 
   kubectl get crd backendtlspolicies.gateway.networking.k8s.io -o json |
     jq -e '

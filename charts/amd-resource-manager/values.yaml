@@ -10,8 +10,8 @@ airm:
   # Only "all" is implemented in this chart version.
   mode: all
   imageTag: "2.0.0"
-  # Replaced by NKP's clusterName substitution for catalog deployments.
-  clusterName: demo-cluster
+  # Empty by default; catalog cm.yaml substitutes NKP ${clusterName}.
+  clusterName: ""
   # Script all-mode behavior: includeDemoSetup=true
   includeDemoSetup: true
   namespace: airm
@@ -42,6 +42,7 @@ discovery:
 
 keycloak:
   namespace: keycloak
+  # Upstream AIRM install guide client ID. Override/update this if upstream changes it.
   adminClientId: "354a0fa1-35ac-4a6d-9c4d-d661129c2cd0"
   chartUrl: oci://registry-1.docker.io/bitnamicharts/keycloak
   images:
