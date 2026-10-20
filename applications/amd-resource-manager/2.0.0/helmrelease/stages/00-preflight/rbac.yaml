@@ -19,8 +19,9 @@
 #    - GatewayClasses: verify the configured Traefik GatewayClass.
 #    - MetalLB IPAddressPools: derive the nip.io domain from an address pool.
 #
-# The ClusterRole is read-only (`get`/`list`). RoleBindings attach both scopes
-# exclusively to the `airm-discovery` ServiceAccount used by discovery-job.yaml.
+# The ClusterRole is read-only (`get`/`list`/`watch` where wait is used).
+# RoleBindings attach both scopes exclusively to the `airm-discovery`
+# ServiceAccount used by discovery-job.yaml.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -88,7 +89,11 @@ rules:
   resources:
   - customresourcedefinitions
   verbs:
+  # get covers kubectl get; list/watch are required by kubectl wait
+  # --for=condition=Established on CRDs (crd_ready in discovery.sh).
   - get
+  - list
+  - watch
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
