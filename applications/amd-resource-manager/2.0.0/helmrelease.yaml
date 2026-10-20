@@ -8,6 +8,7 @@ spec:
   path: ./helmrelease
   postBuild:
     substitute:
+      clusterName: ${clusterName}
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
