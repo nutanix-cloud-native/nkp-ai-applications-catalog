@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    global:
+      imageRegistry: "docker.io"
+
+    clearml:
+      existingSecret: ""
+      clearmlConfig: |-
+        sdk {
+          }
+        server {
+          }
+        api {
+          }
+
+    apiserver:
+      enabled: true
+      prepopulateEnabled: false
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      service:
+        type: ClusterIP
+        port: 8008
+      ingress:
+        enabled: false
+
+    webserver:
+      enabled: true
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      service:
+        type: ClusterIP
+        port: 80
+      ingress:
+        enabled: true
+        ingressClassName: kommander-traefik
+        hosts:
+          - host: ""
+            paths:
+              - path: /nkp/clearml
+                pathType: ImplementationSpecific
+
+    fileserver:
+      enabled: true
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      service:
+        type: ClusterIP
+        port: 8081
+      ingress:
+        enabled: false
+
+    mongodb:
+      enabled: true
+      auth:
+        enabled: false
+      primary:
+        persistence:
+          enabled: true
+          size: 8Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+
+    dragonfly:
+      enabled: true
+      replicaCount: 1
+      storage:
+        enabled: true
+        requests: 5Gi
+      image:
+        repository: "docker.dragonflydb.io/dragonflydb/dragonfly"
+        tag: "v1.36.0"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    elasticsearch:
+      enabled: true
+      esJavaOpts: "-Xms512m -Xmx512m"
+      volumeClaimTemplate:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 4Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 4Gi
+---

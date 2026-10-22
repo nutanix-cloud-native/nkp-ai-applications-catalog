@@ -1,0 +1,62 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: ClearML Server
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: ClearML Server provides the control plane for MLOps, including experiment tracking, model registry, data management, and a web UI for the full AI lifecycle.
+dependencies: []
+requiredDependencies: []
+icon: "https://raw.githubusercontent.com/clearml/clearml/master/docs/clearml-logo.svg"
+licensing:
+  - Pro
+  - Ultimate
+nkpVersionSupport: ">=2.20.0"
+overview: |
+  **Overview**
+
+  ClearML Server is the backend control plane for the ClearML open-source MLOps platform.
+  It provides experiment tracking, model registry, dataset versioning, and a unified web UI
+  for managing the end-to-end machine learning lifecycle.
+
+  This catalog entry deploys the ClearML server stack, which includes:
+
+  - **Web application** — Unified dashboard for experiments, models, datasets, and pipelines
+  - **API server** — RESTful backend for programmatic access
+  - **File server** — Artifact and model storage served to the UI and clients
+  - Integrated MongoDB, Dragonfly (Redis-compatible), and Elasticsearch (via subcharts)
+
+  **Key capabilities**
+
+  - Track experiments with full hyperparameters, metrics, and source code versioning
+  - Manage model versions from staging to production
+  - Version-controlled datasets with lineage tracking
+  - Pipeline orchestration with visualization
+  - Live cluster dashboard for compute resource monitoring
+
+  **Storage and lifecycle**
+
+  - MongoDB stores experiment metadata and model registry
+  - Elasticsearch stores logs and search indices
+  - The file server stores model artifacts and datasets
+  - PersistentVolumeClaims are configured for all data stores
+
+  **Resource defaults**
+
+  | Component | Request | Limit |
+  |-----------|---------|-------|
+  | API Server | 500m CPU / 1Gi memory | 2 CPU / 4Gi memory |
+  | Web Server | 200m CPU / 256Mi memory | 1 CPU / 1Gi memory |
+  | File Server | 200m CPU / 256Mi memory | 1 CPU / 1Gi memory |
+
+  **Resources**
+
+  [Documentation](https://clear.ml/docs) · [Project](https://github.com/clearml/clearml-helm-charts) · [Helm chart](https://github.com/clearml/clearml-helm-charts)
+scope:
+  - workspace
+supportLink: https://clear.ml/docs
+type: nkp-catalog
+---

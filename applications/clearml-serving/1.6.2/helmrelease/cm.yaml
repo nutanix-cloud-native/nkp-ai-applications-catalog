@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    global:
+      imageRegistry: "docker.io"
+
+    clearml:
+      apiAccessKey: "CLEARML_API_ACCESS_KEY"
+      apiSecretKey: "CLEARML_API_SECRET_KEY"
+      apiHost: "http://clearml-apiserver.clearml:8008"
+      filesHost: "http://clearml-fileserver.clearml:8081"
+      webHost: "http://clearml-webserver.clearml"
+      defaultBaseServeUrl: "http://127.0.0.1:8080/serve"
+      servingTaskId: "CLEARML_SERVING_TASK_ID"
+      kafkaServeUrl: ""
+
+    clearml_serving_statistics:
+      enabled: true
+      image:
+        repository: "clearml/clearml-serving-statistics"
+        tag: "latest"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+      pollFrequencyMinutes: "1.0"
+
+    clearml_serving_inference:
+      enabled: true
+      image:
+        repository: "clearml/clearml-serving-inference"
+        tag: "latest"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 11
+        targetCPU: 50
+        targetMemory: 50
+      pollFrequencyMinutes: "1.0"
+      ingress:
+        enabled: true
+        ingressClassName: kommander-traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+        hosts:
+          - host: ""
+            paths:
+              - path: /nkp/clearml-serving
+                pathType: ImplementationSpecific
+
+    clearml_serving_inference_triton:
+      enabled: false
+      image:
+        repository: "clearml/clearml-serving-triton"
+        tag: "latest"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 11
+        targetCPU: 50
+        targetMemory: 50
+
+    kafka:
+      enabled: true
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    prometheus:
+      enabled: true
+      prometheus:
+        prometheusSpec:
+          serviceMonitorSelectorNilUsesHelmValues: false
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    grafana:
+      enabled: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+---
