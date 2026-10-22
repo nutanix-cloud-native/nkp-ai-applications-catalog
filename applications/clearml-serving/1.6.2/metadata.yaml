@@ -1,0 +1,66 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: ClearML Serving
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: ClearML Serving provides scalable model serving with automatic deployment, canary rollbacks, multi-model endpoints, and built-in monitoring via Prometheus and Grafana. Includes NVIDIA Triton integration for GPU-optimized inference.
+dependencies: []
+requiredDependencies:
+  - clearml
+dependsOn:
+  - type: Application
+    name: clearml
+    optional: false
+icon: "https://raw.githubusercontent.com/clearml/clearml/master/docs/clearml-logo.svg"
+licensing:
+  - Pro
+  - Ultimate
+nkpVersionSupport: ">=2.20.0"
+overview: |
+  **Overview**
+
+  ClearML Serving is a scalable model serving solution that enables automatic model
+  deployment, A/B testing, canary rollouts, and model performance monitoring. It integrates
+  with the ClearML Server for model registry and supports multiple serving engines including
+  NVIDIA Triton for GPU-optimized inference.
+
+  This catalog entry deploys the ClearML serving stack, including:
+
+  - **Statistics service** — Collects and exports serving metrics to Prometheus
+  - **Inference service** — Handles model preprocessing and postprocessing logic
+  - **Inference engine** — Supports CPU-based and NVIDIA Triton-accelerated inference
+  - **Kafka** — Message queue for inter-service communication
+  - **Prometheus & Grafana** — Monitoring and dashboarding (via subcharts)
+
+  **Key capabilities**
+
+  - Serve any model from the ClearML model registry (scikit-learn, PyTorch, TensorFlow, ONNX)
+  - Automatic model deployment on publish/tag with configurable polling
+  - Canary and A/B testing with weighted traffic splitting
+  - Multi-model endpoints with hot-swapping
+  - Built-in monitoring with Prometheus metrics and Grafana dashboards
+  - Auto-batching and GPU optimization via NVIDIA Triton
+  - Out-of-the-box node auto-scaling based on load
+
+  **Dependencies**
+
+  This app requires the ClearML Server application to be installed first at the workspace level.
+
+  **Access**
+
+  ClearML Serving exposes its inference endpoints through the NKP Traefik route
+  at `/nkp/clearml-serving/`. Models are deployed via the ClearML CLI or SDK after
+  registering them in the ClearML model repository.
+
+  **Resources**
+
+  [Documentation](https://clear.ml/docs/latest/docs/serving/) · [Project](https://github.com/clearml/clearml-serving) · [Helm chart](https://github.com/clearml/clearml-helm-charts)
+scope:
+  - workspace
+supportLink: https://clear.ml/docs/latest/docs/serving/
+type: nkp-catalog
+---
