@@ -2,20 +2,20 @@
 #
 # This script runs inside discovery-job.yaml and performs three tasks:
 #
-# 1. Validate prerequisites:
+# 1. Validate required NKP application dependencies:
 #    - Confirm kubectl/jq and Kubernetes API connectivity.
-#    - Require cert-manager and Gateway API CRDs.
-#    - Detect CloudNativePG and the configured GatewayClass; these are warnings
-#      because a later stage can install CNPG and Gateway reconciliation gives
-#      the authoritative result for the GatewayClass.
+#    - Wait for CloudNativePG, Gateway API CRDs, Prometheus, and Traefik.
+#    - Fail if they do not become ready within the dependency timeout. These
+#      dependencies are declared in metadata.yaml and are owned by NKP; AIRM
+#      must not install replacement controllers when reconciliation is delayed.
 #
 # 2. Resolve cluster-specific configuration:
 #    - Domain: explicit override, then first MetalLB pool address as nip.io,
 #      then the Traefik LoadBalancer address.
 #    - StorageClass: explicit override, literal `default`, annotated default,
 #      then the first available class.
-#    - Prometheus: explicit override, NKP kube-prometheus-stack Service, another
-#      labeled Prometheus Service, then the installer-compatible LGTM fallback.
+#    - Prometheus: explicit override, the NKP kube-prometheus-stack Service in
+#      any namespace, then another labeled Prometheus Service.
 #
 # 3. Publish the result:
 #    Create or update `airm-discovered` in the catalog release namespace with
@@ -35,23 +35,82 @@ fail() {
   exit 1
 }
 
-command -v kubectl >/dev/null || fail "kubectl is unavailable"
-command -v jq >/dev/null || fail "jq is unavailable"
-kubectl version >/dev/null || fail "cannot connect to the Kubernetes API"
+crd_ready() {
+  for crd in "$@"; do
+    kubectl wait --timeout=120s --for=condition=Established "crd/$crd" || return 1
+  done
+}
 
-log "Validating required platform dependencies"
-kubectl get deployment -n cert-manager cert-manager >/dev/null ||
-  fail "cert-manager deployment is not available"
-if kubectl get deployments -A -l app.kubernetes.io/name=cloudnative-pg \
-  -o name | grep -q .; then
-  log "CloudNativePG operator found"
-else
-  log "WARNING: CloudNativePG operator not detected; infrastructure stage must install or provide it"
-fi
-kubectl get customresourcedefinition gatewayclasses.gateway.networking.k8s.io \
-  >/dev/null || fail "Gateway API CRDs are not available"
-kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null ||
-  log "WARNING: GatewayClass $GATEWAY_CLASS_NAME is not available; gateway stage may fail"
+prometheus_service_data() {
+  result="$(kubectl get services -A -o json 2>/dev/null |
+    jq -r '
+      [.items[] | select(
+        .metadata.name == "kube-prometheus-stack-prometheus"
+      )][0] |
+      if . then "\(.metadata.name) \(.metadata.namespace)" else "" end
+    ')"
+  if [ -n "$result" ]; then
+    printf '%s\n' "$result"
+    return
+  fi
+
+  kubectl get services -A -l app.kubernetes.io/name=prometheus \
+    -o json 2>/dev/null |
+    jq -r '.items[0] |
+      if . then "\(.metadata.name) \(.metadata.namespace)" else "" end'
+}
+
+dependencies_ready() {
+  cnpg="$(kubectl get deployments -A \
+    -l app.kubernetes.io/name=cloudnative-pg -o json 2>/dev/null ||
+    printf '{"items":[]}')"
+  cnpg_count="$(printf '%s' "$cnpg" | jq '.items | length')"
+  [ "$cnpg_count" -le 1 ] ||
+    fail "multiple CloudNativePG operators detected; exactly one may manage AIRM"
+  [ "$cnpg_count" -eq 1 ] || return 1
+  printf '%s' "$cnpg" | jq -e '
+    .items[0] |
+    (.spec.replicas // 1) > 0 and
+    (.status.availableReplicas // 0) >= (.spec.replicas // 1)
+  ' >/dev/null || return 1
+
+  crd_ready \
+    gatewayclasses.gateway.networking.k8s.io \
+    gateways.gateway.networking.k8s.io \
+    httproutes.gateway.networking.k8s.io || return 1
+  kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null 2>&1 || return 1
+
+  kubectl get statefulsets -A -l app.kubernetes.io/name=prometheus \
+    -o json 2>/dev/null |
+    jq -e '
+      [.items[] | select(
+        (.spec.replicas // 1) > 0 and
+        (.status.readyReplicas // 0) >= (.spec.replicas // 1)
+      )] | length > 0
+    ' >/dev/null || return 1
+  [ -n "$(prometheus_service_data)" ] || return 1
+
+  kubectl get deployments -A -l app.kubernetes.io/name=traefik \
+    -o json 2>/dev/null |
+    jq -e '
+      [.items[] | select(
+        (.spec.replicas // 1) > 0 and
+        (.status.availableReplicas // 0) >= (.spec.replicas // 1)
+      )] | length > 0
+    ' >/dev/null || return 1
+}
+
+log "Waiting for required NKP application dependencies"
+dependency_timeout_seconds=900
+dependency_poll_seconds=10
+dependency_deadline="$(($(date +%s) + dependency_timeout_seconds))"
+until dependencies_ready; do
+  if [ "$(date +%s)" -ge "$dependency_deadline" ]; then
+    fail "required dependencies did not become ready within $dependency_timeout_seconds seconds: cloudnative-pg, gateway-api-crds, kube-prometheus-stack, traefik"
+  fi
+  sleep "$dependency_poll_seconds"
+done
+log "Required NKP application dependencies are ready"
 
 domain="$DOMAIN_OVERRIDE"
 if [ -z "$domain" ]; then
@@ -100,18 +159,7 @@ fi
 
 prometheus_url="$PROMETHEUS_URL_OVERRIDE"
 if [ -z "$prometheus_url" ]; then
-  service="$(kubectl get service -n kommander \
-    kube-prometheus-stack-prometheus -o json 2>/dev/null |
-    jq -r '.metadata.name // empty')"
-  if [ -n "$service" ]; then
-    prometheus_url="http://$service.kommander.svc.cluster.local:9090"
-  fi
-fi
-if [ -z "$prometheus_url" ]; then
-  service_data="$(kubectl get services -A \
-    -l app.kubernetes.io/name=prometheus -o json 2>/dev/null |
-    jq -r '.items[0] |
-      if . then "\(.metadata.name) \(.metadata.namespace)" else "" end')"
+  service_data="$(prometheus_service_data)"
   if [ -n "$service_data" ]; then
     service="$(printf '%s' "$service_data" | cut -d' ' -f1)"
     namespace="$(printf '%s' "$service_data" | cut -d' ' -f2)"
@@ -119,8 +167,7 @@ if [ -z "$prometheus_url" ]; then
   fi
 fi
 if [ -z "$prometheus_url" ]; then
-  prometheus_url="http://lgtm-stack.otel-lgtm-stack.svc.cluster.local:9090"
-  log "Prometheus discovery failed; using script-compatible fallback: $prometheus_url"
+  fail "ready Prometheus was detected but no Prometheus Service endpoint could be discovered"
 fi
 
 log "Writing discovered cluster configuration"

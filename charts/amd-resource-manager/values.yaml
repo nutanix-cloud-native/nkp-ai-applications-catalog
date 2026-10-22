@@ -10,6 +10,8 @@ airm:
   # Only "all" is implemented in this chart version.
   mode: all
   imageTag: "2.0.0"
+  # Empty by default; catalog cm.yaml substitutes NKP ${clusterName}.
+  clusterName: ""
   # Script all-mode behavior: includeDemoSetup=true
   includeDemoSetup: true
   namespace: airm
@@ -40,6 +42,7 @@ discovery:
 
 keycloak:
   namespace: keycloak
+  # Upstream AIRM install guide client ID. Override/update this if upstream changes it.
   adminClientId: "354a0fa1-35ac-4a6d-9c4d-d661129c2cd0"
   chartUrl: oci://registry-1.docker.io/bitnamicharts/keycloak
   images:
@@ -82,8 +85,6 @@ versions:
   aimEngineCrdsDigest: "sha256:f5bbaedc7f61e78883775ffb226780c2de3b2d5b18601fad638809cf34c976f0"
   gatewayApi: "v1.4.0"
   keycloakChart: "25.2.0"
-  cnpgOperator: "v1.27.0"
-  cnpgOperatorManifestDigest: "sha256:7be449085a4c5941ff05d2c4aca47d4f1c4c87698181fe2c19c47a9f6a43b268"
   rabbitmqOperator: "v2.22.5"
   rabbitmqOperatorManifestDigest: "sha256:f7d3a549a2514ea3de3a91b231a969dbfee0520f467d2fbe91821b9388f48dbe"
 
@@ -99,6 +100,7 @@ stages:
 allModeStages:
   - name: 00-preflight
     dependsOn: []
+    timeout: 25m
   - name: 01-secrets
     dependsOn:
       - 00-preflight

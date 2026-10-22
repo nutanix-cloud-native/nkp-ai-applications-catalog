@@ -89,7 +89,6 @@ applications:
       - docker.io/library/postgres:17-alpine
       - docker.io/library/rabbitmq:4.3.4-management
       - docker.io/liquibase/liquibase:4.31
-      - ghcr.io/cloudnative-pg/cloudnative-pg:1.27.0
       - ghcr.io/cloudnative-pg/postgresql:17.2
       - ghcr.io/rabbitmq/cluster-operator:2.22.5
   - name: jupyterhub
