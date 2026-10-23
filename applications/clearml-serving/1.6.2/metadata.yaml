@@ -30,11 +30,11 @@ overview: |
 
   This catalog entry deploys the ClearML serving stack, including:
 
-  - **Statistics service** — Collects and exports serving metrics to Prometheus
-  - **Inference service** — Handles model preprocessing and postprocessing logic
-  - **Inference engine** — Supports CPU-based and NVIDIA Triton-accelerated inference
-  - **Kafka** — Message queue for inter-service communication
-  - **Prometheus & Grafana** — Monitoring and dashboarding (via subcharts)
+  - **Statistics service** - Collects and exports serving metrics to Prometheus
+  - **Inference service** - Handles model preprocessing and postprocessing logic
+  - **Inference engine** - Supports CPU-based and NVIDIA Triton-accelerated inference
+  - **Kafka** - Message queue for inter-service communication
+  - **Prometheus & Grafana** - Monitoring and dashboarding (via subcharts)
 
   **Key capabilities**
 
@@ -58,7 +58,7 @@ overview: |
 
   **Resources**
 
-  [Documentation](https://clear.ml/docs/latest/docs/serving/) · [Project](https://github.com/clearml/clearml-serving) · [Helm chart](https://github.com/clearml/clearml-helm-charts)
+  [Documentation](https://clear.ml/docs/latest/docs/serving/) , [Project](https://github.com/clearml/clearml-serving) , [Helm chart](https://github.com/clearml/clearml-helm-charts)
 scope:
   - workspace
 supportLink: https://clear.ml/docs/latest/docs/serving/
