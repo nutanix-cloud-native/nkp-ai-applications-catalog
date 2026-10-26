@@ -90,7 +90,7 @@ jobs:
           entries=$(echo "$pairs" | awk -F/ 'NF==2 {print $1"/"$2}' | while IFS=/ read -r app ver; do
             airgapped=false
             bundle_source="ghcr"
-            chart_yaml_path="charts/${app}/Chart.yaml"
+            chart_yaml_path="charts/${app}/${ver}/Chart.yaml"
             gitrepo_yaml_path="applications/${app}/${ver}/helmrelease/gitrepository.yaml"
 
             # Check if an app is airgapped and where to get its bundle based on whether it's generic or baked locally
