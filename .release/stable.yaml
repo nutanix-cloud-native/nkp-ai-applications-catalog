@@ -22,6 +22,8 @@ releases:
       - name: kubeflow-pipelines
         version: 2.15.0
       - name: kai-scheduler
+        version: 0.15.2
+      - name: kai-scheduler
         version: 0.17.0
       - name: kueue
         version: 0.18.0
@@ -33,8 +35,6 @@ releases:
         version: 1.0.0
       - name: amd-gpu-operator
         version: 1.5.1
-    constraints:
-      nkpVersion: "2.20"
   - tagName: 2.19
     fileName: stable-nkp-ai-applications-catalog-2.19.tar
     collectionAnnotations:

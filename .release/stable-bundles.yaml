@@ -12,6 +12,8 @@ releases:
       - name: kubeflow-pipelines
         version: 2.15.0
       - name: kai-scheduler
+        version: 0.15.2
+      - name: kai-scheduler
         version: 0.17.0
       - name: kueue
         version: 0.18.0
