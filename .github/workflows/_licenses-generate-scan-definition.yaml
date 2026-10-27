@@ -33,7 +33,7 @@ jobs:
       scan_definitions_dir: ${{ steps.generate.outputs.scan_definitions_dir }}
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Generate per-app scan definitions
         id: generate
@@ -78,7 +78,7 @@ jobs:
           echo "scan_definitions_dir=${SCAN_DIR}" >> "$GITHUB_OUTPUT"
 
       - name: Upload scan definitions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: scan-definitions
           path: scans/
