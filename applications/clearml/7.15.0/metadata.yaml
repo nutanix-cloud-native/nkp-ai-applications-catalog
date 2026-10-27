@@ -24,9 +24,9 @@ overview: |
 
   This catalog entry deploys the ClearML server stack, which includes:
 
-  - **Web application** — Unified dashboard for experiments, models, datasets, and pipelines
-  - **API server** — RESTful backend for programmatic access
-  - **File server** — Artifact and model storage served to the UI and clients
+  - **Web application** - Unified dashboard for experiments, models, datasets, and pipelines
+  - **API server** - RESTful backend for programmatic access
+  - **File server** - Artifact and model storage served to the UI and clients
   - Integrated MongoDB, Dragonfly (Redis-compatible), and Elasticsearch (via subcharts)
 
   **Key capabilities**
@@ -54,7 +54,7 @@ overview: |
 
   **Resources**
 
-  [Documentation](https://clear.ml/docs) · [Project](https://github.com/clearml/clearml-helm-charts) · [Helm chart](https://github.com/clearml/clearml-helm-charts)
+  [Documentation](https://clear.ml/docs) , [Project](https://github.com/clearml/clearml) , [Helm chart](https://github.com/clearml/clearml-helm-charts)
 scope:
   - workspace
 supportLink: https://clear.ml/docs
