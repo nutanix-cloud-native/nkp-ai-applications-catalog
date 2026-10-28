@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- cm.yaml
+- kustomizations/00-namespace.yaml
+- kustomizations/00-preflight.yaml
+- kustomizations/01-secrets.yaml
+- kustomizations/02-gateway.yaml
+- kustomizations/03-keycloak.yaml
+- kustomizations/04-storage.yaml
+- kustomizations/05-operators.yaml
+- kustomizations/05-infrastructure.yaml
+- kustomizations/06-rabbitmq-config.yaml
+- kustomizations/07-agent-crds.yaml
+- kustomizations/08-management.yaml
+- kustomizations/09-bootstrap.yaml
+- kustomizations/10-identity-sync.yaml
+- kustomizations/11-gateway-tls.yaml
+- kustomizations/12-agent.yaml
+- kustomizations/13-post-install.yaml
+---

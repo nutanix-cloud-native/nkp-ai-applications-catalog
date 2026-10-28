@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${airmNamespace:=airm}
+  labels:
+    app.kubernetes.io/name: amd-resource-manager
+---

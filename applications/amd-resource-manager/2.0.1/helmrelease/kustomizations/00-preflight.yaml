@@ -1,0 +1,38 @@
+# Stage 00-preflight. Static equivalent of the Kustomization the orchestration
+# chart rendered for this stage in 2.0.0.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-00-preflight
+  namespace: ${releaseNamespace}
+  labels:
+    app.kubernetes.io/name: amd-resource-manager
+    airm.nutanix.com/stage: "00-preflight"
+spec:
+  interval: ${stagesInterval:=1m}
+  retryInterval: ${stagesRetryInterval:=1m}
+  timeout: ${stagePreflightTimeout:=25m}
+  prune: ${stagesPrune:=true}
+  wait: ${stagesWait:=true}
+  force: true
+  path: ./helmrelease/stages/00-preflight
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  postBuild:
+    substitute:
+      releaseName: ${releaseName}
+      releaseNamespace: ${releaseNamespace}
+    substituteFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-config-defaults
+    - kind: ConfigMap
+      name: airm-config-overrides
+      optional: true
+  healthChecks:
+  - apiVersion: batch/v1
+    kind: Job
+    name: airm-discovery
+    namespace: ${releaseNamespace}
+---

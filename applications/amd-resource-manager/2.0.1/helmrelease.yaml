@@ -1,0 +1,30 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-helmrelease
+  namespace: ${releaseNamespace}
+spec:
+  interval: 5m
+  path: ./helmrelease
+  postBuild:
+    substitute:
+      clusterName: ${clusterName}
+      releaseName: ${releaseName}
+      releaseNamespace: ${releaseNamespace}
+      workspaceNamespace: ${workspaceNamespace}
+    # Stage tuning (stagesInterval, stagesRetryInterval, stagesTimeout,
+    # stagesPrune, stagesWait) is read here because it is resolved while the
+    # stage Kustomizations are rendered, before any defaults ConfigMap exists.
+    substituteFrom:
+    - kind: ConfigMap
+      name: airm-config-overrides
+      optional: true
+  prune: true
+  retryInterval: 1m0s
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  timeout: 1m0s
+  wait: true
+---

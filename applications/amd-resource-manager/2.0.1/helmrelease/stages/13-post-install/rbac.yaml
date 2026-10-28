@@ -1,0 +1,80 @@
+# Stage 13 — Installation summary permissions
+#
+# The final summary reads one existing Secret from each workload namespace:
+#
+# - AIRM namespace: `get` only on `airm-user-credentials` for the UI username
+#   and password.
+# - Keycloak namespace: `get` only on `keycloak-kcadmin` for the permanent admin
+#   console username and password.
+#
+# Separate namespaced Roles avoid cluster-wide Secret access. No list, create,
+# patch, update, delete, pod, or cluster-scoped permissions are granted. Both
+# RoleBindings target only the summary Job's dedicated ServiceAccount.
+#
+# These narrow permissions do not remove the disclosure risk from printing
+# Secret values into Job logs; log access and retention must be considered
+# separately.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-post-install
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-post-install
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-user-credentials
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-post-install
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-post-install
+subjects:
+- kind: ServiceAccount
+  name: airm-post-install
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-post-install
+  namespace: ${keycloakNamespace:=keycloak}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - keycloak-kcadmin
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-post-install
+  namespace: ${keycloakNamespace:=keycloak}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-post-install
+subjects:
+- kind: ServiceAccount
+  name: airm-post-install
+  namespace: ${releaseNamespace}
+---

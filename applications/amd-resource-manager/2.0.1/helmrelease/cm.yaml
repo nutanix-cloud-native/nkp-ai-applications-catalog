@@ -1,0 +1,80 @@
+# Default pins for every AIRM stage.
+#
+# Each stage Kustomization lists this ConfigMap first in
+# `postBuild.substituteFrom`, so every key below is available to the stage
+# manifests as ${key}. To override a value, create the optional ConfigMap
+# `airm-config-overrides` (same namespace, same flat key/value layout). It is
+# listed after this one, so its keys win. Keys written by the stage 00
+# discovery Job live in `airm-discovered`.
+#
+# 2.0.0 kept these in charts/amd-resource-manager/values.yaml. 2.0.1 has no
+# orchestration chart; this ConfigMap is the single place for versions,
+# digests, chart sources, and tool images.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-config-defaults
+  namespace: ${releaseNamespace}
+data:
+  # Namespaces
+  airmNamespace: airm
+  keycloakNamespace: keycloak
+
+  # AIRM
+  # all | management | agent. Only "all" is implemented; 00-preflight fails
+  # for any other value.
+  airmMode: all
+  # Keep "false": stages 09/10 replace the upstream configure Job. "true"
+  # re-enables that Job and is not supported alongside them.
+  airmIncludeDemoSetup: "false"
+  # Cluster name registered with AIRM. Defaults to the NKP cluster name.
+  clusterName: ${clusterName}
+  airmImageTag: "2.0.0"
+  airmApiChartUrl: oci://registry-1.docker.io/amdenterpriseai/airm-api-chart
+  airmApiChartVersion: "2.0.0"
+  airmAgentChartUrl: oci://registry-1.docker.io/amdenterpriseai/airm-agent-chart
+  airmAgentChartVersion: "2.0.0"
+  airmCnpgChartUrl: oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart
+  airmCnpgChartVersion: "2.0.0"
+  airmRabbitmqChartUrl: oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart
+  airmRabbitmqChartVersion: "2.0.0"
+
+  # Optional discovery overrides. Empty values are discovered by 00-preflight.
+  discoveryDomain: ""
+  discoveryStorageClass: ""
+  discoveryPrometheusUrl: ""
+
+  # Gateway
+  gatewayName: airm-https
+  gatewayClassName: traefik
+  gatewayListenerName: websecure
+  gatewayTlsSecretName: airm-gateway-tls
+  gatewayApiVersion: v1.4.0
+
+  # Keycloak
+  keycloakAdminClientId: 354a0fa1-35ac-4a6d-9c4d-d661129c2cd0
+  keycloakChartUrl: oci://registry-1.docker.io/bitnamicharts/keycloak
+  keycloakChartVersion: "25.2.0"
+  keycloakImageRepository: bitnamilegacy/keycloak
+  keycloakImageTag: 26.3.3-debian-12-r0
+  keycloakConfigCliRepository: bitnamilegacy/keycloak-config-cli
+  keycloakConfigCliTag: 6.4.0-debian-12-r11
+  keycloakPostgresqlRepository: bitnamilegacy/postgresql
+  keycloakPostgresqlTag: 17.6.0-debian-12-r0
+  keycloakPostgresExporterRepository: bitnamilegacy/postgres-exporter
+  keycloakPostgresExporterTag: 0.17.1-debian-12-r15
+  keycloakOsShellRepository: bitnamilegacy/os-shell
+  keycloakOsShellTag: 12-debian-12-r50
+
+  # Release manifests downloaded by stages 05-operators and 07-agent-crds
+  rabbitmqOperatorVersion: v2.22.5
+  rabbitmqOperatorManifestDigest: sha256:f7d3a549a2514ea3de3a91b231a969dbfee0520f467d2fbe91821b9388f48dbe
+  kaiwoVersion: v0.1.9
+  kaiwoManifestDigest: sha256:e1bfb64db02ad3a0bd6fbcc728fad37a294b7c065c7810f3606b647d086cc8ed
+  aimEngineVersion: v0.2.1
+  aimEngineCrdsDigest: sha256:f5bbaedc7f61e78883775ffb226780c2de3b2d5b18601fad638809cf34c976f0
+
+  # Tool images used by stage Jobs
+  clusterToolImage: docker.io/alpine/k8s:1.35.0
+  opensslImage: docker.io/alpine/openssl:3.5.4
+---

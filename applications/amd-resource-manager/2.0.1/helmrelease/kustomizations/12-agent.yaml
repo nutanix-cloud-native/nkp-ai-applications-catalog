@@ -1,0 +1,48 @@
+# Stage 12-agent. Static equivalent of the Kustomization the orchestration
+# chart rendered for this stage in 2.0.0.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-12-agent
+  namespace: ${releaseNamespace}
+  labels:
+    app.kubernetes.io/name: amd-resource-manager
+    airm.nutanix.com/stage: "12-agent"
+spec:
+  interval: ${stagesInterval:=1m}
+  retryInterval: ${stagesRetryInterval:=1m}
+  timeout: ${stageAgentTimeout:=10m}
+  prune: ${stagesPrune:=true}
+  wait: ${stagesWait:=true}
+  force: true
+  path: ./helmrelease/stages/12-agent
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  postBuild:
+    substitute:
+      releaseName: ${releaseName}
+      releaseNamespace: ${releaseNamespace}
+    substituteFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-config-defaults
+    - kind: ConfigMap
+      name: airm-config-overrides
+      optional: true
+    - kind: ConfigMap
+      name: airm-discovered
+      optional: true
+  dependsOn:
+  - name: ${releaseName}-11-gateway-tls
+    namespace: ${releaseNamespace}
+  healthChecks:
+  - apiVersion: helm.toolkit.fluxcd.io/v2
+    kind: HelmRelease
+    name: airm-agent
+    namespace: ${releaseNamespace}
+  - apiVersion: apps/v1
+    kind: Deployment
+    name: airm-agent-agent
+    namespace: airm
+---

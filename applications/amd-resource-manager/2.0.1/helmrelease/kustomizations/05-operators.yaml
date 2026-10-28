@@ -1,0 +1,44 @@
+# Stage 05-operators. Static equivalent of the Kustomization the orchestration
+# chart rendered for this stage in 2.0.0.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-05-operators
+  namespace: ${releaseNamespace}
+  labels:
+    app.kubernetes.io/name: amd-resource-manager
+    airm.nutanix.com/stage: "05-operators"
+spec:
+  interval: ${stagesInterval:=1m}
+  retryInterval: ${stagesRetryInterval:=1m}
+  timeout: ${stageOperatorsTimeout:=12m}
+  prune: ${stagesPrune:=true}
+  wait: ${stagesWait:=true}
+  force: true
+  path: ./helmrelease/stages/05-operators
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  postBuild:
+    substitute:
+      releaseName: ${releaseName}
+      releaseNamespace: ${releaseNamespace}
+    substituteFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-config-defaults
+    - kind: ConfigMap
+      name: airm-config-overrides
+      optional: true
+    - kind: ConfigMap
+      name: airm-discovered
+      optional: true
+  dependsOn:
+  - name: ${releaseName}-04-storage
+    namespace: ${releaseNamespace}
+  healthChecks:
+  - apiVersion: batch/v1
+    kind: Job
+    name: airm-operator-assurance
+    namespace: ${releaseNamespace}
+---

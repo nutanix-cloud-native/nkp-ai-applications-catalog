@@ -1,0 +1,33 @@
+# Stage 00-namespace. Creates the dedicated AIRM namespace before any stage
+# writes Secrets or installs workloads into it. In 2.0.0 the orchestration
+# chart rendered this Namespace. It is a separate Kustomization with
+# `prune: false`, like Harbor's `ncr-system-namespace`, so removing or
+# reconciling the app never deletes the namespace (and the data in it).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-00-namespace
+  namespace: ${releaseNamespace}
+  labels:
+    app.kubernetes.io/name: amd-resource-manager
+    airm.nutanix.com/stage: "00-namespace"
+spec:
+  interval: 6h
+  retryInterval: 1m
+  timeout: 1m
+  prune: false
+  wait: true
+  force: false
+  path: ./helmrelease/stages/00-namespace
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  postBuild:
+    substituteFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-config-defaults
+    - kind: ConfigMap
+      name: airm-config-overrides
+      optional: true
+---

@@ -1,0 +1,113 @@
+# Stage 03 — Keycloak configuration permissions
+#
+# The configuration Job crosses two namespace boundaries, each with a separate
+# Role so it receives no cluster-wide access.
+#
+# Keycloak namespace:
+# - Read `keycloak` to obtain the chart-generated bootstrap admin password.
+# - Read/patch `keycloak-kcadmin` to preserve or update the permanent console
+#   administrator credentials.
+# - Create Secrets for the first creation of `keycloak-kcadmin`. Kubernetes
+#   cannot restrict create requests by resourceName because authorization
+#   occurs before the object exists, so this is the only intentionally broad
+#   rule. It remains namespaced and bound only to this Job's ServiceAccount.
+#
+# AIRM namespace:
+# - Read the two Keycloak client Secrets and `airm-user-credentials`.
+# - Patch only the two Keycloak client Secrets when synchronizing Keycloak's
+#   authoritative client secret.
+# - Secret creation is intentionally absent. Stage 01 must create all three
+#   prerequisites, and this stage should fail if that dependency is missing.
+#
+# Realm, client, user, and role changes use Keycloak's HTTP API and require no
+# additional Kubernetes permissions.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-keycloak-config
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-keycloak-config
+  namespace: keycloak
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - keycloak
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resourceNames:
+  - keycloak-kcadmin
+  resources:
+  - secrets
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-keycloak-config
+  namespace: keycloak
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-keycloak-config
+subjects:
+- kind: ServiceAccount
+  name: airm-keycloak-config
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-keycloak-config
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-keycloak-admin-client
+  - airm-keycloak-ui-creds
+  - airm-user-credentials
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-keycloak-admin-client
+  - airm-keycloak-ui-creds
+  resources:
+  - secrets
+  verbs:
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-keycloak-config
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-keycloak-config
+subjects:
+- kind: ServiceAccount
+  name: airm-keycloak-config
+  namespace: ${releaseNamespace}
+---

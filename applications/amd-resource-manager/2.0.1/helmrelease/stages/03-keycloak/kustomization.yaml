@@ -1,0 +1,24 @@
+# Stage 03 — Kustomize assembly
+#
+# This stage has two layers:
+# 1. resources.yaml declaratively creates the Keycloak namespace, chart source,
+#    HelmRelease, and external HTTPRoute.
+# 2. keycloak-config.sh is packaged into an executable ConfigMap and run by the
+#    configuration Job using the permissions in rbac.yaml.
+#
+# Flux starts this stage after Secrets and Gateway setup. Its orchestration
+# health checks wait for both `airm-keycloak` HelmRelease readiness and the
+# `airm-keycloak-config` Job, ensuring installation and AIRM-specific identity
+# configuration are complete before dependent stages proceed.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - keycloak-config.sh
+  name: airm-keycloak-config-script
+  namespace: ${releaseNamespace}
+resources:
+- resources.yaml
+- rbac.yaml
+- keycloak-config-job.yaml
+---

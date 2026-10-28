@@ -1,0 +1,67 @@
+# Stage 06 — RabbitMQ configuration permissions
+#
+# This Job configures RabbitMQ through commands executed inside its broker pod,
+# so all permissions are confined to the AIRM namespace:
+#
+# - `get` on `airm-rabbitmq-admin` and
+#   `airm-rabbitmq-common-vhost-user` reads only the two passwords required by
+#   rabbitmqctl/rabbitmqadmin.
+# - `get` on the specifically named first broker pod allows readiness polling.
+# - `create` on `pods/exec` opens the Kubernetes exec subresource used to run
+#   RabbitMQ administrative commands. Kubernetes RBAC cannot restrict an exec
+#   create rule by command; access is bounded by namespace, ServiceAccount, and
+#   the Job's fixed pod name in its script/environment.
+#
+# The Job receives no Secret write, pod mutation, list, delete, or
+# cluster-scoped permissions. RabbitMQ authorization then controls the
+# operations executed inside the broker.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-rabbitmq-config
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airm-rabbitmq-config
+  namespace: ${airmNamespace:=airm}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-rabbitmq-admin
+  - airm-rabbitmq-common-vhost-user
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resourceNames:
+  - airm-infra-rabbitmq-rabbitmq-server-0
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airm-rabbitmq-config
+  namespace: ${airmNamespace:=airm}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airm-rabbitmq-config
+subjects:
+- kind: ServiceAccount
+  name: airm-rabbitmq-config
+  namespace: ${releaseNamespace}
+---

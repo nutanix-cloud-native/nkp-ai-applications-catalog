@@ -1,0 +1,6 @@
+# Stage 00-namespace: Kustomize assembly. Only the AIRM Namespace.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace.yaml
+---
