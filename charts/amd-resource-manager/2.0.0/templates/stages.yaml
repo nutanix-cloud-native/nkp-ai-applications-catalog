@@ -19,7 +19,7 @@ spec:
   interval: {{ $root.Values.stages.interval }}
   retryInterval: {{ $root.Values.stages.retryInterval }}
   timeout: {{ default $root.Values.stages.timeout $stage.timeout }}
-  prune: {{ $root.Values.stages.prune }}
+  prune: {{ if hasKey $stage "prune" }}{{ $stage.prune }}{{ else }}{{ $root.Values.stages.prune }}{{ end }}
   wait: {{ $root.Values.stages.wait }}
   force: true
   path: ./helmrelease/stages/{{ $stage.name }}
@@ -58,21 +58,11 @@ spec:
       keycloakOsShellRepository: {{ $root.Values.keycloak.images.osShell.repository | quote }}
       keycloakOsShellTag: {{ $root.Values.keycloak.images.osShell.tag | quote }}
       {{ end -}}
-      {{ if eq $stage.name "05-operators" -}}
-      rabbitmqOperatorVersion: {{ $root.Values.versions.rabbitmqOperator | quote }}
-      rabbitmqOperatorManifestDigest: {{ $root.Values.versions.rabbitmqOperatorManifestDigest | quote }}
-      {{ end -}}
-      {{ if eq $stage.name "05-infrastructure" -}}
+      {{ if eq $stage.name "05b-infrastructure" -}}
       airmCnpgChartUrl: {{ $root.Values.chartSources.airmCnpg | quote }}
       airmCnpgChartVersion: {{ $root.Values.versions.airmCnpgChart | quote }}
       airmRabbitmqChartUrl: {{ $root.Values.chartSources.airmRabbitmq | quote }}
       airmRabbitmqChartVersion: {{ $root.Values.versions.airmRabbitmqChart | quote }}
-      {{ end -}}
-      {{ if eq $stage.name "07-agent-crds" -}}
-      kaiwoVersion: {{ $root.Values.versions.kaiwo | quote }}
-      kaiwoManifestDigest: {{ $root.Values.versions.kaiwoManifestDigest | quote }}
-      aimEngineVersion: {{ $root.Values.versions.aimEngine | quote }}
-      aimEngineCrdsDigest: {{ $root.Values.versions.aimEngineCrdsDigest | quote }}
       {{ end -}}
       {{ if eq $stage.name "08-management" -}}
       airmApiChartUrl: {{ $root.Values.chartSources.airmApi | quote }}
