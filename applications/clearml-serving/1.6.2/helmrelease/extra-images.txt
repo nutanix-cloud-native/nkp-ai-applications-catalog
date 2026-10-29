@@ -1,0 +1,7 @@
+docker.io/clearml/clearml-serving-statistics:latest
+docker.io/clearml/clearml-serving-inference:latest
+docker.io/clearml/clearml-serving-triton:latest
+docker.io/bitnamilegacy/kafka:3.4.0-debian-11-r6
+docker.io/bitnamilegacy/zookeeper:3.8.1-debian-11-r6
+quay.io/prometheus/prometheus:v2.41.0
+docker.io/grafana/grafana:9.4.3
