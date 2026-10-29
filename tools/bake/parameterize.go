@@ -31,8 +31,17 @@ var (
 	podBlockFields       = []string{"nodeSelector", "tolerations", "affinity"}
 )
 
+// chartVersion is the generated chart's Chart.yaml version, which is also the
+// directory it is written under: charts/<app>/<version>/.
+func (c *versionCtx) chartVersion() string {
+	if c.ver.Chart.Version != "" {
+		return c.ver.Chart.Version
+	}
+	return c.ver.Version
+}
+
 func (c *versionCtx) generateChart() error {
-	chartDir := filepath.Join(c.repoRoot, "charts", c.app)
+	chartDir := filepath.Join(c.repoRoot, "charts", c.app, c.chartVersion())
 	fmt.Printf("==> Generating parameterized chart into %s\n", chartDir)
 	if err := os.RemoveAll(chartDir); err != nil {
 		return err
@@ -221,10 +230,7 @@ func injectPlaceholders(r *yaml.Node, w Workload) {
 // Generates Chart.yaml. sources points at the catalog repo so GHCR links the
 // pushed package to it (and inherits its public visibility); home stays upstream.
 func (c *versionCtx) writeChartYaml(chartDir string) error {
-	chartVersion := c.ver.Chart.Version
-	if chartVersion == "" {
-		chartVersion = c.ver.Version
-	}
+	chartVersion := c.chartVersion()
 	appVersion := c.ver.Chart.AppVersion
 	if appVersion == "" {
 		appVersion = c.ver.Ref

@@ -17,6 +17,10 @@ on:
         type: string
         default: "HEAD"
         required: true
+      chart_version:
+        description: "Optional single chart version to bake and publish for the selected app (for example: 2.15.0). Must be configured in scripts/bake-apps.yaml. If empty, publish every configured version."
+        type: string
+        required: false
 
 jobs:
   publish-baked-charts:
@@ -28,7 +32,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -43,7 +47,7 @@ jobs:
           skip-nix-installation: true
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -103,25 +107,49 @@ jobs:
         shell: bash
         env:
           APPS_LIST: ${{ steps.resolve-apps.outputs.apps_list }}
+          SELECTED_VERSION: ${{ inputs.chart_version }}
         run: |
           set -euo pipefail
 
           published=()
           while IFS= read -r app; do
             [[ -n "$app" ]] || continue
-            chart_path="charts/${app}/Chart.yaml"
 
-            if [[ ! -f "$chart_path" ]]; then
-              echo "::error::No baked chart found for ${app} at ${chart_path}"
+            # Chart versions this app bakes, from scripts/bake-apps.yaml
+            # (chart.version, falling back to the catalog version).
+            chart_versions="$(APP="$app" devbox run -- yq -r '.apps[env(APP)].versions[] | (.chart.version // .version)' scripts/bake-apps.yaml)"
+            if [[ -z "$chart_versions" ]]; then
+              echo "::error::No versions for ${app} in scripts/bake-apps.yaml"
               exit 1
             fi
+
+            # Optional single-version run: only that version is baked and published.
+            if [[ -n "$SELECTED_VERSION" ]]; then
+              if ! grep -qxF "$SELECTED_VERSION" <<< "$chart_versions"; then
+                echo "::error::Version ${SELECTED_VERSION} is not configured for ${app} in scripts/bake-apps.yaml"
+                exit 1
+              fi
+              chart_versions="$SELECTED_VERSION"
+            fi
+
+            while IFS= read -r chart_version; do
+              chart_path="charts/${app}/${chart_version}/Chart.yaml"
+              if [[ ! -f "$chart_path" ]]; then
+                echo "::error::No baked chart found for ${app} at ${chart_path}"
+                exit 1
+              fi
+            done <<< "$chart_versions"
 
             echo "==> Baking ${app}"
-            devbox run -- just bake "${app}"
-            if ! grep -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
-              echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage after bake"
-              exit 1
-            fi
+            devbox run -- just bake "${app}" "${SELECTED_VERSION}"
+
+            while IFS= read -r chart_version; do
+              chart_path="charts/${app}/${chart_version}/Chart.yaml"
+              if ! grep -q 'https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog' "$chart_path"; then
+                echo "::error::${chart_path} is missing catalog source link required for package-to-repo linkage after bake"
+                exit 1
+              fi
+            done <<< "$chart_versions"
 
             echo "==> Checking bake drift for ${app}"
             if [[ -d "applications/${app}" ]]; then
@@ -130,11 +158,14 @@ jobs:
               git diff --exit-code -- "charts/${app}"
             fi
 
-            echo "==> Publishing baked chart ${app}"
-            devbox run -- just push-baked-chart "${app}"
+            while IFS= read -r chart_version; do
+              chart_path="charts/${app}/${chart_version}/Chart.yaml"
+              echo "==> Publishing baked chart ${app} ${chart_version}"
+              devbox run -- just push-baked-chart "${app}" "${chart_version}"
 
-            version="$(awk -F': *' '/^version:/{print $2; exit}' "$chart_path")"
-            published+=("${app}:${version}")
+              version="$(awk -F': *' '/^version:/{print $2; exit}' "$chart_path")"
+              published+=("${app}:${version}")
+            done <<< "$chart_versions"
           done <<< "$APPS_LIST"
 
           {

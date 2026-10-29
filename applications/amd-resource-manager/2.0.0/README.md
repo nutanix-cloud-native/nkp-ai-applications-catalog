@@ -33,7 +33,7 @@ registries:
 - `amdenterpriseai/airm-rabbitmq-chart`
 
 Chart locations, image versions, tool images, and supporting component versions
-are maintained in `charts/amd-resource-manager/values.yaml`.
+are maintained in `charts/amd-resource-manager/2.0.0/values.yaml`.
 
 ## Staged Reconciliation
 
@@ -100,7 +100,7 @@ operations.
 
 The RabbitMQ Cluster Operator release manifest is also versioned and protected
 by a pinned SHA-256 digest. Versions and digests are defined in
-`charts/amd-resource-manager/values.yaml` and must be updated together when
+`charts/amd-resource-manager/2.0.0/values.yaml` and must be updated together when
 upgrading these artifacts.
 
 Digest verification protects downloaded release content from changing

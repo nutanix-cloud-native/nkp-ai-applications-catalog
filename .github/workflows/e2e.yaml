@@ -34,7 +34,7 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       has_entries: ${{ steps.matrix.outputs.has_entries }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build test matrix
         id: matrix
@@ -90,7 +90,7 @@ jobs:
           entries=$(echo "$pairs" | awk -F/ 'NF==2 {print $1"/"$2}' | while IFS=/ read -r app ver; do
             airgapped=false
             bundle_source="ghcr"
-            chart_yaml_path="charts/${app}/Chart.yaml"
+            chart_yaml_path="charts/${app}/${ver}/Chart.yaml"
             gitrepo_yaml_path="applications/${app}/${ver}/helmrelease/gitrepository.yaml"
 
             # Check if an app is airgapped and where to get its bundle based on whether it's generic or baked locally
@@ -122,7 +122,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: cachix/install-nix-action@v31
 
@@ -132,7 +132,7 @@ jobs:
           skip-nix-installation: true
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -161,7 +161,7 @@ jobs:
 
       - name: Upload airgapped bundle
         if: success() && matrix.airgapped
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: airgapped-bundle-${{ matrix.app }}-${{ matrix.version }}
           path: ${{ matrix.app }}-${{ matrix.version }}-full.tar
@@ -175,7 +175,7 @@ jobs:
 
       - name: Upload diagnostic bundle
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-${{ matrix.app }}-${{ matrix.version }}
           path: e2e-*.tar.gz

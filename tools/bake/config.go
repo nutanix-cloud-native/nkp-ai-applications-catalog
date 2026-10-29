@@ -29,7 +29,7 @@ type Version struct {
 	Chart        *Chart   `yaml:"chart"`        // chart to generate (required; baked apps ship as charts)
 }
 
-// Chart is the generated Helm chart under charts/<app>/, which gives a baked app
+// Chart is the generated Helm chart under charts/<app>/<chart version>/, which gives a baked app
 // a configOverrides surface.
 type Chart struct {
 	Version    string     `yaml:"version"`    // Chart.yaml version (default: catalog version)

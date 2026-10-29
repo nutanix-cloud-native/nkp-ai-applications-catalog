@@ -33,7 +33,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install NIX
         uses: cachix/install-nix-action@v31
@@ -69,7 +69,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install NIX
         uses: cachix/install-nix-action@v31
@@ -88,7 +88,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_MESOSPHERE_D2IQSRE_PUBLIC_RO_TOKEN }}
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           # Role defined in nutanix-ncn/aws-roles/roles/nkp-ai-applications-catalog.tf
           role-to-assume: arn:aws:iam::139475575661:role/nkp-ai-applications-catalog
@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload Summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundle-summary
           path: ./bundles/summary.html
