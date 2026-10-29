@@ -79,14 +79,19 @@ versions:
   airmAgentChart: "2.0.0"
   airmCnpgChart: "2.0.0"
   airmRabbitmqChart: "2.0.0"
+  # Kaiwo and AIM Engine versions of the CRDs vendored in
+  # applications/amd-resource-manager/2.0.0/helmrelease/stages/07a-agent-crd-definitions/.
+  # Documentation only: changing these does not change the installed CRDs.
+  # Re-vendor the files in that directory and update the provenance headers to upgrade.
   kaiwo: "v0.1.9"
-  kaiwoManifestDigest: "sha256:e1bfb64db02ad3a0bd6fbcc728fad37a294b7c065c7810f3606b647d086cc8ed"
   aimEngine: "v0.2.1"
-  aimEngineCrdsDigest: "sha256:f5bbaedc7f61e78883775ffb226780c2de3b2d5b18601fad638809cf34c976f0"
   gatewayApi: "v1.4.0"
   keycloakChart: "25.2.0"
+  # RabbitMQ Cluster Operator version of the manifest vendored in
+  # applications/amd-resource-manager/2.0.0/helmrelease/stages/05a-operators/.
+  # Documentation only: changing this does not change the installed operator.
+  # Re-vendor the manifest and update its provenance header to upgrade.
   rabbitmqOperator: "v2.22.5"
-  rabbitmqOperatorManifestDigest: "sha256:f7d3a549a2514ea3de3a91b231a969dbfee0520f467d2fbe91821b9388f48dbe"
 
 # Stage Flux Kustomizations reconcile paths under the catalog application OCI source.
 stages:
@@ -118,17 +123,21 @@ allModeStages:
       - apiVersion: batch/v1
         kind: Job
         name: airm-storage
-  - name: 05-operators
+  - name: 05a-operators
     dependsOn:
       - 04-storage
     timeout: 12m
+    # Prune disabled so removing this stage never deletes the RabbitMQ operator
+    # CRDs or the RabbitmqCluster resources stored under them.
+    prune: false
     healthChecks:
-      - apiVersion: batch/v1
-        kind: Job
-        name: airm-operator-assurance
-  - name: 05-infrastructure
+      - apiVersion: apps/v1
+        kind: Deployment
+        name: rabbitmq-cluster-operator
+        namespace: rabbitmq-system
+  - name: 05b-infrastructure
     dependsOn:
-      - 05-operators
+      - 05a-operators
     timeout: 12m
     healthChecks:
       - apiVersion: helm.toolkit.fluxcd.io/v2
@@ -147,23 +156,32 @@ allModeStages:
         namespace: airm
   - name: 06-rabbitmq-config
     dependsOn:
-      - 05-infrastructure
+      - 05b-infrastructure
     timeout: 12m
     healthChecks:
       - apiVersion: batch/v1
         kind: Job
         name: airm-rabbitmq-config
-  - name: 07-agent-crds
+  - name: 07a-agent-crd-definitions
     dependsOn:
       - 06-rabbitmq-config
+    # Prune disabled so removing this stage never deletes the CRDs or the
+    # custom resources stored under them.
+    prune: false
+    timeout: 15m
+  - name: 07b-kaiwo-queue-seed
+    # Depends only on 07a: 07a already depends on 06, and 07a is Ready only
+    # once every CRD is Established.
+    dependsOn:
+      - 07a-agent-crd-definitions
     timeout: 12m
     healthChecks:
       - apiVersion: batch/v1
         kind: Job
-        name: airm-agent-crds
+        name: airm-kaiwo-queue-seed
   - name: 08-management
     dependsOn:
-      - 07-agent-crds
+      - 07b-kaiwo-queue-seed
     timeout: 12m
     healthChecks:
       - apiVersion: helm.toolkit.fluxcd.io/v2
