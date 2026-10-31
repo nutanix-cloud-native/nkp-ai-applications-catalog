@@ -18,7 +18,8 @@ import (
 const (
 	certManagerManifestURL = "https://github.com/cert-manager/cert-manager/releases/download/v1.19.3/cert-manager.yaml"
 	//nolint:lll // upstream Istio CRD bundle URL cannot be shortened.
-	istioCRDsManifestURL = "https://raw.githubusercontent.com/istio/istio/1.25.0/manifests/charts/base/files/crd-all.gen.yaml"
+	istioCRDsManifestURL    = "https://raw.githubusercontent.com/istio/istio/1.25.0/manifests/charts/base/files/crd-all.gen.yaml"
+	agentSandboxManifestURL = "https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.9/sandbox.yaml"
 )
 
 var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
@@ -26,9 +27,17 @@ var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: 
 // dependencyProvisioners installs a lightweight stand-in on Kind for each
 // hard platform dependency an app names in metadata dependsOn (optional: false).
 var dependencyProvisioners = map[string]func(context.Context) error{
-	"cert-manager": provisionCertManager,
-	"istio-helm":   provisionIstioCRDs,
-	"kuberay":      provisionKubeRay,
+	"cert-manager":  provisionCertManager,
+	"istio-helm":    provisionIstioCRDs,
+	"kuberay":       provisionKubeRay,
+	"agent-sandbox": provisionAgentSandbox,
+}
+
+// clusterPrerequisites lists cluster components an app needs that are neither
+// catalog nor platform apps, so they cannot appear in metadata dependsOn
+// (NKP would look for an App by that name). Each entry must have a provisioner.
+var clusterPrerequisites = map[string][]string{
+	"openshell": {"agent-sandbox"},
 }
 
 type dependsOnEntry struct {
@@ -45,6 +54,7 @@ func provisionDependencies(ctx context.Context, appName string) error {
 	if err != nil {
 		return err
 	}
+	deps = append(deps, clusterPrerequisites[appName]...)
 	for _, dep := range deps {
 		provision, ok := dependencyProvisioners[dep]
 		if !ok {
@@ -120,6 +130,18 @@ func provisionCertManager(ctx context.Context) error {
 
 func provisionIstioCRDs(ctx context.Context) error {
 	return applyRemoteManifest(ctx, istioCRDsManifestURL)
+}
+
+// provisionAgentSandbox installs the Agent Sandbox controller and CRDs, which
+// the OpenShell chart's preflight requires before it renders.
+func provisionAgentSandbox(ctx context.Context) error {
+	if err := applyRemoteManifest(ctx, agentSandboxManifestURL); err != nil {
+		return err
+	}
+	return harness.WaitForCondition(
+		ctx, harness.Default.Client(), deploymentGVK,
+		"agent-sandbox-system", "agent-sandbox-controller", "Available", 5*time.Minute, 2*time.Second,
+	)
 }
 
 // provisionKubeRay installs the KubeRay catalog app dependency so downstream

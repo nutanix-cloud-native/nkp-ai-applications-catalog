@@ -443,6 +443,7 @@ These apps demonstrate catalog composability and dependency flow. See [docs/demo
 | vllm | 0.1.1 | `oci://ghcr.io/nutanix-cloud-native/charts/vllm` | High-throughput inference and serving engine for large language models |
 | flowise | 6.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/flowise` | Drag-and-drop UI to build customized LLM flows with LangChain |
 | open-webui | 16.0.0 | `oci://ghcr.io/nutanix-cloud-native/charts/open-webui` | Self-hosted web interface for LLMs with Ollama and OpenAI-compatible APIs |
+| openshell | 0.1.6 | `oci://ghcr.io/nvidia/openshell/helm-chart` | NVIDIA sandboxed runtime for autonomous AI agents (requires Agent Sandbox) |
 
 ## Scripts & Justfile
 
