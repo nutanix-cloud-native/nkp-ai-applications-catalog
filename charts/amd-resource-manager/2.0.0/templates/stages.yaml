@@ -36,7 +36,7 @@ spec:
       discoveryPrometheusUrl: {{ $root.Values.discovery.prometheusUrl | quote }}
       airmNamespace: {{ $root.Values.airm.namespace | quote }}
       keycloakNamespace: {{ $root.Values.keycloak.namespace | quote }}
-      keycloakAdminClientId: {{ $root.Values.keycloak.adminClientId | quote }}
+      keycloakAdminClientId: {{ required "keycloak.adminClientId must be set (cluster UUID supplied by cm.yaml)" $root.Values.keycloak.adminClientId | quote }}
       gatewayName: {{ $root.Values.gateway.name | quote }}
       gatewayClassName: {{ $root.Values.gateway.gatewayClassName | quote }}
       gatewayListenerName: {{ $root.Values.gateway.listenerName | quote }}
