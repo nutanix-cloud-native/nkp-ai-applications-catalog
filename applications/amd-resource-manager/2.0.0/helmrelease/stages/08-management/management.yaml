@@ -76,6 +76,7 @@ spec:
       includeDemoSetup: false
       keycloak:
         internalUrl: http://keycloak.${keycloakNamespace:=keycloak}.svc.cluster.local:80
+        clientId: ${keycloakAdminClientId}
       postgresql:
         host: airm-infra-cnpg-cnpg-rw.${airmNamespace:=airm}.svc.cluster.local
       rabbitmq:

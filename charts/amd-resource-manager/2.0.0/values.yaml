@@ -42,8 +42,10 @@ discovery:
 
 keycloak:
   namespace: keycloak
-  # Upstream AIRM install guide client ID. Override/update this if upstream changes it.
-  adminClientId: "354a0fa1-35ac-4a6d-9c4d-d661129c2cd0"
+  # Keycloak client ID for the AIRM admin client. Intentionally empty: the catalog
+  # supplies the cluster UUID through cm.yaml (keycloak.adminClientId: ${clusterUUID}).
+  # Stage 01 rejects any value that is not a UUID.
+  adminClientId: ""
   chartUrl: oci://registry-1.docker.io/bitnamicharts/keycloak
   images:
     keycloak:
