@@ -1,0 +1,20 @@
+# Stage 07b — KaiwoQueueConfig seed Kustomize assembly
+#
+# This file packages kaiwo-queue-seed.sh into an executable ConfigMap and applies
+# its cluster-scoped ServiceAccount/RBAC before creating the seed Job. The
+# generated script is mounted read-only by kaiwo-queue-seed-job.yaml.
+#
+# Flux starts this stage after stage 07a is Ready (all CRDs Established) and
+# waits for the `airm-kaiwo-queue-seed` Job health check. Management/bootstrap
+# and the agent can therefore assume the KaiwoQueueConfig seed exists.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - kaiwo-queue-seed.sh
+  name: airm-kaiwo-queue-seed-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- kaiwo-queue-seed-job.yaml
+---

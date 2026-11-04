@@ -50,17 +50,18 @@ The current stage sequence is:
 3. `02-gateway` validates Gateway API support and creates the AIRM Gateway.
 4. `03-keycloak` installs and configures Keycloak.
 5. `04-storage` validates and prepares the selected StorageClass.
-6. `05-operators` verifies the required database operator and installs or
-   verifies the RabbitMQ Cluster Operator.
-7. `05-infrastructure` deploys PostgreSQL and RabbitMQ.
+6. `05a-operators` applies the vendored RabbitMQ Cluster Operator manifest and
+   waits for its Deployment to be Ready.
+7. `05b-infrastructure` deploys PostgreSQL and RabbitMQ.
 8. `06-rabbitmq-config` configures the RabbitMQ resources used by AIRM.
-9. `07-agent-crds` installs the required Kaiwo and AIM Engine CRDs.
-10. `08-management` deploys the AIRM API and UI.
-11. `09-bootstrap` registers the local cluster with AIRM.
-12. `10-identity-sync` reconciles the registered cluster's RabbitMQ identity.
-13. `11-gateway-tls` creates the self-signed Gateway certificate and routes.
-14. `12-agent` deploys the local AIRM agent.
-15. `13-post-install` verifies the completed installation and emits an access
+9. `07a-agent-crd-definitions` applies the Kaiwo and AIM Engine CRDs, with pruning disabled.
+10. `07b-kaiwo-queue-seed` creates the `KaiwoQueueConfig/kaiwo` seed if it is absent.
+11. `08-management` deploys the AIRM API and UI.
+12. `09-bootstrap` registers the local cluster with AIRM.
+13. `10-identity-sync` reconciles the registered cluster's RabbitMQ identity.
+14. `11-gateway-tls` creates the self-signed Gateway certificate and routes.
+15. `12-agent` deploys the local AIRM agent.
+16. `13-post-install` verifies the completed installation and emits an access
     summary.
 
 The parent HelmRelease enables drift detection. If a rendered stage
@@ -88,31 +89,44 @@ kubectl logs job/<job-name> -n <job-namespace>
 
 ## Release Artifact Integrity
 
-Stage `07-agent-crds` downloads pinned Kaiwo and AIM Engine release artifacts.
-It verifies each artifact with its catalog-pinned SHA-256 digest before applying
-anything to the cluster.
+The Kaiwo and AIM Engine CRDs are vendored in
+`applications/amd-resource-manager/2.0.0/helmrelease/stages/07a-agent-crd-definitions/`
+and applied by stage `07a-agent-crd-definitions`. Each file records its upstream
+source URL, release version, and SHA-256 digest in its header. The catalog no
+longer downloads these artifacts at install time.
 
-For Kaiwo, the stage extracts and installs only the CRDs from the verified
-release manifest. For AIM Engine, it applies the verified CRD release file. The
-stage then waits for the required CRDs to become established and creates the
-cluster-scoped `KaiwoQueueConfig/kaiwo` seed object required for AIRM quota
-operations.
+Stage `07a` runs with pruning disabled, so removing or changing the stage never
+deletes the CRDs or the custom resources stored under them. The CRDs are not part
+of the Helm chart, so chart upgrades don't touch them. A new catalog version that
+changes a CRD is applied when stage `07a` reconciles. A change that removes a
+stored version is rejected by the API server, which holds stage `07b` and every
+later stage until the change is resolved.
 
-The RabbitMQ Cluster Operator release manifest is also versioned and protected
-by a pinned SHA-256 digest. Versions and digests are defined in
-`charts/amd-resource-manager/2.0.0/values.yaml` and must be updated together when
-upgrading these artifacts.
+Stage `07b-kaiwo-queue-seed` runs only after stage `07a` is Ready, so the CRDs are
+already Established. It creates the cluster-scoped `KaiwoQueueConfig/kaiwo` seed
+object only if it is absent. An existing seed is never modified. Transient API
+errors are retried a bounded number of times, and authorization failures fail
+the stage immediately.
 
-Digest verification protects downloaded release content from changing
-unexpectedly at a pinned URL. It does not replace review and validation of a
-new artifact before its digest is accepted into the catalog.
+The RabbitMQ Cluster Operator manifest is vendored at
+`applications/amd-resource-manager/2.0.0/helmrelease/stages/05a-operators/rabbitmq-cluster-operator.yaml`.
+Stage 05a applies it directly as a Flux-managed resource, and Flux gates the stage on
+the `rabbitmq-cluster-operator` Deployment in `rabbitmq-system`. Flux owns this operator:
+it applies the vendored version on each reconcile, so an operator installed outside
+this catalog is upgraded to the vendored version. Stage 05a runs with pruning disabled,
+so removing the stage never deletes the operator CRDs or the RabbitMQ clusters. The
+manifest's provenance header records the upstream URL and SHA-256 digest. Upgrading
+requires re-vendoring the manifest and updating that header.
+
+No release artifact is downloaded at install time. Vendored files are reviewed
+in git, and their provenance headers record the upstream source and digest.
 
 ### Kaiwo and AIM API coverage
 
 The current release uses the Kaiwo CRDs to provide the Kubernetes API types
-expected by the AIRM agent. It also creates the cluster-scoped
-`KaiwoQueueConfig/kaiwo` object that AIRM uses to record project quota and
-resource-allocation state. Quota changes can be inspected with:
+expected by the AIRM agent. It also ensures the cluster-scoped `KaiwoQueueConfig/kaiwo` object exists. Stage
+07 creates it only when it is absent and never modifies an existing object. AIRM
+uses it to record project quota and resource-allocation state. Quota changes can be inspected with:
 
 ```bash
 kubectl get kaiwoqueueconfig kaiwo -o yaml
@@ -219,11 +233,56 @@ and `EXTERNAL-SECRETS.md`.
 When changing a chart source, release artifact, or image:
 
 1. Update its pinned version or tag.
-2. Update the corresponding SHA-256 digest where verification is supported.
+2. Re-vendor the changed artifact and update its provenance header. For Kaiwo or AIM Engine, that is the files in `stages/07a-agent-crd-definitions/`. For RabbitMQ, it is `stages/05a-operators/rabbitmq-cluster-operator.yaml`. The `kaiwo`, `aimEngine`, and `rabbitmqOperator` versions in `values.yaml` are documentation only.
 3. Render and inspect the orchestration chart.
 4. Validate the catalog repository.
 5. Build a fresh catalog bundle and publish it under a new immutable tag.
 6. Reconcile the NKP catalog collection and verify every stage becomes Ready.
+
+## Uninstall and Clean Reinstall
+
+Removing or reinstalling this application does not clear its state. The following survive:
+
+| Item | Why it survives |
+|---|---|
+| Kaiwo and AIM Engine CRDs, and every custom resource stored under them | Stage `07a-agent-crd-definitions` uses `prune: false` |
+| `KaiwoQueueConfig/kaiwo` seed and its quota state | Created by a script in stage `07b`, not managed by Flux. It is never modified, and AIRM adds a finalizer to it. |
+| AIRM PostgreSQL (CloudNativePG) data and the AIRM database | Persistent volume claims in the `airm` namespace |
+| RabbitMQ data, vhosts, users, and queues | Persistent volume claims in the `airm` namespace |
+| Keycloak realm, users, and data | Persistent volume claims in the `keycloak` namespace |
+| Generated Secrets: `airm-user-credentials`, `airm-rabbitmq-admin`, `airm-rabbitmq-common-vhost-user`, `airm-cnpg-user`, `airm-cnpg-superuser`, `airm-secrets-airm`, `keycloak-kcadmin` | Stage `01-secrets` keeps existing Secrets on retries |
+| RabbitMQ Cluster Operator CRDs (`rabbitmq.com`) | Stage `05a-operators` uses `prune: false` |
+
+A normal reinstall works. When the AIRM database, the `airm-rabbitmq-common-vhost-user` Secret, and the registration are all still present, stage `09-bootstrap` finds the existing registration and exits without changes.
+
+### Reset to a clean state
+
+These steps destroy data. Run them in order, and only on a cluster where no other workload depends on AIRM.
+
+1. Suspend or delete the catalog HelmRelease and its stage Kustomizations first. Otherwise Flux recreates what you remove.
+2. Delete the seed while AIRM is still running, so AIRM can release its finalizer. If the seed stays in `Terminating`, check for the `airm.silogen.ai/kaiwoqueueconfig-finalizer` finalizer before removing anything else.
+
+   ```
+   kubectl delete kaiwoqueueconfig kaiwo
+   ```
+
+3. Delete the `airm` and `keycloak` namespaces. This removes the AIRM database, RabbitMQ data, Keycloak realm, and the Secrets listed above.
+4. In the release namespace, delete the stage Jobs (`airm-*`), the `airm-discovered` ConfigMap, and the `airm-gateway-tls` Secret.
+5. Delete the Kaiwo and AIM Engine CRDs. This also deletes every `KaiwoJob`, `KaiwoService`, `KaiwoConfig`, `KaiwoQueueConfig`, and AIM resource. List the names first, then delete them:
+
+   ```
+   kubectl get crd | grep -E 'kaiwo\.silogen\.ai|aim\.eai\.amd\.com'
+   ```
+
+6. If you also want the RabbitMQ Cluster Operator reinstalled, delete the `rabbitmq-system` namespace and the `rabbitmq.com` CRDs. This deletes every `RabbitmqCluster`. Don't delete CloudNativePG or other NKP platform CRDs, since this application doesn't own them.
+7. Reinstall the application.
+
+Verify a clean state before reinstalling. The grep below should return nothing. `kubectl get kaiwoqueueconfig` should report that the server doesn't have that resource type.
+
+```
+kubectl get crd | grep -E 'kaiwo\.silogen\.ai|aim\.eai\.amd\.com'
+kubectl get kaiwoqueueconfig
+```
 
 ## Links
 

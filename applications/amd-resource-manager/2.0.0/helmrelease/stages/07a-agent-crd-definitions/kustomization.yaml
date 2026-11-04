@@ -1,0 +1,18 @@
+# Stage 07a — Kaiwo and AIM Engine CRD definitions
+#
+# Applies the vendored Kaiwo and AIM Engine CustomResourceDefinitions. This stage
+# has no Job and no RBAC. Its Flux Kustomization is rendered with prune disabled
+# (see charts/amd-resource-manager/2.0.0/values.yaml), so removing or changing
+# this stage never deletes the CRDs or the custom resources stored under them.
+#
+# Stage 07b-kaiwo-queue-seed depends on this stage. This stage is Ready only
+# once every CRD is Established, so the seed Job runs after the CRDs exist.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- aim-engine-crds.yaml
+- kaiwo-kaiwoconfigs.yaml
+- kaiwo-kaiwojobs.yaml
+- kaiwo-kaiwoqueueconfigs.yaml
+- kaiwo-kaiwoservices.yaml
+---
