@@ -1,0 +1,14 @@
+# ConfigMap for the NKP Launch button.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-ui
+  namespace: ${releaseNamespace}
+  labels:
+    kommander.d2iq.io/application: ${releaseName}
+data:
+  name: NVIDIA Run:ai
+  dashboardLink: "/nkp/runai/"
+  docsLink: "https://run-ai-docs.nvidia.com/self-hosted"
+  version: "3.0.20"
+---

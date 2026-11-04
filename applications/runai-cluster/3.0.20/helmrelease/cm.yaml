@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    clusterConfig:
+      global:
+        ingress:
+          ingressClass: kommander-traefik
+    openShift:
+      mode: Disabled
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

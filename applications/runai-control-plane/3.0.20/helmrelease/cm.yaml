@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    global:
+      domain: ${runaiDomain:=localhost}
+      ingress:
+        ingressClass: kommander-traefik
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---
