@@ -7,6 +7,8 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-resource-manager:2.0.0
+      - oci://<registry-url>/nkp-ai-applications-catalog/clearml-serving:1.6.2
+      - oci://<registry-url>/nkp-ai-applications-catalog/clearml:7.15.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.17.0
@@ -91,6 +93,29 @@ applications:
       - docker.io/liquibase/liquibase:4.31
       - ghcr.io/cloudnative-pg/postgresql:17.2
       - ghcr.io/rabbitmq/cluster-operator:2.22.5
+  - name: clearml
+    version: 7.15.0
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts/clearml:7.15.0
+      - docker.dragonflydb.io/dragonflydb/dragonfly:v1.36.0
+      - docker.elastic.co/elasticsearch/elasticsearch:7.17.3
+      - docker.io/bitnamilegacy/mongodb:6.0.10-debian-11-r8
+      - docker.io/clearml/server:2.4
+      - docker.io/docker.elastic.co/elasticsearch/elasticsearch:7.17.3
+  - name: clearml-serving
+    version: 1.6.2
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts/clearml-serving:1.6.2
+      - docker.io/allegroai/clearml-serving-triton:1.3.0
+      - docker.io/bitnamilegacy/kafka:3.4.0-debian-11-r6
+      - docker.io/bitnamilegacy/zookeeper:3.8.1-debian-11-r6
+      - docker.io/clearml/clearml-serving-inference:latest
+      - docker.io/clearml/clearml-serving-statistics:latest
+      - docker.io/clearml/clearml-serving-triton:latest
+      - docker.io/grafana/grafana:9.4.3
+      - docker.io/jimmidyson/configmap-reload:v0.8.0
+      - quay.io/prometheus/alertmanager:v0.25.0
+      - quay.io/prometheus/prometheus:v2.41.0
   - name: jupyterhub
     version: 4.3.2
     images:

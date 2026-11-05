@@ -1,0 +1,4 @@
+docker.io/clearml/server:2.4
+docker.io/bitnamilegacy/mongodb:6.0.10-debian-11-r8
+docker.dragonflydb.io/dragonflydb/dragonfly:v1.36.0
+docker.io/docker.elastic.co/elasticsearch/elasticsearch:7.17.3
