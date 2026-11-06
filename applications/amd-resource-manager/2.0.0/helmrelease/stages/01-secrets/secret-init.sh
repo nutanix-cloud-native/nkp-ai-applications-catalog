@@ -1,8 +1,7 @@
 # Stage 01 — AIRM Secret initialization
 #
-# This script is the GitOps equivalent of `step_8_generate_secrets` in
-# install-amd-resource-manager-helm-charts-copy.sh. It creates the credentials
-# expected by the CNPG, RabbitMQ, Keycloak, AIRM API, and AIRM UI charts before
+# This script creates the credentials expected by the CNPG, RabbitMQ, Keycloak,
+# AIRM API, and AIRM UI charts before
 # those components are deployed. Passwords remain hexadecimal because they are
 # safe to embed in AMQP and application connection strings.
 #
@@ -16,22 +15,19 @@
 #   replaces it with the cluster ID and one-time secret returned by AIRM.
 # - airm-secrets-airm: UI/OIDC/API environment values.
 #
-# Differences from the original script step 8:
-# 1. This Job reads DOMAIN from stage 00's `airm-discovered` ConfigMap instead
-#    of inheriting the shell installer's in-process DOMAIN variable.
-# 2. Random hex values use `/dev/urandom` + `od` instead of `openssl rand`
-#    because the pinned in-cluster utility image does not require openssl.
-# 3. Most existing Secrets are preserved exactly as in the original
-#    `ensure_secret` behavior, making retries non-destructive.
-# 4. The two Keycloak client Secrets are deliberately reconciled with apply
-#    semantics. The UI Secret is preferred, then the admin-client Secret, then
-#    a new value. This repairs drift between two Secret shapes that represent
-#    one Keycloak client. Stage 03 later makes Keycloak's value authoritative.
-# 5. Every required Secret and key is verified after creation. The original
-#    script printed success without a final completeness check; a failed GitOps
-#    stage must stop before dependent components start.
-# 6. The script explicitly waits for discovery status and validates in-cluster
-#    API/tool access because it runs in a separate Job, not the installer shell.
+# Design notes:
+# - The Job reads DOMAIN from stage 00's `airm-discovered` ConfigMap, so it does
+#   not depend on state left behind by another process.
+# - Random hex values come from `/dev/urandom` with `od`, which the pinned
+#   in-cluster utility image supports without openssl.
+# - Existing Secrets are preserved, so retries are non-destructive.
+# - The two Keycloak client Secrets are reconciled with apply semantics. The UI
+#   Secret is preferred, then the admin-client Secret, then a new value. Stage 03
+#   later makes Keycloak's value authoritative.
+# - Every required Secret and key is verified after creation. A failed stage
+#   stops before dependent components start.
+# - The script waits for discovery status and validates in-cluster API and tool
+#   access, because it runs in its own Job.
 
 log() {
   printf '%s\n' "==> $*"
@@ -97,12 +93,20 @@ command -v tr >/dev/null || fail "tr is unavailable"
 AIRM_NAMESPACE="$${AIRM_NAMESPACE:?AIRM_NAMESPACE is required}"
 RELEASE_NAMESPACE="$${RELEASE_NAMESPACE:?RELEASE_NAMESPACE is required}"
 KEYCLOAK_CLIENT_ID="$${KEYCLOAK_CLIENT_ID:?KEYCLOAK_CLIENT_ID is required}"
+AIRM_USERNAME="$${AIRM_USERNAME:?AIRM_USERNAME is required}"
 # The client ID is the cluster UUID (or a legacy UUID). An unresolved Flux
 # variable such as a literal clusterUUID placeholder must fail here, before
 # any Keycloak client is created under that name.
 printf '%s' "$KEYCLOAK_CLIENT_ID" |
   grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' ||
   fail "KEYCLOAK_CLIENT_ID is not a UUID: $KEYCLOAK_CLIENT_ID"
+
+# The username becomes the local part of the login email. Keycloak stores
+# usernames in lowercase, so only lowercase letters, digits, dots, dashes, and
+# underscores are accepted. This also keeps the value safe in JSON bodies.
+printf '%s' "$AIRM_USERNAME" |
+  grep -Eq '^[a-z0-9][a-z0-9._-]{0,63}$' ||
+  fail "AIRM_USERNAME must be 1-64 lowercase letters, digits, dots, dashes, or underscores: $AIRM_USERNAME"
 
 # NOTE: Do not pass kubectl client flags such as --request-timeout here.
 # With alpine/k8s kubectl v1.35, those flags disable in-cluster config and
@@ -135,13 +139,13 @@ done
 [ -n "$DOMAIN" ] || fail "airm-discovered ConfigMap did not provide airmDomain in namespace $RELEASE_NAMESPACE"
 [ "$STATUS" = "ready" ] || fail "airm-discovered ConfigMap status is '$${STATUS:-<empty>}', expected 'ready'"
 
-log "Creating script-compatible AIRM secrets"
+log "Creating AIRM secrets"
 UI_CLIENT_SECRET="$(get_secret_value airm-keycloak-ui-creds KEYCLOAK_SECRET)"
 ADMIN_CLIENT_SECRET="$(get_secret_value airm-keycloak-admin-client client-secret)"
 
-# The UI secret is the canonical Kubernetes source during secret initialization,
-# matching the original flow that reads it first before falling back to the
-# admin-client secret. If both exist and disagree, keep the stage moving by
+# The UI secret is the canonical Kubernetes source during secret initialization
+# and is read first; the admin-client secret is only a fallback. If both exist
+# and disagree, keep the stage moving by
 # syncing the admin-client Secret to the UI value; the Keycloak configuration
 # stage later reconciles both Kubernetes Secrets from Keycloak itself.
 if [ -n "$UI_CLIENT_SECRET" ] && [ -n "$ADMIN_CLIENT_SECRET" ] &&
@@ -172,9 +176,12 @@ apply_secret airm-keycloak-admin-client \
 apply_secret airm-keycloak-ui-creds \
   --from-literal=KEYCLOAK_SECRET="$KC_CLIENT_SECRET"
 
+# The username is the local part of the login email. An existing Secret keeps its
+# current value. To change the username on an installed cluster, delete
+# airm-user-credentials and reconcile; the previous Keycloak user is not removed.
 ensure_secret airm-user-credentials \
   --from-literal=USER_PASSWORD="$(rand_hex 8)" \
-  --from-literal=USER_EMAIL="devuser@$DOMAIN"
+  --from-literal=USER_EMAIL="$AIRM_USERNAME@$DOMAIN"
 
 RABBITMQ_ADMIN_PASSWORD="$(rand_hex 16)"
 ensure_secret airm-rabbitmq-admin \

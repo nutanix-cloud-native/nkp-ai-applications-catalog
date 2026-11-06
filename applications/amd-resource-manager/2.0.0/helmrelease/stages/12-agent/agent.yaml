@@ -5,22 +5,17 @@
 # have succeeded. The agent connects to the local RabbitMQ cluster using the
 # registered identity stored in `airm-rabbitmq-common-vhost-user`.
 #
-# Relationship to installer step 10:
-# - In script `--mode all`, the agent was installed as part of the umbrella
-#   `airm` chart at the same time as API/UI. The patched configure Job then
-#   replaced its temporary Secret and restarted the running agent.
-# - In script `--mode agent`, the standalone `airm-agent` chart connected to a
-#   remote management RabbitMQ address supplied by command-line arguments.
-# - This catalog release is all-mode only, but uses the standalone agent chart
-#   so startup can be ordered after local registration and broker provisioning.
+# Notes:
+# - The standalone `airm-agent` chart is used so its startup can be ordered after
+#   local registration and broker provisioning. The upstream umbrella chart
+#   starts the agent alongside the API and UI, and the agent then has to be
+#   restarted after its Secret is replaced.
+# - This catalog release is all-mode only.
 #
-# Differences from the original installer:
-# 1. The chart is fetched from OCI by explicit version tag rather than from the
-#    local checkout produced by installer step 2.
+# 1. The chart is fetched from OCI by explicit version tag.
 # 2. Agent installation is deliberately deferred instead of relying on a
 #    post-registration rollout restart. Its first startup sees final credentials.
-# 3. RabbitMQ host/port are the in-cluster all-mode Service, not remote
-#    `MGMT_RMQ_HOST`/`MGMT_RMQ_PORT` parameters.
+# 3. RabbitMQ host and port are the in-cluster Service, not remote addresses.
 # 4. The identity Secret name is explicit in declared Helm values.
 # 5. Flux continuously installs/upgrades/remediates the release; parent health
 #    checks wait for both this HelmRelease and the agent Deployment.
