@@ -41,7 +41,6 @@ spec:
       gatewayClassName: {{ $root.Values.gateway.gatewayClassName | quote }}
       gatewayListenerName: {{ $root.Values.gateway.listenerName | quote }}
       gatewayTlsSecretName: {{ $root.Values.gateway.tlsSecretName | quote }}
-      gatewayApiVersion: {{ $root.Values.versions.gatewayApi | quote }}
       clusterToolImage: {{ $root.Values.toolImages.cluster | quote }}
       opensslImage: {{ $root.Values.toolImages.openssl | quote }}
       {{ if eq $stage.name "03-keycloak" -}}

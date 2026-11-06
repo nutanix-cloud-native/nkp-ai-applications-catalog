@@ -37,7 +37,8 @@ overview: |
   **Dependencies**
 
   Uses NKP's built-in cert-manager and requires the cloudnative-pg,
-  gateway-api-crds, kube-prometheus-stack, and traefik platform apps. RabbitMQ
+  kube-prometheus-stack, and traefik platform apps. Gateway API CRDs must also be
+  installed; see Prerequisites. RabbitMQ
   Cluster Operator and Keycloak are installed by this application. Soft
   dependencies include amd-gpu-operator and external-secrets for optional
   GPU and project-secret workflows.
@@ -45,6 +46,13 @@ overview: |
   **Prerequisites**
 
   - NKP workspace with the requiredDependencies enabled
+  - Gateway API CRDs (`gateway.networking.k8s.io`) installed before this
+    application. This application does not install or manage them. AIRM requires
+    `BackendTLSPolicy/v1` served as storage. Install from exactly one source:
+    - NKP `gateway-api-crds` platform app: standard channel, v1.4.0. NKP 2.20.0
+      includes it, and it is sufficient for AIRM and Traefik.
+    - Envoy Gateway NAI: experimental channel, v1.5.1. The `safe-upgrades` policy
+      it ships prevents it from coexisting with the platform app.
   - Default StorageClass (or a discoverable StorageClass)
   - LoadBalancer VIP availability for Gateway HTTPS (for example MetalLB)
   - For project External Secrets: External Secrets Operator and a Ready
@@ -61,7 +69,6 @@ dependencies:
   - external-secrets
 requiredDependencies:
   - cloudnative-pg
-  - gateway-api-crds
   - kube-prometheus-stack
   - traefik
 # NKP >=2.19.0 is required for ${clusterName} and ${clusterUUID} (both introduced in 2.19).
