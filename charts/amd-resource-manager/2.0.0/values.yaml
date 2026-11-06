@@ -87,7 +87,6 @@ versions:
   # Re-vendor the files in that directory and update the provenance headers to upgrade.
   kaiwo: "v0.1.9"
   aimEngine: "v0.2.1"
-  gatewayApi: "v1.4.0"
   keycloakChart: "25.2.0"
   # RabbitMQ Cluster Operator version of the manifest vendored in
   # applications/amd-resource-manager/2.0.0/helmrelease/stages/05a-operators/.
