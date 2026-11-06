@@ -1,8 +1,8 @@
 # Stage 05b — Infrastructure Kustomize assembly
 #
 # This stage contains only declarative Flux resources:
-# - cnpg.yaml installs AIRM's PostgreSQL/CNPG cluster (installer step 9c).
-# - rabbitmq.yaml installs AIRM's RabbitMQ cluster (installer step 9d).
+# - cnpg.yaml installs AIRM's PostgreSQL/CNPG cluster.
+# - rabbitmq.yaml installs AIRM's RabbitMQ cluster.
 #
 # It starts after `05a-operators` confirms both controllers are Ready. Parent
 # orchestration health checks wait for both HelmReleases and their generated

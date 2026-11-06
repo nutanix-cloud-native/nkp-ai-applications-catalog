@@ -1,9 +1,8 @@
 # Stage 02 — AIRM Gateway
 #
-# This script performs step 6 from install-amd-resource-manager-helm-charts-copy.sh:
-# it creates the shared Gateway used by the AIRM and Keycloak HTTPRoutes.
+# This script creates the shared Gateway used by the AIRM and Keycloak HTTPRoutes.
 #
-# Step 5 (applying Gateway API CRDs) is not performed. The CRDs, including
+# This stage does not apply Gateway API CRDs. The CRDs, including
 # BackendTLSPolicy v1, are provided by the NKP gateway-api-crds platform
 # application and verified by 00-preflight before this stage runs. This stage
 # never installs or upgrades them.
@@ -13,22 +12,18 @@
 # ports 443 and 80. Using the Service ports causes Traefik to reject the
 # Gateway with a PortUnavailable condition.
 #
-# Differences from the original installer steps 5 and 6:
-# 1. Gateway name/class/listener, TLS Secret, and workload namespaces are
-#    supplied by the orchestration chart instead of being shell constants.
-# 2. The Gateway is created in `${releaseNamespace}` rather than the script's
-#    hardcoded `kommander` namespace, so it follows the NKP catalog instance.
-# 3. `allowedRoutes` is restricted to the AIRM and Keycloak namespaces using
-#    Kubernetes' built-in namespace-name label. The script used `from: All`.
-# 4. Gateway API CRDs are not applied or upgraded by this stage. Installer
-#    step 5 applies them; in the catalog the NKP gateway-api-crds platform
-#    application owns them, and 00-preflight verifies them.
-# 5. Gateway API compatibility is enforced in 00-preflight, which fails the
-#    stage chain before this stage runs against incompatible API definitions.
-# 6. This stage only references `airm-gateway-tls`; it does not create the TLS
-#    Secret. The original script creates a self-signed Secret later in step 11.
-#    The catalog deployment therefore requires that Secret to be supplied by
-#    the intended TLS/certificate workflow.
+# Notes:
+# - Gateway name, class, listener, TLS Secret, and workload namespaces are
+#   supplied by the orchestration chart rather than hardcoded.
+# - The Gateway is created in the catalog release namespace.
+# - `allowedRoutes` is restricted to the AIRM and Keycloak namespaces using the
+#   built-in namespace-name label.
+# - Gateway API CRDs are not applied or upgraded here. The NKP gateway-api-crds
+#   platform application owns them, and 00-preflight verifies them.
+# - Gateway API compatibility is enforced in 00-preflight, which stops the stage
+#   chain before this stage runs against incompatible API definitions.
+# - This stage only references `airm-gateway-tls`. Stage 11 creates or preserves
+#   that Secret.
 #
 # Applying the Gateway is idempotent, so Flux may safely retry this Job after
 # transient API or network failures.
@@ -53,11 +48,11 @@ GATEWAY_TLS_SECRET_NAME="$${GATEWAY_TLS_SECRET_NAME:?GATEWAY_TLS_SECRET_NAME is 
 AIRM_NAMESPACE="$${AIRM_NAMESPACE:?AIRM_NAMESPACE is required}"
 KEYCLOAK_NAMESPACE="$${KEYCLOAK_NAMESPACE:?KEYCLOAK_NAMESPACE is required}"
 DOMAIN="$${DOMAIN:?DOMAIN is required (from airm-discovered airmDomain)}"
-# Script step 5 is not performed: the Gateway API CRDs are platform-provided and
+# The Gateway API CRDs are platform-provided and
 # already verified by 00-preflight, so no CRD upgrade is required here.
 log "Gateway API CRD upgrade is not required; platform-provided CRDs (including BackendTLSPolicy v1) were verified by 00-preflight"
 
-# Script step 6: Traefik-backed Gateway (listener ports = Traefik entrypoints).
+# Traefik-backed Gateway (listener ports = Traefik entrypoints).
 log "Creating/updating Gateway $${GATEWAY_NAME} in $${GATEWAY_NAMESPACE}"
 kubectl apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1

@@ -1,7 +1,7 @@
 # Stage 11 — Gateway TLS and external verification Job
 #
-# This two-container Job reproduces installer step 11 without requiring one
-# oversized image:
+# This two-container Job generates and publishes the Gateway TLS Secret without
+# requiring one oversized image:
 # - The init container uses a version-pinned openssl image to generate a
 #   self-signed wildcard certificate for the discovered domain.
 # - The main cluster-tool container creates the TLS Secret only when absent,

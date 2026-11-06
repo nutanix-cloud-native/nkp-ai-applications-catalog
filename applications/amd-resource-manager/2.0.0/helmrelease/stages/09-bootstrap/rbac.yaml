@@ -9,10 +9,9 @@
 #   one-time RabbitMQ secret.
 #
 # `get` is therefore required on all three names and `patch` is required by
-# `kubectl apply` for the RabbitMQ identity Secret. The current combined rule
-# also technically permits patching the two authentication-input Secrets even
-# though register.sh never does so; splitting read-only and mutable names into
-# separate rules is a valid least-privilege follow-up.
+# `kubectl apply` for the RabbitMQ identity Secret. The combined rule also
+# permits patching the two authentication-input Secrets, which registration
+# never modifies.
 #
 # Create is intentionally absent: stage 01 must have created these Secrets, and
 # registration should fail if its prerequisites are missing. There is no list,
