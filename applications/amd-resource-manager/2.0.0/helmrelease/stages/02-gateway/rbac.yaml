@@ -1,19 +1,16 @@
 # Stage 02 — Gateway setup permissions
 #
-# The Job performs one cluster-scoped operation and one namespaced operation:
+# The Job performs one mutation: it applies the AIRM Gateway.
 #
-# 1. Gateway API CRDs:
-#    CustomResourceDefinitions are cluster-scoped. `get`/`list` allow
-#    server-side comparison and discovery; `create` installs missing CRDs; and
-#    `update`/`patch` let `kubectl apply` upgrade older NKP definitions to the
-#    configured compatible release. Delete permission is intentionally absent.
+# 1. Gateway API CRDs are not granted here. They are platform-owned
+#    (gateway-api-crds) and only verified by stage 00-preflight. AIRM never
+#    creates, updates, or patches them, so this Role has no CRD permissions.
 #
 # 2. Gateway:
-#    The same apply workflow needs get/list/create/update/patch for Gateway
+#    The apply workflow needs get/list/create/update/patch for Gateway
 #    resources. The Gateway namespace is selected from the catalog release at
-#    deployment time. These permissions are currently carried in the combined
-#    ClusterRole used by this Job; no access to HTTPRoutes, Secrets, Services,
-#    or other workload resources is granted.
+#    deployment time. No access to HTTPRoutes, Secrets, Services, or other
+#    workload resources is granted.
 #
 # A separate namespaced Role permits `get` only on the specifically named
 # `airm-discovered` ConfigMap. The current script does not read that ConfigMap:
@@ -22,9 +19,8 @@
 # implementation and is retained only as existing stage RBAC; it can be removed
 # in a least-privilege cleanup unless direct runtime discovery is added.
 #
-# Both bindings target only the `airm-gateway` ServiceAccount. The permissions
-# are mutation-capable because this stage replaces installer steps 5 and 6,
-# which use `kubectl apply` for both CRDs and the Gateway.
+# The binding targets only the `airm-gateway` ServiceAccount. The permissions
+# are mutation-capable only for the Gateway, which this stage applies.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -36,17 +32,6 @@ kind: ClusterRole
 metadata:
   name: ${releaseName}-airm-gateway
 rules:
-- apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
 - apiGroups:
   - gateway.networking.k8s.io
   resources:

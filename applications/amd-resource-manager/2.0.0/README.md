@@ -35,6 +35,39 @@ registries:
 Chart locations, image versions, tool images, and supporting component versions
 are maintained in `charts/amd-resource-manager/2.0.0/values.yaml`.
 
+## Gateway API CRDs
+
+AIRM requires the Gateway API CRDs (`gateway.networking.k8s.io`) to be installed
+before this application. This application does not install, upgrade, or manage
+them. The `00-preflight` stage fails if the required CRDs, or
+`BackendTLSPolicy/v1` served as the storage version, are missing.
+
+NKP 2.20.0 includes the `gateway-api-crds` platform application, which provides
+the standard channel at v1.4.0, including `BackendTLSPolicy/v1`. This is
+sufficient for AIRM and Traefik.
+
+Two sources provide these CRDs, and only one can own them on a cluster:
+
+- **NKP `gateway-api-crds` platform application:** standard channel, v1.4.0.
+  Sufficient for Traefik and AIRM.
+- **Envoy Gateway NAI:** experimental channel, v1.5.1. Also provides
+  `BackendTLSPolicy/v1` and experimental CRDs (`ListenerSet`, `TCPRoute`,
+  `TLSRoute`, `UDPRoute`).
+
+Do not install both on the same cluster. The `safe-upgrades`
+ValidatingAdmissionPolicy shipped with Envoy Gateway NAI prevents the platform
+standard CRDs and the Envoy experimental CRDs from coexisting, so an install or
+upgrade can fail with a validation error.
+
+Verify before installing AIRM:
+
+```bash
+kubectl get crd gatewayclasses.gateway.networking.k8s.io gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io backendtlspolicies.gateway.networking.k8s.io
+kubectl get crd backendtlspolicies.gateway.networking.k8s.io -o jsonpath='{.spec.versions[?(@.storage==true)].name}'
+```
+
+The second command should print `v1`.
+
 ## Staged Reconciliation
 
 The orchestration chart renders an ordered set of Flux Kustomizations. Each
@@ -44,10 +77,12 @@ prevents later stages from running.
 The current stage sequence is:
 
 1. `00-preflight` discovers the domain, StorageClass, and Prometheus endpoint,
-   and verifies required platform services.
+   verifies required platform services, and verifies the platform Gateway API
+   CRDs, including `BackendTLSPolicy/v1` served as the storage version.
 2. `01-secrets` generates and validates the Kubernetes Secrets needed by AIRM,
    PostgreSQL, RabbitMQ, and Keycloak.
-3. `02-gateway` validates Gateway API support and creates the AIRM Gateway.
+3. `02-gateway` creates the AIRM Gateway. It does not install or upgrade Gateway
+   API CRDs. See [Gateway API CRDs](#gateway-api-crds).
 4. `03-keycloak` installs and configures Keycloak.
 5. `04-storage` validates and prepares the selected StorageClass.
 6. `05a-operators` applies the vendored RabbitMQ Cluster Operator manifest and
