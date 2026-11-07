@@ -1,30 +1,11 @@
 #!/bin/sh
 #
-# Stage 13 — Installation completion summary
+# Stage 13 — Installation summary
 #
-# This script is the GitOps counterpart of installer step 12. After every
-# functional stage and the agent are Ready, it reads the generated AIRM and
-# Keycloak login credentials and prints the domain, access URLs, Gateway name,
-# and credentials as a final installation summary.
-#
-# Differences from the original installer step 12:
-# 1. It runs as a Flux health-gated Kubernetes Job after agent readiness rather
-#    than printing from the operator's local terminal.
-# 2. Missing domain or credential values are hard failures, proving that the
-#    expected Secrets survived the complete install flow. The installer printed
-#    fallback text when values were unavailable.
-# 3. The summary is intentionally shorter: uninstall commands and intermediate
-#    implementation reminders are maintained in catalog documentation rather
-#    than emitted by an in-cluster workload.
-# 4. Domain, namespaces, and Gateway name are supplied by catalog values rather
-#    than installer globals.
-#
-# SECURITY NOTE: For parity with installer step 12, this implementation prints
-# plaintext credentials. Unlike terminal output, Kubernetes Job logs may be
-# retained, collected centrally, or readable by users with pod/log access.
-# Reviewers should explicitly approve this behavior. A safer production design
-# would print only the Secret names and `kubectl get secret ...` retrieval
-# commands, leaving credential disclosure as an audited operator action.
+# Runs after every functional stage and the AIRM agent are Ready. It checks that
+# the login Secrets exist and are populated, then prints the access URLs and the
+# commands that retrieve the login credentials. Usernames and passwords are never
+# written to the Job log.
 set -eu
 
 log() {
@@ -64,17 +45,16 @@ cat <<EOF
     AIRM API: https://airmapi.$DOMAIN
     Keycloak: https://kc.$DOMAIN
 
-  Credentials:
-    AIRM UI login:
-      Username: $airm_user
-      Password: $airm_password
+  Credentials are stored in Kubernetes Secrets and are not printed here.
+  Retrieve the AIRM UI username and password:
+    kubectl get secret airm-user-credentials -n $AIRM_NAMESPACE -o jsonpath='{.data.USER_EMAIL}' | base64 -d; echo
+    kubectl get secret airm-user-credentials -n $AIRM_NAMESPACE -o jsonpath='{.data.USER_PASSWORD}' | base64 -d; echo
 
-    Keycloak admin console:
-      Username: $keycloak_user
-      Password: $keycloak_password
+  Retrieve the Keycloak administrator username and password:
+    kubectl get secret keycloak-kcadmin -n $KEYCLOAK_NAMESPACE -o jsonpath='{.data.username}' | base64 -d; echo
+    kubectl get secret keycloak-kcadmin -n $KEYCLOAK_NAMESPACE -o jsonpath='{.data.password}' | base64 -d; echo
 
   IMPORTANT:
     - The TLS certificate is self-signed; browsers will show a warning.
-    - Credentials are read from existing Kubernetes Secrets.
 ================================================================
 EOF

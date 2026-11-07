@@ -1,23 +1,20 @@
 # Stage 05b — AIRM PostgreSQL infrastructure
 #
-# These Flux resources replace installer step 9c, which ran:
-# `helm upgrade --install airm-infra-cnpg <local-chart>`.
+# Installs AIRM's PostgreSQL cluster with the CloudNativePG operator.
 #
 # The OCIRepository retrieves AMD's AIRM CNPG chart using an explicit version
 # tag. The HelmRelease deploys into the dedicated AIRM namespace
 # and creates the CloudNativePG Cluster used by the AIRM management API.
 #
-# Differences from the original installer step 9c:
-# - The chart comes directly from a version-pinned OCI artifact rather than the
-#   mutable local tree cloned by installer step 2.
-# - Flux performs install/upgrade and remediation instead of host-side Helm.
-# - Reconciliation is continuous; an existing release is brought to the
-#   declared state rather than detected and skipped.
+# Notes:
+# - The chart comes from a version-pinned OCI artifact.
+# - Flux performs install, upgrade, and remediation, and reconciles drift
+#   continuously.
 # - Namespace creation and retry policy are expressed in the HelmRelease.
-# - Both data and WAL storage retain the script's literal `default`
-#   StorageClass setting, which stage 04 assures before this stage.
+# - Both data and WAL storage use the `default` StorageClass, which stage 04
+#   provides before this stage runs.
 # - Readiness is enforced by the parent orchestration health checks for this
-#   HelmRelease and its generated CNPG Cluster, not by `helm --wait` here.
+#   HelmRelease and its generated CNPG Cluster.
 #
 # No shell script or Kubernetes RBAC is required in this stage: Flux source and
 # Helm controllers perform all chart retrieval and installation operations.

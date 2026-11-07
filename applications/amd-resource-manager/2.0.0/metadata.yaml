@@ -18,8 +18,7 @@ overview: |
 
   AMD Resource Manager provides administrators with tools to oversee computational
   resources and user access across AI clusters. This catalog application packages
-  AIRM `2.0.0` for NKP using Flux-managed stages that preserve the behavior of the
-  tested Helm installer script.
+  AIRM `2.0.0` for NKP using Flux-managed stages.
 
   This release installs **all mode** only: management plane (API, UI, Keycloak,
   PostgreSQL, RabbitMQ) and the local agent on the same cluster. Management-only

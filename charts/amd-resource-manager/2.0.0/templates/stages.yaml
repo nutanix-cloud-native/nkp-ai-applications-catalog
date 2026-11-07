@@ -31,6 +31,7 @@ spec:
     substitute:
       releaseName: {{ $releaseName | quote }}
       releaseNamespace: {{ $releaseNamespace | quote }}
+      airmUsername: {{ required "airm.username must be set" $root.Values.airm.username | quote }}
       discoveryDomain: {{ $root.Values.discovery.domain | quote }}
       discoveryStorageClass: {{ $root.Values.discovery.storageClass | quote }}
       discoveryPrometheusUrl: {{ $root.Values.discovery.prometheusUrl | quote }}

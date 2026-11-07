@@ -12,12 +12,9 @@
 #    deployment time. No access to HTTPRoutes, Secrets, Services, or other
 #    workload resources is granted.
 #
-# A separate namespaced Role permits `get` only on the specifically named
-# `airm-discovered` ConfigMap. The current script does not read that ConfigMap:
-# Flux resolves `${airmDomain}` through `postBuild.substituteFrom` before the
-# Job is created. This permission is therefore not required by the present
-# implementation and is retained only as existing stage RBAC; it can be removed
-# in a least-privilege cleanup unless direct runtime discovery is added.
+# A separate namespaced Role permits `get` only on the named `airm-discovered`
+# ConfigMap. The Job does not read it at runtime; Flux resolves `${airmDomain}`
+# through `postBuild.substituteFrom` before the Job is created.
 #
 # The binding targets only the `airm-gateway` ServiceAccount. The permissions
 # are mutation-capable only for the Gateway, which this stage applies.

@@ -2,17 +2,16 @@
 #
 # This final Job runs only after the standalone AIRM agent is Ready. It validates
 # that the expected login Secrets contain non-empty values and emits the access
-# URLs and installation summary corresponding to installer step 12.
+# URLs and the commands that retrieve the login credentials.
 #
 # Domain, namespaces, and Gateway name come from catalog substitution.
 # post-install.sh is packaged into an executable ConfigMap by kustomization.yaml
 # and mounted read-only. Its dedicated ServiceAccount can read only the two
 # specifically named credential Secrets needed by the summary.
 #
-# SECURITY: The current script prints plaintext credentials to Job logs for
-# parity with the installer terminal summary. Kubernetes logs may have broader
-# readership and retention; see the script header for the recommended safer
-# production alternative.
+# SECURITY: The script does not write usernames or passwords to the Job log. It
+# prints the commands that read them from their Secrets, so Kubernetes log
+# readers never see the values.
 #
 # Flux health-checks this Job, making missing final credentials visible as an
 # installation failure rather than reporting a misleading successful summary.
