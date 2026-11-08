@@ -21,6 +21,8 @@ var enabledApps = []string{
 	"open-webui",
 	"kuberay",
 	"ray-cluster",
+	"clearml",
+	"clearml-serving",
 }
 
 // customTestApps are Flux/baked apps that share the Kustomize suite

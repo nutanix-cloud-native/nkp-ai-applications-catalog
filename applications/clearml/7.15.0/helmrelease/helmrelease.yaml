@@ -1,0 +1,55 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  ref:
+    tag: 7.15.0
+  url: oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts/clearml
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: clearml
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  install:
+    createNamespace: true
+    remediation:
+      retries: 30
+    timeout: 10m
+  interval: 15s
+  targetNamespace: clearml
+  upgrade:
+    remediation:
+      retries: 30
+    timeout: 10m
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${releaseName}-${appVersion}-defaults
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: clearml-webserver
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: clearml-webserver
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: clearml-webserver
+                        env:
+                          - name: CLEARML_PROXY_HOST
+                            value: "https://${clusterName}.${clusterType}.k8s.nutanix.com"
+---
