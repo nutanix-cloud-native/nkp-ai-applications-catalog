@@ -1,0 +1,45 @@
+# Stage 07b — KaiwoQueueConfig seed permissions
+#
+# KaiwoQueueConfig is cluster-scoped, so the Job requires a ClusterRole:
+#
+# - `get` checks whether the `kaiwo` seed exists.
+# - `create` creates the seed only when it is absent.
+#   No patch, update, or delete is granted, so an existing seed, including
+#   AIRM-managed quota state, cannot be modified by this stage.
+#
+# No CRD permissions are granted. Stage 07a applies the CRDs, and this stage
+# depends on it. Delete permission and access to Kaiwo/AIM workload custom
+# resources are not granted. The ClusterRoleBinding targets only the short-lived
+# stage ServiceAccount; the later AIRM agent receives its own separate permissions.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: airm-kaiwo-queue-seed
+  namespace: ${releaseNamespace}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ${releaseName}-airm-kaiwo-queue-seed
+rules:
+- apiGroups:
+  - kaiwo.silogen.ai
+  resources:
+  - kaiwoqueueconfigs
+  verbs:
+  - get
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${releaseName}-airm-kaiwo-queue-seed
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ${releaseName}-airm-kaiwo-queue-seed
+subjects:
+- kind: ServiceAccount
+  name: airm-kaiwo-queue-seed
+  namespace: ${releaseNamespace}
+---

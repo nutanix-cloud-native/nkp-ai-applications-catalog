@@ -1,4 +1,4 @@
-# Stage 05 — AIRM PostgreSQL infrastructure
+# Stage 05b — AIRM PostgreSQL infrastructure
 #
 # These Flux resources replace installer step 9c, which ran:
 # `helm upgrade --install airm-infra-cnpg <local-chart>`.

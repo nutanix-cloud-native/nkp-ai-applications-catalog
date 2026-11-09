@@ -97,6 +97,12 @@ command -v tr >/dev/null || fail "tr is unavailable"
 AIRM_NAMESPACE="$${AIRM_NAMESPACE:?AIRM_NAMESPACE is required}"
 RELEASE_NAMESPACE="$${RELEASE_NAMESPACE:?RELEASE_NAMESPACE is required}"
 KEYCLOAK_CLIENT_ID="$${KEYCLOAK_CLIENT_ID:?KEYCLOAK_CLIENT_ID is required}"
+# The client ID is the cluster UUID (or a legacy UUID). An unresolved Flux
+# variable such as a literal clusterUUID placeholder must fail here, before
+# any Keycloak client is created under that name.
+printf '%s' "$KEYCLOAK_CLIENT_ID" |
+  grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' ||
+  fail "KEYCLOAK_CLIENT_ID is not a UUID: $KEYCLOAK_CLIENT_ID"
 
 # NOTE: Do not pass kubectl client flags such as --request-timeout here.
 # With alpine/k8s kubectl v1.35, those flags disable in-cluster config and

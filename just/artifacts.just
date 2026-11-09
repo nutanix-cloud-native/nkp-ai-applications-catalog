@@ -1,7 +1,7 @@
-# Package a bake-generated chart (charts/<app>, produced by `just bake <app>`)
+# Package a bake-generated chart (charts/<app>/<version>, produced by `just bake <app>`)
 # and push it to our OCI registry. Login first with `just login`.
-# Usage: just push-baked-chart kubeflow-pipelines [oci-registry]
-push-baked-chart app oci-registry=OCI_REGISTRY:
+# Usage: just push-baked-chart kubeflow-pipelines 2.15.0 [oci-registry]
+push-baked-chart app version oci-registry=OCI_REGISTRY:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ app }}" in
@@ -11,11 +11,11 @@ push-baked-chart app oci-registry=OCI_REGISTRY:
         exit 1
         ;;
     esac
-    [ -f "charts/{{ app }}/Chart.yaml" ] || { echo "No chart at charts/{{ app }}; run 'just bake {{ app }}' first" >&2; exit 1; }
+    [ -f "charts/{{ app }}/{{ version }}/Chart.yaml" ] || { echo "No chart at charts/{{ app }}/{{ version }}; run 'just bake {{ app }} {{ version }}' first" >&2; exit 1; }
     workdir=$(mktemp -d)
     trap 'rm -rf "$workdir"' EXIT
-    echo "==> Packaging charts/{{ app }}"
-    helm package "charts/{{ app }}" -d "$workdir"
+    echo "==> Packaging charts/{{ app }}/{{ version }}"
+    helm package "charts/{{ app }}/{{ version }}" -d "$workdir"
     echo "==> Pushing to {{ oci-registry }}"
     helm push "$workdir"/*.tgz {{ oci-registry }}
 

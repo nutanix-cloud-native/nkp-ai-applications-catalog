@@ -114,7 +114,7 @@ spec:
 		t.Fatalf("generateChart: %v", err)
 	}
 
-	chartDir := filepath.Join(repoRoot, "charts", "demo")
+	chartDir := filepath.Join(repoRoot, "charts", "demo", "1.0.0")
 	values := readFile(t, filepath.Join(chartDir, "values.yaml"))
 	if !strings.Contains(values, "replicas: 2") {
 		t.Errorf("values.yaml should seed upstream replicas=2:\n%s", values)

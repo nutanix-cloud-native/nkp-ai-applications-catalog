@@ -1,0 +1,47 @@
+# Stage 07b — KaiwoQueueConfig seed Job
+#
+# Stage 07a applies the Kaiwo and AIM Engine CRDs, and this stage depends on it,
+# so the CRDs are Established before this Job runs. The Job creates the
+# cluster-scoped KaiwoQueueConfig/kaiwo seed only if it is absent. An existing
+# seed is left unchanged.
+#
+# kaiwo-queue-seed.sh is packaged into an executable ConfigMap by kustomization.yaml
+# and mounted read-only. The utility image provides sh and kubectl.
+#
+# The dedicated ServiceAccount can read and create KaiwoQueueConfig. It cannot
+# modify it or change CRDs. The ten-minute deadline covers the seed retries.
+# Flux blocks management installation until this Job proves the seed exists.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airm-kaiwo-queue-seed
+  namespace: ${releaseNamespace}
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: kaiwo-queue-seed
+        airm.nutanix.com/stage: 07b-kaiwo-queue-seed
+    spec:
+      restartPolicy: Never
+      serviceAccountName: airm-kaiwo-queue-seed
+      containers:
+      - name: kaiwo-queue-seed
+        image: ${clusterToolImage:=docker.io/alpine/k8s:1.35.0}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - /scripts/kaiwo-queue-seed.sh
+        volumeMounts:
+        - mountPath: /scripts
+          name: kaiwo-queue-seed-script
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 0555
+          name: airm-kaiwo-queue-seed-script
+        name: kaiwo-queue-seed-script
+---

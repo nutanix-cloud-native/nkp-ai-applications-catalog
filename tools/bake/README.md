@@ -55,7 +55,7 @@ flowchart LR
         direction TB
         F["split manifest into<br/>YAML nodes"] --> G["swap tunable fields for placeholders<br/>(stays valid YAML)"]
         G --> H["expand placeholders →<br/>Helm template exprs"]
-        H --> I["write charts/&lt;app&gt;/<br/>Chart.yaml · values.yaml · templates/"]
+        H --> I["write charts/&lt;app&gt;/&lt;version&gt;/<br/>Chart.yaml · values.yaml · templates/"]
     end
 
     BAKE --> OUT["helmrelease/extra-images.txt<br/>(images hidden in env/args/ConfigMaps)"]
@@ -127,7 +127,7 @@ Key fields:
 Run from the repo root (recipes live in the [`justfile`](../../justfile)):
 
 ```bash
-just bake <app> [version]     # render + bake into applications/<app>/ and charts/<app>/
+just bake <app> [version]     # render + bake into applications/<app>/<version>/ and charts/<app>/<version>/
 just bake-check               # re-bake everything; fail if committed artifacts drifted (CI gate)
 just bake-build               # compile-check the tool
 just bake-test                # vet + unit tests
@@ -150,8 +150,11 @@ committed chart or manifest fails the build.
 To publish baked charts with CI credentials, use the manual GitHub Actions
 workflow `Publish Baked Charts to GHCR` (`.github/workflows/publish-baked-charts-oci.yaml`).
 It can detect changed baked charts from `charts/<app>/` paths or accept an
-explicit `baked_chart_apps` override, then runs `just bake <app>` before pushing via
-`just push-baked-chart <app>`.
+explicit `baked_chart_apps` override, then runs `just bake <app>` before pushing each
+`charts/<app>/<version>/` via `just push-baked-chart <app> <version>`.
+Set the optional `chart_version` input (for example `2.15.0`) to bake and publish only that
+version; it must be configured in `scripts/bake-apps.yaml`. Leave it empty to publish every
+configured version.
 
 ## Layout
 

@@ -30,7 +30,7 @@ jobs:
       - self-hosted-nutanix-docker-medium
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -44,7 +44,7 @@ jobs:
     runs-on: self-hosted-nutanix-medium
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -59,7 +59,7 @@ jobs:
           skip-nix-installation: true
 
       - name: Set up pre-commit cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}

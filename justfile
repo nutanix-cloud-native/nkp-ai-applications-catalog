@@ -57,7 +57,8 @@ mirror-chart-from-repo repo-url chart version oci-registry=OCI_REGISTRY:
     ./scripts/push-helm-to-oci.sh {{repo-url}} {{chart}} {{version}} {{oci-registry}}
 
 # Push the generated kubeflow-pipelines chart to OCI.
-push-kubeflow-pipelines: (push-baked-chart "kubeflow-pipelines")
+# Usage: just push-kubeflow-pipelines [version]   (default: 2.15.0)
+push-kubeflow-pipelines version="2.15.0": (push-baked-chart "kubeflow-pipelines" version)
 
 # Mirror a chart from an upstream OCI registry to our OCI registry
 # Usage: just mirror-chart-from-oci oci://upstream-registry/chart <version> [oci-registry]
