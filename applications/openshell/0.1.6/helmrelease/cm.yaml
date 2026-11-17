@@ -15,4 +15,12 @@ data:
         memory: 1Gi
     service:
       type: ClusterIP
+    # Default workload image for sandboxes created without --from (the TUI path).
+    # The full community base image (tools, /tmp, /sandbox, sandbox user) instead of
+    # the bare Ubuntu base. Tag fffb6b2 is an immutable commit tag of the same image
+    # as latest (sha256:aeef1c63...), so the default cannot drift.
+    sandbox:
+      image:
+        repository: ghcr.io/nvidia/openshell-community/sandboxes/base
+        tag: fffb6b2
 ---
