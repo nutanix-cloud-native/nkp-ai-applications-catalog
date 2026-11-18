@@ -28,8 +28,7 @@ overview: |
 
   **Prerequisites**
 
-  - **Agent Sandbox controller and CRDs** must be installed on the cluster before enabling this application. The chart checks for the `agents.x-k8s.io` API and fails the install if it is missing. Install with:
-    `kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.9/sandbox.yaml`
+  - **Agent Sandbox v1.0.9** (controller, namespace `agent-sandbox-system`, and the cluster-wide `sandboxes.agents.x-k8s.io` CRD) is installed by this application, applied first by its own Flux Kustomization. Nothing needs to be installed by hand. It is not pruned on uninstall, so it stays in place and so do any Sandboxes. Only one application may own this CRD.
   - A CNI that **enforces ingress and egress NetworkPolicy** (for example Cilium, the NKP default). Without enforcement, sandboxes can bypass OpenShell network policy.
   - A default StorageClass, or set `server.dataStorageClass` and `server.workspaceStorageClass` in config overrides.
 

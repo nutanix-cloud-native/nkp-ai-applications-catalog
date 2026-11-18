@@ -1,9 +1,31 @@
+# Agent Sandbox is applied first. It is a cluster-scoped prerequisite (CRD and
+# controller), so it is NOT pruned: uninstalling OpenShell keeps the CRD and the
+# controller, and therefore keeps every Sandbox in the cluster.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${releaseName}-agent-sandbox
+  namespace: ${releaseNamespace}
+spec:
+  interval: 6h0m0s
+  path: ./agent-sandbox
+  prune: false
+  retryInterval: 1m0s
+  sourceRef:
+    kind: OCIRepository
+    name: ${releaseName}-source
+    namespace: ${releaseNamespace}
+  timeout: 10m0s
+  wait: true
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: ${releaseName}-helmrelease
   namespace: ${releaseNamespace}
 spec:
+  dependsOn:
+    - name: ${releaseName}-agent-sandbox
   interval: 6h0m0s
   path: ./helmrelease
   postBuild:

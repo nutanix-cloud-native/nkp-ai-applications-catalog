@@ -13,26 +13,25 @@ namespace. Upstream marks the Kubernetes deployment path as experimental.
 ### Agent Sandbox
 
 OpenShell provisions sandboxes through the Kubernetes SIG
-[Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox) API. The
-chart does **not** install the cluster-scoped Agent Sandbox controller or CRDs,
-and it is not shipped in this catalog. Install it on the target cluster before
-enabling OpenShell:
+[Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox) API (v1.0.9).
+The application vendors that release in `0.1.6/agent-sandbox/sandbox.yaml` and
+applies it with its own Flux Kustomization `<release>-agent-sandbox`. The
+OpenShell HelmRelease waits for it (`dependsOn`), so there is no manual install
+step.
 
-```bash
-kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.9/sandbox.yaml
-kubectl -n agent-sandbox-system rollout status deployment/agent-sandbox-controller
-```
+- The Agent Sandbox Kustomization has `prune: false`. Uninstalling OpenShell keeps
+  the CRD and the controller. This is intentional: deleting the CRD would delete
+  every Sandbox in the cluster.
+- The consequence is that the CRD is left behind after uninstall. Remove it by
+  hand only when no Sandbox is needed: `kubectl delete crd sandboxes.agents.x-k8s.io`.
+- Exactly one application may own `sandboxes.agents.x-k8s.io`. Do not ship a
+  second Agent Sandbox install alongside this one.
 
-Without it, the chart's preflight check fails the HelmRelease with
-`Agent Sandbox is required but neither agents.x-k8s.io/v1beta1 nor
-agents.x-k8s.io/v1alpha1 is served by this cluster`. Leave
-`agentSandbox.preflight.enabled` at its default (`true`) so this stays a clear
-install-time error. Catalog validation renders the chart offline, so
-`.bloodhound.yaml` declares the Sandbox CRD through `additional_crds`.
-
-For air-gapped clusters, mirror
-`registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9` and update the
-image in `sandbox.yaml` before applying it.
+If the CRD exists but was installed another way, the chart's preflight check still
+passes, and Flux adopts the objects on first apply. Keep the preflight enabled
+(`agentSandbox.preflight.enabled`, default `true`). Air-gapped clusters need
+`registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9` mirrored; it is
+listed in `helmrelease/extra-images.txt`.
 
 ### NetworkPolicy enforcement
 
