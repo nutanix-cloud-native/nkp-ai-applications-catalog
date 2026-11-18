@@ -31,7 +31,7 @@ spec:
     remediation:
       retries: 30
   interval: 15s
-  # Dedicated AIRM namespace (matches the shell installer). Downstream stages
+  # Dedicated AIRM namespace. Downstream stages
   # create additional namespaces (for example keycloak) as needed.
   targetNamespace: airm
   upgrade:

@@ -127,8 +127,8 @@ kubectl logs job/<job-name> -n <job-namespace>
 The Kaiwo and AIM Engine CRDs are vendored in
 `applications/amd-resource-manager/2.0.0/helmrelease/stages/07a-agent-crd-definitions/`
 and applied by stage `07a-agent-crd-definitions`. Each file records its upstream
-source URL, release version, and SHA-256 digest in its header. The catalog no
-longer downloads these artifacts at install time.
+source URL, release version, and SHA-256 digest in its header. No release
+artifact is downloaded at install time.
 
 Stage `07a` runs with pruning disabled, so removing or changing the stage never
 deletes the CRDs or the custom resources stored under them. The CRDs are not part
@@ -186,6 +186,47 @@ The Gateway currently uses a self-signed TLS certificate, so browsers and API
 clients will report a trust warning unless that certificate is trusted
 explicitly.
 
+### Set the initial AIRM username (fresh install only)
+
+Use this only when installing the application on a cluster where AIRM is not
+yet installed. The default username is `devuser`, and the login is
+`<username>@<domain>`.
+
+Create a ConfigMap in the `kommander` namespace that sets `airm.username`:
+
+```bash
+cat <<'EOF' | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amd-resource-manager-<username>-username
+  namespace: kommander
+data:
+  values.yaml: |
+    airm:
+      username: <username>
+EOF
+```
+
+Create the AppDeployment with the `nkp` CLI and reference that ConfigMap with
+`--add-cluster-config-overrides`:
+
+```bash
+nkp create appdeployment <app-deployment-name> \
+  --app amd-resource-manager-2.0.0 \
+  --clusters <cluster-name> \
+  --add-cluster-config-overrides <cluster-name>:amd-resource-manager-<username>-username \
+  --workspace <workspace-name>
+```
+
+Replace `<username>`, `<app-deployment-name>`, `<cluster-name>`, and
+`<workspace-name>` with your values. The username must be 1-64 characters: lowercase letters, digits,
+dots, dashes, or underscores, and it must start with a letter or digit.
+
+The username is used only when stage `01-secrets` creates
+`airm-user-credentials` during this first installation. Do not use this
+override on a cluster where AIRM is already installed.
+
 ### Retrieve the AIRM UI credentials
 
 Stage `01-secrets` creates the initial AIRM user in the
@@ -208,10 +249,10 @@ kubectl get secret keycloak-kcadmin -n keycloak \
   -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
-The post-install Job currently includes these credentials in its completion
-summary. Because Kubernetes logs may be retained or collected centrally,
-access to the Job logs must be restricted. Direct Secret retrieval should be
-used as an intentional, audited operator action.
+The post-install Job does not write usernames or passwords to its logs. Its
+summary prints only the URLs and the `kubectl` commands for reading the Secrets.
+Retrieve credentials by reading the Secrets directly, as an intentional operator
+action.
 
 Existing generated Secrets are preserved during normal stage retries where
 possible. Deleting them can rotate credentials and cause dependent components
@@ -262,17 +303,6 @@ and `EXTERNAL-SECRETS.md`.
 - Project External Secrets are optional and validated through the AIRM UI
   when External Secrets Operator and a Ready ClusterSecretStore are present.
 - Gateway access currently uses a self-signed certificate.
-
-## Updating the Catalog Entry
-
-When changing a chart source, release artifact, or image:
-
-1. Update its pinned version or tag.
-2. Re-vendor the changed artifact and update its provenance header. For Kaiwo or AIM Engine, that is the files in `stages/07a-agent-crd-definitions/`. For RabbitMQ, it is `stages/05a-operators/rabbitmq-cluster-operator.yaml`. The `kaiwo`, `aimEngine`, and `rabbitmqOperator` versions in `values.yaml` are documentation only.
-3. Render and inspect the orchestration chart.
-4. Validate the catalog repository.
-5. Build a fresh catalog bundle and publish it under a new immutable tag.
-6. Reconcile the NKP catalog collection and verify every stage becomes Ready.
 
 ## Uninstall and Clean Reinstall
 

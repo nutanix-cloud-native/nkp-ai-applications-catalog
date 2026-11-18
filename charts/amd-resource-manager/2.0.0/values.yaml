@@ -12,8 +12,13 @@ airm:
   imageTag: "2.0.0"
   # Empty by default; catalog cm.yaml substitutes NKP ${clusterName}.
   clusterName: ""
-  # Script all-mode behavior: includeDemoSetup=true
-  includeDemoSetup: true
+  # Initial AIRM UI user. Used as the login name, so the UI email is
+  # <username>@<domain>. 1-64 lowercase letters, digits, dots, dashes, or underscores.
+  username: devuser
+  # Not used as of now. The upstream configure Job is not run as part of
+  # all-mode installation; stages 09-bootstrap and 10-identity-sync replace its
+  # registration and RabbitMQ identity work. Kept in case demo setup is included later.
+  includeDemoSetup: false
   namespace: airm
 
 catalog:
@@ -74,7 +79,7 @@ chartSources:
   airmCnpg: oci://registry-1.docker.io/amdenterpriseai/airm-cnpg-chart
   airmRabbitmq: oci://registry-1.docker.io/amdenterpriseai/airm-rabbitmq-chart
 
-# Pinned versions — AIRM charts/images confirmed; others filled in the versions todo.
+# Pinned chart and image versions.
 versions:
   airmChart: "2.0.0"
   airmApiChart: "2.0.0"
@@ -102,7 +107,7 @@ stages:
   prune: true
   wait: true
 
-# All-mode stage order matching the plan / script side effects.
+# All-mode stage order and dependencies.
 allModeStages:
   - name: 00-preflight
     dependsOn: []

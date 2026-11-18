@@ -1,10 +1,10 @@
 # Stage 03 — Keycloak realm, clients, users, and role configuration
 #
-# This script implements the configuration portions of installer step 7:
-# - 7b: create the `airm` realm, OIDC clients, and service-account role mapping.
-# - 7b2: create a permanent `kcadmin` user for the Keycloak admin console.
-# - 7b3: create the default AIRM user and grant Platform Administrator.
-# Keycloak installation and step 7c's HTTPRoute are declarative resources in
+# This script configures the AIRM-specific parts of Keycloak:
+# - create the `airm` realm, OIDC clients, and service-account role mapping.
+# - create a permanent `kcadmin` user for the Keycloak admin console.
+# - create the default AIRM user and grant Platform Administrator.
+# Keycloak installation and its HTTPRoute are declarative resources in
 # resources.yaml; they are not created by this script.
 #
 # The Job authenticates to Keycloak's internal Service with the bootstrap admin
@@ -16,22 +16,20 @@
 # - the default AIRM user and non-temporary password;
 # - Kubernetes Secret copies consumed by the AIRM charts.
 #
-# Differences from the original installer step 7 configuration:
-# 1. Calls go directly to the stable in-cluster Keycloak Service instead of
-#    `kubectl exec` into the assumed `keycloak-0` pod.
-# 2. Existing clients and users are read and updated with PUT, not only created
-#    with POST-and-ignore-conflict. This repairs configuration drift on retry.
-# 3. The actual Keycloak client secret is treated as authoritative and synced
-#    back to both Kubernetes Secret shapes created by stage 01.
-# 4. An existing `keycloak-kcadmin` password is preserved. The installer
-#    generated and reset a random password whenever step 7 was rerun.
-# 5. The default user's profile, password, and empty `requiredActions` are
-#    reconciled even when that user already exists; the installer mostly
-#    skipped an existing user.
-# 6. Realm/client/user/role state and a real password-grant login are verified
-#    at the end. Failures stop Flux instead of being hidden by `|| true`.
-# 7. Random fallback generation uses `/dev/urandom` + `od` rather than openssl
-#    because this runs in the pinned cluster utility image.
+# Notes:
+# - Calls go directly to the stable in-cluster Keycloak Service rather than into
+#   a specific Keycloak pod.
+# - Existing clients and users are read and updated with PUT, so retries repair
+#   configuration drift.
+# - The Keycloak client secret is authoritative and is synced back to both
+#   Kubernetes Secret shapes created by stage 01.
+# - An existing `keycloak-kcadmin` password is preserved across retries.
+# - The default user's profile, password, and empty `requiredActions` are
+#   reconciled even when the user already exists.
+# - Realm, client, user, and role state and a real password-grant login are
+#   verified at the end. Failures stop Flux instead of being hidden by `|| true`.
+# - Random fallback generation uses `/dev/urandom` with `od` because this runs in
+#   the pinned cluster utility image.
 #
 # Requests accepting HTTP 409 are limited to idempotent create/role-assignment
 # operations. Other non-2xx responses fail the Job so later AIRM stages cannot

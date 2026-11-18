@@ -2,7 +2,7 @@
 #
 # Stage 06 — Initial RabbitMQ application identity and topology
 #
-# This script is the GitOps equivalent of installer step 9e. The RabbitMQ
+# This script configures RabbitMQ for AIRM. The RabbitMQ
 # Cluster Operator creates the broker and admin bootstrap identity, but AIRM
 # also needs:
 # - publisher vhost `vh_airm_common`;
@@ -15,21 +15,18 @@
 # cluster and replaces the Kubernetes Secret with the returned cluster ID and
 # one-time secret; stage 10 then creates the matching RabbitMQ identity,
 # per-cluster vhost, and queue. The initial topology here lets management
-# components start from the same baseline as the tested installer.
+# components start from a known baseline.
 #
-# Differences from the original installer step 9e:
-# 1. RabbitMQ configuration is a dedicated Flux stage after infrastructure
-#    health checks instead of a substep in the broader step 9 function.
-# 2. Pod readiness is polled for up to 300 seconds and is a hard failure. The
-#    installer waited 120 seconds and continued on timeout with `|| true`.
-# 3. Existing users and vhosts are queried before add/change operations,
-#    producing deterministic retries instead of suppressing expected errors.
-# 4. RabbitMQ commands are not followed by `|| true`; any failed password,
-#    vhost, permission, or queue operation stops the stage.
-# 5. The final user, vhosts, and durable queue are read back and verified. The
-#    installer only printed listings after applying configuration.
-# 6. The RabbitMQ pod and namespace are supplied by the Job environment rather
-#    than embedded as shell-level installer constants.
+# Notes:
+# - RabbitMQ configuration runs as its own Flux stage after the infrastructure
+#   health checks.
+# - Pod readiness is polled for up to 300 seconds and is a hard failure.
+# - Existing users and vhosts are queried before add or change operations, so
+#   retries are deterministic.
+# - RabbitMQ commands are not followed by `|| true`; any failed password, vhost,
+#   permission, or queue operation stops the stage.
+# - The final user, vhosts, and durable queue are read back and verified.
+# - The RabbitMQ pod and namespace are supplied by the Job environment.
 #
 # The queue declaration and permission updates are safe to repeat. Credentials
 # are read from stage 01 Secrets and are never printed.
