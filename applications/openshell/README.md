@@ -14,7 +14,7 @@ namespace. Upstream marks the Kubernetes deployment path as experimental.
 
 OpenShell provisions sandboxes through the Kubernetes SIG
 [Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox) API (v1.0.9).
-The application vendors that release in `0.1.6/agent-sandbox/sandbox.yaml` and
+The application vendors that release in `0.1.6/helmrelease/agent-sandbox/agent-sandbox.yaml` and
 applies it with its own Flux Kustomization `<release>-agent-sandbox`. The
 OpenShell HelmRelease waits for it (`dependsOn`), so there is no manual install
 step.

@@ -1,6 +1,7 @@
-# Vendored from https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.9/sandbox.yaml
-# (Apache-2.0). Do not edit by hand: re-vendor the release and update the sha256 below.
-# sha256 of the upstream file: 3eeb27fa821659593ba92c5454571f08c84abb07096bb9d372c1c6c750f6d7d2
+# Agent Sandbox v1.0.9 manifest, vendored unmodified from upstream.
+# Source: https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.9/sandbox.yaml
+# Source SHA-256: 3eeb27fa821659593ba92c5454571f08c84abb07096bb9d372c1c6c750f6d7d2
+# Applied directly by Flux as the resources of the <release>-agent-sandbox Kustomization.
 ---
 kind: Namespace
 apiVersion: v1

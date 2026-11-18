@@ -8,7 +8,7 @@ metadata:
   namespace: ${releaseNamespace}
 spec:
   interval: 6h0m0s
-  path: ./agent-sandbox
+  path: ./helmrelease/agent-sandbox
   prune: false
   retryInterval: 1m0s
   sourceRef:
