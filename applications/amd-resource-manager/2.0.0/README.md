@@ -83,13 +83,13 @@ The current stage sequence is:
    PostgreSQL, RabbitMQ, and Keycloak.
 3. `02-gateway` creates the AIRM Gateway. It does not install or upgrade Gateway
    API CRDs. See [Gateway API CRDs](#gateway-api-crds).
-4. `03-keycloak` installs and configures Keycloak.
+4. `03a-keycloak` installs Keycloak, and `03b-keycloak-config` configures the AIRM realm, clients, and users.
 5. `04-storage` validates and prepares the selected StorageClass.
 6. `05a-operators` applies the vendored RabbitMQ Cluster Operator manifest and
    waits for its Deployment to be Ready.
 7. `05b-infrastructure` deploys PostgreSQL and RabbitMQ.
 8. `06-rabbitmq-config` configures the RabbitMQ resources used by AIRM.
-9. `07a-agent-crd-definitions` applies the Kaiwo and AIM Engine CRDs, with pruning disabled.
+9. `07a-agent-crd-definitions` applies the Kaiwo and AIM Engine CRDs, with pruning and force disabled.
 10. `07b-kaiwo-queue-seed` creates the `KaiwoQueueConfig/kaiwo` seed if it is absent.
 11. `08-management` deploys the AIRM API and UI.
 12. `09-bootstrap` registers the local cluster with AIRM.
@@ -130,8 +130,9 @@ and applied by stage `07a-agent-crd-definitions`. Each file records its upstream
 source URL, release version, and SHA-256 digest in its header. No release
 artifact is downloaded at install time.
 
-Stage `07a` runs with pruning disabled, so removing or changing the stage never
-deletes the CRDs or the custom resources stored under them. The CRDs are not part
+Stage `07a` runs with pruning and force disabled, so removing or changing the stage never
+deletes the CRDs or the custom resources stored under them. A change that would need a
+CRD replaced fails the stage instead of Flux deleting and recreating it. The CRDs are not part
 of the Helm chart, so chart upgrades don't touch them. A new catalog version that
 changes a CRD is applied when stage `07a` reconciles. A change that removes a
 stored version is rejected by the API server, which holds stage `07b` and every
@@ -148,8 +149,9 @@ The RabbitMQ Cluster Operator manifest is vendored at
 Stage 05a applies it directly as a Flux-managed resource, and Flux gates the stage on
 the `rabbitmq-cluster-operator` Deployment in `rabbitmq-system`. Flux owns this operator:
 it applies the vendored version on each reconcile, so an operator installed outside
-this catalog is upgraded to the vendored version. Stage 05a runs with pruning disabled,
-so removing the stage never deletes the operator CRDs or the RabbitMQ clusters. The
+this catalog is upgraded to the vendored version. Stage 05a runs with pruning and force
+disabled, so removing the stage never deletes the operator CRDs or the RabbitMQ clusters,
+and a change that would need the operator replaced fails instead of being recreated. The
 manifest's provenance header records the upstream URL and SHA-256 digest. Upgrading
 requires re-vendoring the manifest and updating that header.
 
@@ -258,6 +260,13 @@ Existing generated Secrets are preserved during normal stage retries where
 possible. Deleting them can rotate credentials and cause dependent components
 to become inconsistent.
 
+### Recover a lost or deleted Secret
+
+If a generated Secret is missing or lost, or AIRM fails with a credential
+error, follow [SECRET-RECOVERY.md](SECRET-RECOVERY.md). It explains how to
+restore each Secret from a backup, or recover it by hand, and which component
+to restart afterward.
+
 ## External Secrets
 
 Treat infrastructure secrets and project secrets as separate paths.
@@ -310,13 +319,13 @@ Removing or reinstalling this application does not clear its state. The followin
 
 | Item | Why it survives |
 |---|---|
-| Kaiwo and AIM Engine CRDs, and every custom resource stored under them | Stage `07a-agent-crd-definitions` uses `prune: false` |
+| Kaiwo and AIM Engine CRDs, and every custom resource stored under them | Stage `07a-agent-crd-definitions` uses `prune: false` and `force: false` |
 | `KaiwoQueueConfig/kaiwo` seed and its quota state | Created by a script in stage `07b`, not managed by Flux. It is never modified, and AIRM adds a finalizer to it. |
 | AIRM PostgreSQL (CloudNativePG) data and the AIRM database | Persistent volume claims in the `airm` namespace |
 | RabbitMQ data, vhosts, users, and queues | Persistent volume claims in the `airm` namespace |
 | Keycloak realm, users, and data | Persistent volume claims in the `keycloak` namespace |
 | Generated Secrets: `airm-user-credentials`, `airm-rabbitmq-admin`, `airm-rabbitmq-common-vhost-user`, `airm-cnpg-user`, `airm-cnpg-superuser`, `airm-secrets-airm`, `keycloak-kcadmin` | Stage `01-secrets` keeps existing Secrets on retries |
-| RabbitMQ Cluster Operator CRDs (`rabbitmq.com`) | Stage `05a-operators` uses `prune: false` |
+| RabbitMQ Cluster Operator CRDs (`rabbitmq.com`) | Stage `05a-operators` uses `prune: false` and `force: false` |
 
 A normal reinstall works. When the AIRM database, the `airm-rabbitmq-common-vhost-user` Secret, and the registration are all still present, stage `09-bootstrap` finds the existing registration and exits without changes.
 

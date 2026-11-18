@@ -13,6 +13,8 @@ spec:
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
+  # prune true: if an object leaves this Kustomization, or the Kustomization is deleted,
+  # Flux deletes it. Stateful objects are protected by the stages' own prune: false.
   prune: true
   retryInterval: 1m0s
   sourceRef:
@@ -20,5 +22,6 @@ spec:
     name: ${releaseName}-source
     namespace: ${releaseNamespace}
   timeout: 1m0s
+  # wait true: this Kustomization reports Ready only after its applied objects are Ready.
   wait: true
 ---

@@ -66,6 +66,7 @@ scope:
 dependencies:
   - amd-gpu-operator
   - external-secrets
+  - velero
 requiredDependencies:
   - cloudnative-pg
   - kube-prometheus-stack

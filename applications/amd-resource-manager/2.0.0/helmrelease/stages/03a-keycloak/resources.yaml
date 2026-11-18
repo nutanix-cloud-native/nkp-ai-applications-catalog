@@ -46,6 +46,9 @@ spec:
     namespace: ${releaseNamespace}
   install:
     createNamespace: true
+    # install retries 3: after a failed install, Flux uninstalls Keycloak and retries.
+    # Helm does not delete the PVC created from the StatefulSet template, so the
+    # database survives an uninstall.
     remediation:
       retries: 3
     timeout: 10m
@@ -53,6 +56,11 @@ spec:
   releaseName: keycloak
   targetNamespace: ${keycloakNamespace:=keycloak}
   upgrade:
+    # force false (the default, set explicitly): a change that needs the Keycloak
+    # StatefulSet replaced fails the upgrade. Helm does not delete and recreate it,
+    # so the database stays in place.
+    force: false
+    # upgrade retries 3: after a failed upgrade, Flux rolls back to the previous revision.
     remediation:
       retries: 3
     timeout: 10m
