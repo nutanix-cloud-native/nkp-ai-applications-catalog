@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    # The chart has no default image tag and fails to render without one. Pin the
+    # controller to the release that OpenShell 0.1.6 is tested against. Bump it
+    # together with the chart version and extra-images.txt.
+    image:
+      tag: v1.0.9
+---

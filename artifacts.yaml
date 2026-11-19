@@ -193,6 +193,10 @@ applications:
       - ghcr.io/nvidia/openshell/sandbox:0.1.6
       - ghcr.io/nvidia/openshell/supervisor:0.1.6
       - nvcr.io/nvidia/base/ubuntu:24.04
+  - name: agent-sandbox
+    version: 0.1.5
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/agent-sandbox:0.1.5
       - registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9
   - name: ray-cluster
     version: 1.7.0

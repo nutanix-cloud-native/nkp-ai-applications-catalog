@@ -13,25 +13,23 @@ namespace. Upstream marks the Kubernetes deployment path as experimental.
 ### Agent Sandbox
 
 OpenShell provisions sandboxes through the Kubernetes SIG
-[Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox) API (v1.0.9).
-The application vendors that release in `0.1.6/helmrelease/agent-sandbox/agent-sandbox.yaml` and
-applies it with its own Flux Kustomization `<release>-agent-sandbox`. The
-OpenShell HelmRelease waits for it (`dependsOn`), so there is no manual install
-step.
+[Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox) API. Agent
+Sandbox is a separate catalog application, `agent-sandbox` 0.1.5. It is a
+declared dependency, so enable it before OpenShell. OpenShell does not install
+the CRDs or the controller itself.
 
-- The Agent Sandbox Kustomization has `prune: false`. Uninstalling OpenShell keeps
-  the CRD and the controller. This is intentional: deleting the CRD would delete
-  every Sandbox in the cluster.
-- The consequence is that the CRD is left behind after uninstall. Remove it by
-  hand only when no Sandbox is needed: `kubectl delete crd sandboxes.agents.x-k8s.io`.
-- Exactly one application may own `sandboxes.agents.x-k8s.io`. Do not ship a
-  second Agent Sandbox install alongside this one.
+- Agent Sandbox installs the `sandboxes.agents.x-k8s.io` CRD and the controller.
+  Uninstalling it removes the controller, but keeps the CRDs, so stored `Sandbox`
+  objects survive.
+- Only one application may own those CRDs.
 
-If the CRD exists but was installed another way, the chart's preflight check still
-passes, and Flux adopts the objects on first apply. Keep the preflight enabled
-(`agentSandbox.preflight.enabled`, default `true`). Air-gapped clusters need
-`registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9` mirrored; it is
-listed in `helmrelease/extra-images.txt`.
+Without Agent Sandbox, the chart's preflight check fails the HelmRelease with
+`Agent Sandbox is required but neither agents.x-k8s.io/v1beta1 nor
+agents.x-k8s.io/v1alpha1 is served by this cluster`. Leave
+`agentSandbox.preflight.enabled` at its default (`true`).
+
+Air-gapped clusters mirror the Agent Sandbox controller image listed in
+`applications/agent-sandbox/0.1.5/helmrelease/extra-images.txt`.
 
 ### NetworkPolicy enforcement
 
