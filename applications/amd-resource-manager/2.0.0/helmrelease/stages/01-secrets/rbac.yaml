@@ -11,13 +11,17 @@
 # 2. AIRM namespace (`airm-secret-init`):
 #    `get` is required to preserve existing credentials and validate keys.
 #    `create` initializes missing Secrets.
-#    `patch` is required by `kubectl apply` both for creation retries and for
-#    synchronizing the two Kubernetes Secrets representing one Keycloak client.
+#    `patch` is required by `kubectl apply` for creation retries. Stage 01 no
+#    longer writes the two Keycloak client Secrets; stage 03b creates them.
 #
 # The Role grants access to Secrets as a resource type in the AIRM namespace;
 # Kubernetes RBAC cannot restrict create requests by resource name. Keeping the
 # Role namespaced and binding it only to this stage's ServiceAccount limits the
 # write boundary. No delete, list, or cluster-scoped permissions are granted.
+#
+# The database guard (secret-init.sh) also reads, with get only, the named CNPG
+# Cluster and its two PVCs in the AIRM namespace. Names come from the Job
+# environment values, which use the same substitution variables as this file.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -67,6 +71,26 @@ rules:
   - get
   - create
   - patch
+# Database guard: get only, on the named CNPG Cluster and its two PVCs. No list,
+# no ConfigMap, and no cluster-scoped access. The Cluster is namespaced, so a
+# Role in the AIRM namespace is enough.
+- apiGroups:
+  - postgresql.cnpg.io
+  resourceNames:
+  - ${cnpgClusterName:=airm-infra-cnpg-cnpg}
+  resources:
+  - clusters
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resourceNames:
+  - ${cnpgDataPvcName:=airm-infra-cnpg-cnpg-1}
+  - ${cnpgWalPvcName:=airm-infra-cnpg-cnpg-1-wal}
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

@@ -83,13 +83,13 @@ The current stage sequence is:
    PostgreSQL, RabbitMQ, and Keycloak.
 3. `02-gateway` creates the AIRM Gateway. It does not install or upgrade Gateway
    API CRDs. See [Gateway API CRDs](#gateway-api-crds).
-4. `03-keycloak` installs and configures Keycloak.
+4. `03a-keycloak` installs Keycloak, and `03b-keycloak-config` configures the AIRM realm, clients, and users.
 5. `04-storage` validates and prepares the selected StorageClass.
 6. `05a-operators` applies the vendored RabbitMQ Cluster Operator manifest and
    waits for its Deployment to be Ready.
 7. `05b-infrastructure` deploys PostgreSQL and RabbitMQ.
 8. `06-rabbitmq-config` configures the RabbitMQ resources used by AIRM.
-9. `07a-agent-crd-definitions` applies the Kaiwo and AIM Engine CRDs, with pruning disabled.
+9. `07a-agent-crd-definitions` applies the Kaiwo and AIM Engine CRDs, with pruning and force disabled.
 10. `07b-kaiwo-queue-seed` creates the `KaiwoQueueConfig/kaiwo` seed if it is absent.
 11. `08-management` deploys the AIRM API and UI.
 12. `09-bootstrap` registers the local cluster with AIRM.
@@ -130,8 +130,9 @@ and applied by stage `07a-agent-crd-definitions`. Each file records its upstream
 source URL, release version, and SHA-256 digest in its header. No release
 artifact is downloaded at install time.
 
-Stage `07a` runs with pruning disabled, so removing or changing the stage never
-deletes the CRDs or the custom resources stored under them. The CRDs are not part
+Stage `07a` runs with pruning and force disabled, so removing or changing the stage never
+deletes the CRDs or the custom resources stored under them. A change that would need a
+CRD replaced fails the stage instead of Flux deleting and recreating it. The CRDs are not part
 of the Helm chart, so chart upgrades don't touch them. A new catalog version that
 changes a CRD is applied when stage `07a` reconciles. A change that removes a
 stored version is rejected by the API server, which holds stage `07b` and every
@@ -148,8 +149,9 @@ The RabbitMQ Cluster Operator manifest is vendored at
 Stage 05a applies it directly as a Flux-managed resource, and Flux gates the stage on
 the `rabbitmq-cluster-operator` Deployment in `rabbitmq-system`. Flux owns this operator:
 it applies the vendored version on each reconcile, so an operator installed outside
-this catalog is upgraded to the vendored version. Stage 05a runs with pruning disabled,
-so removing the stage never deletes the operator CRDs or the RabbitMQ clusters. The
+this catalog is upgraded to the vendored version. Stage 05a runs with pruning and force
+disabled, so removing the stage never deletes the operator CRDs or the RabbitMQ clusters,
+and a change that would need the operator replaced fails instead of being recreated. The
 manifest's provenance header records the upstream URL and SHA-256 digest. Upgrading
 requires re-vendoring the manifest and updating that header.
 
@@ -258,6 +260,13 @@ Existing generated Secrets are preserved during normal stage retries where
 possible. Deleting them can rotate credentials and cause dependent components
 to become inconsistent.
 
+### Recover a lost or deleted Secret
+
+If a generated Secret is missing or lost, or AIRM fails with a credential
+error, follow [SECRET-RECOVERY.md](SECRET-RECOVERY.md). It explains how to
+restore each Secret from a backup, or recover it by hand, and which component
+to restart afterward.
+
 ## External Secrets
 
 Treat infrastructure secrets and project secrets as separate paths.
@@ -310,44 +319,144 @@ Removing or reinstalling this application does not clear its state. The followin
 
 | Item | Why it survives |
 |---|---|
-| Kaiwo and AIM Engine CRDs, and every custom resource stored under them | Stage `07a-agent-crd-definitions` uses `prune: false` |
+| Kaiwo and AIM Engine CRDs, and every custom resource stored under them | Stage `07a-agent-crd-definitions` uses `prune: false` and `force: false` |
 | `KaiwoQueueConfig/kaiwo` seed and its quota state | Created by a script in stage `07b`, not managed by Flux. It is never modified, and AIRM adds a finalizer to it. |
 | AIRM PostgreSQL (CloudNativePG) data and the AIRM database | Persistent volume claims in the `airm` namespace |
 | RabbitMQ data, vhosts, users, and queues | Persistent volume claims in the `airm` namespace |
 | Keycloak realm, users, and data | Persistent volume claims in the `keycloak` namespace |
 | Generated Secrets: `airm-user-credentials`, `airm-rabbitmq-admin`, `airm-rabbitmq-common-vhost-user`, `airm-cnpg-user`, `airm-cnpg-superuser`, `airm-secrets-airm`, `keycloak-kcadmin` | Stage `01-secrets` keeps existing Secrets on retries |
-| RabbitMQ Cluster Operator CRDs (`rabbitmq.com`) | Stage `05a-operators` uses `prune: false` |
+| RabbitMQ Cluster Operator CRDs (`rabbitmq.com`) | Stage `05a-operators` uses `prune: false` and `force: false` |
+| Project namespaces (labelled `airm.silogen.ai/project-id`) | AIRM creates them, not Flux, so removing the AppDeployment doesn't remove them. A new project with the same name fails with `namespace already exists`. |
+| HelmReleases `airm-keycloak` (stage `03a-keycloak`), `airm-infra-cnpg` and `airm-infra-rabbitmq` (stage `05b-infrastructure`), and their `sh.helm.release.v1.*` Secrets in the release namespace | Those stages use `prune: false`, so removing the AppDeployment leaves these objects behind. Helm still records them as installed, so a reinstall reports `in sync` and doesn't recreate the workloads. |
 
 A normal reinstall works. When the AIRM database, the `airm-rabbitmq-common-vhost-user` Secret, and the registration are all still present, stage `09-bootstrap` finds the existing registration and exits without changes.
 
 ### Reset to a clean state
 
-These steps destroy data. Run them in order, and only on a cluster where no other workload depends on AIRM.
+These steps destroy data. Run them in order, and only on a cluster where no other workload depends on AIRM. Check each step's output before you move on.
 
-1. Suspend or delete the catalog HelmRelease and its stage Kustomizations first. Otherwise Flux recreates what you remove.
-2. Delete the seed while AIRM is still running, so AIRM can release its finalizer. If the seed stays in `Terminating`, check for the `airm.silogen.ai/kaiwoqueueconfig-finalizer` finalizer before removing anything else.
+The order matters. The seed and project cleanup need the AIRM API, and deleting the AppDeployment or `airm-management` takes that API down.
+
+1. **Delete the projects while AIRM is running.** AIRM creates one namespace per project, labelled `airm.silogen.ai/project-id`. Delete the projects in the AIRM UI or API first, then check whether any namespace is left over:
+
+   ```
+   kubectl get ns -l airm.silogen.ai/project-id
+   kubectl delete ns -l airm.silogen.ai/project-id
+   ```
+
+   Check first that each namespace has no workloads you need. A leftover project namespace makes AIRM fail the next project with the same name with `namespaces "<name>" already exists`.
+
+2. **Delete the seed while AIRM is running.** This lets AIRM remove its finalizer. If the seed stays in `Terminating`, check for the `airm.silogen.ai/kaiwoqueueconfig-finalizer` finalizer before you do anything else.
 
    ```
    kubectl delete kaiwoqueueconfig kaiwo
    ```
 
-3. Delete the `airm` and `keycloak` namespaces. This removes the AIRM database, RabbitMQ data, Keycloak realm, and the Secrets listed above.
-4. In the release namespace, delete the stage Jobs (`airm-*`), the `airm-discovered` ConfigMap, and the `airm-gateway-tls` Secret.
-5. Delete the Kaiwo and AIM Engine CRDs. This also deletes every `KaiwoJob`, `KaiwoService`, `KaiwoConfig`, `KaiwoQueueConfig`, and AIM resource. List the names first, then delete them:
+3. **Delete the AppDeployment.** The AppDeployment owns the catalog HelmRelease and the stage Kustomizations. Deleting only those objects doesn't work, because the AppDeployment recreates them. Find its name first, then delete it:
+
+   ```
+   kubectl get appdeployment -n kommander | grep -E 'amd|airm'
+   kubectl delete appdeployment <name> -n kommander
+   ```
+
+   Then check that nothing has come back:
+
+   ```
+   kubectl get kustomization,helmrelease -n kommander | grep -E 'amd-resource|airm|keycloak'
+   ```
+
+4. **Delete the stage HelmReleases and their Helm release records.** Stages with `prune: false` leave these behind, and a stale record makes the next install report `in sync` without recreating the workloads.
+
+   ```
+   kubectl delete helmrelease airm-infra-cnpg airm-infra-rabbitmq airm-keycloak airm-management airm-agent -n kommander --ignore-not-found
+   kubectl delete secret -n kommander sh.helm.release.v1.airm-infra-cnpg.v1 sh.helm.release.v1.airm-infra-rabbitmq.v1 sh.helm.release.v1.keycloak.v1 sh.helm.release.v1.airm.v1 sh.helm.release.v1.airm-agent.v1 --ignore-not-found
+   kubectl get secret -n kommander | grep -E 'sh\.helm\.release\.v1\.(airm|keycloak)'
+   ```
+
+   Deleting `airm-infra-cnpg` and `airm-infra-rabbitmq` uninstalls the CloudNativePG and RabbitMQ clusters. Their pods can take about five minutes to shut down gracefully, so wait for them to finish before the next step.
+
+5. **Delete the `airm` and `keycloak` namespaces.** This removes the AIRM database, RabbitMQ data, and Keycloak realm, along with the Secrets listed above.
+
+   ```
+   kubectl delete ns airm keycloak
+   ```
+
+   If a namespace stays `Terminating`, see [Clearing a stuck namespace](#clearing-a-stuck-namespace) below.
+
+6. **Delete the stage Jobs and leftover objects in the release namespace.** List the names first, then delete them one at a time:
+
+   ```
+   kubectl get job -n kommander --no-headers -o custom-columns=NAME:.metadata.name | grep '^airm-'
+   kubectl delete job <name> -n kommander
+   kubectl delete configmap airm-discovered -n kommander --ignore-not-found
+   kubectl delete secret airm-gateway-tls -n kommander --ignore-not-found
+   ```
+
+7. **Delete the Kaiwo and AIM Engine CRDs.** This also deletes every `KaiwoJob`, `KaiwoService`, `KaiwoConfig`, `KaiwoQueueConfig`, and AIM resource. List the names first. Then delete them, after confirming that no other workload uses them:
 
    ```
    kubectl get crd | grep -E 'kaiwo\.silogen\.ai|aim\.eai\.amd\.com'
    ```
 
-6. If you also want the RabbitMQ Cluster Operator reinstalled, delete the `rabbitmq-system` namespace and the `rabbitmq.com` CRDs. This deletes every `RabbitmqCluster`. Don't delete CloudNativePG or other NKP platform CRDs, since this application doesn't own them.
-7. Reinstall the application.
+8. **Optional: reinstall the RabbitMQ Cluster Operator.** Delete the `rabbitmq-system` namespace and the `rabbitmq.com` CRDs. This deletes every `RabbitmqCluster`. Don't delete CloudNativePG or other NKP platform CRDs, since this application doesn't own them. The `rabbitmq-system` namespace is also stuck on the AIRM finalizer, so if it stays `Terminating`, see [Clearing a stuck namespace](#clearing-a-stuck-namespace).
 
-Verify a clean state before reinstalling. The grep below should return nothing. `kubectl get kaiwoqueueconfig` should report that the server doesn't have that resource type.
+9. **Remove the AIRM gateway and catalog sources.** The `airm-https` Gateway and the `airm-*` and `amd-resource-manager-*` OCIRepositories are left from earlier installs. Remove them if you want a fully clean catalog source:
+
+   ```
+   kubectl get gateway -n kommander airm-https
+   kubectl delete gateway -n kommander airm-https --ignore-not-found
+   kubectl get ocirepository -n kommander | grep -E 'airm|amd-resource-manager'
+   ```
+
+10. **Reinstall the application.**
+
+#### Clearing a stuck namespace
+
+AIRM puts `airm.silogen.ai/namespace-finalizer` on its namespaces. Once the AIRM API is gone, nothing removes that finalizer, so the namespace stays `Terminating`.
+
+Only clear the finalizer when the namespace is empty. Check for leftover objects first, including PVCs and PVs. Removing the finalizer while pods or PVCs still exist leaves them orphaned.
 
 ```
+kubectl get ns <name> -o jsonpath='{.metadata.finalizers}{"\n"}'
+kubectl get pods,pvc,svc,secret,configmap,deploy,statefulset -n <name>
+kubectl get pv | grep <name>
+kubectl patch ns <name> --type=merge -p '{"metadata":{"finalizers":null}}'
+```
+
+Only clear it when all the `get` commands above return nothing.
+
+### Verify a clean state
+
+Run these before reinstalling. Each command should return nothing, except the last line, which should report that the server doesn't have that resource type.
+
+```
+kubectl get appdeployment -n kommander | grep -E 'amd|airm'
+kubectl get kustomization,helmrelease -n kommander | grep -E 'amd-resource|airm|keycloak'
+kubectl get secret -n kommander | grep -E 'sh\.helm\.release\.v1\.(airm|keycloak|amd-resource)'
+kubectl get ns | grep -E '^(airm|keycloak|rabbitmq-system)'
+kubectl get ns -l airm.silogen.ai/project-id
+kubectl get pv | grep -E 'airm|keycloak'
+kubectl get gateway -n kommander airm-https
+kubectl get ocirepository -n kommander | grep -E 'airm|amd-resource-manager'
 kubectl get crd | grep -E 'kaiwo\.silogen\.ai|aim\.eai\.amd\.com'
 kubectl get kaiwoqueueconfig
 ```
+
+### Rerun a failed stage Job
+
+Each stage runs one Kubernetes Job (`airm-*`) in the release namespace. Its pod retries up to three times within `activeDeadlineSeconds`. When those retries run out, the Job stays `Failed`. Flux doesn't rerun a failed Job unless its spec changes, so the stage waits.
+
+If a stage stays stuck on a Job that has failed for good, check its logs, fix the cause (for example, a Keycloak or RabbitMQ that wasn't ready), and then delete the Job:
+
+```
+kubectl get job -n kommander | grep airm-
+kubectl logs -n kommander job/<job-name>
+kubectl delete job <job-name> -n kommander
+```
+
+Flux recreates a deleted stage Job the next time its stage Kustomization reconciles. In testing, a deleted Job that had already completed was recreated within seconds of the reconcile. Recovery from a Job that failed for good, and the timing of the automatic one-minute reconcile, are not covered by that test. To watch the Job and its stage, run `kubectl get kustomization -n kommander` and `kubectl get job -n kommander`.
+
+Don't delete a Job that is still running. A `Complete` Job doesn't need deleting, since its TTL removes it after 24 hours.
 
 ## Links
 

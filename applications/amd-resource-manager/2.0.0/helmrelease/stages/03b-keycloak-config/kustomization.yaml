@@ -1,0 +1,20 @@
+# Stage 03b-keycloak-config — Kustomize assembly
+#
+# This stage runs the AIRM Keycloak configuration Job:
+# - keycloak-config.sh is packaged into an executable ConfigMap and run by the
+#   configuration Job using the permissions in rbac.yaml.
+#
+# It depends on stage 03a-keycloak, which installs Keycloak. Flux applies it with
+# `force: true` (the chart default), so a changed Job template is recreated.
+# Job templates are immutable, so Flux needs force to update one.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- files:
+  - keycloak-config.sh
+  name: airm-keycloak-config-script
+  namespace: ${releaseNamespace}
+resources:
+- rbac.yaml
+- keycloak-config-job.yaml
+---
