@@ -19,11 +19,11 @@ overview: |
 
   Agent Sandbox is the Kubernetes SIG project that defines the `Sandbox` API and its controller. It is a cluster-wide prerequisite: it installs the `sandboxes.agents.x-k8s.io` CRD and the `agent-sandbox-controller` in the `agent-sandbox-system` namespace. Runtimes such as OpenShell create `Sandbox` objects through this API.
 
-  This catalog entry packages the upstream Helm chart, pinned to upstream commit `6cc854d` (chart version 0.1.6). The controller image is pinned to `v1.0.9`.
+  This catalog entry packages the upstream Helm chart, pinned to upstream commit `6cc854d` (chart version 0.1.7). The controller image is pinned to `v1.0.9`.
 
   **Lifecycle and data**
 
-  - The application installs four CRDs: `sandboxes`, `sandboxclaims`, `sandboxtemplates` and `sandboxwarmpools`. A separate Flux Kustomization applies them on every reconcile, so upgrades update their schemas.
+  - The application installs four CRDs: `sandboxes`, `sandboxclaims`, `sandboxtemplates` and `sandboxwarmpools`. The chart ships them with `crds: CreateReplace`, so each upgrade applies their current schemas.
   - Uninstalling this application removes the controller and its RBAC, but **keeps the CRDs**. Existing `Sandbox` objects stay in the cluster as stored data.
   - Only one application may own these CRDs. Do not install a second copy of Agent Sandbox on the same cluster.
 

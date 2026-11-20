@@ -9,18 +9,17 @@ as OpenShell create sandboxes through. It has no UI and no front-end service.
 | Field | Value |
 |-------|-------|
 | Chart OCI URL | `oci://ghcr.io/nutanix-cloud-native/charts/agent-sandbox` |
-| Chart tag | `0.1.6` |
+| Chart tag | `0.1.7` |
 | Controller namespace | `agent-sandbox-system` (created by the chart) |
 | Upstream | `kubernetes-sigs/agent-sandbox`, `helm/` at commit `6cc854d` |
 
-The chart is upstream, with three catalog changes:
+The chart is upstream, with two catalog changes:
 
-- `Chart.yaml` links back to this catalog, and its version is `0.1.6`.
+- `Chart.yaml` links back to this catalog, and its version is `0.1.7`.
 - `values.yaml` defaults `image.tag` to `v1.0.9`, because upstream has no default
   and fails to render without one.
-- The chart has no `crds/` directory. The CRDs are delivered by the application
-  (see CRDs below), so that upgrades apply them. The chart reference is defined
-in `helmrelease/helmrelease.yaml`.
+
+The chart reference is defined in `helmrelease/helmrelease.yaml`.
 
 ## Default Configuration
 
@@ -35,24 +34,24 @@ off by default.
 
 ## CRDs
 
-The application installs four CRDs from `crds/` at the application root. A
-separate Flux Kustomization applies them before the chart:
+The chart ships four CRDs in its `crds/` directory:
 
 - `sandboxes.agents.x-k8s.io`
 - `sandboxclaims.extensions.agents.x-k8s.io`
 - `sandboxtemplates.extensions.agents.x-k8s.io`
 - `sandboxwarmpools.extensions.agents.x-k8s.io`
 
-Flux applies the CRDs on every reconcile, so an upgrade updates their schemas. The
-CRD Kustomization has `prune: false`, so uninstall keeps them. This has two
-consequences:
+The HelmRelease sets `crds: CreateReplace` on install and on upgrade. Helm
+applies the CRDs from the chart each time, so a new version's schema changes
+land on upgrade. Helm never removes `crds/` on uninstall, so this keeps the
+CRDs, and every `Sandbox` object stored under them, when the application is
+uninstalled.
 
-- **Uninstall** removes the controller, its RBAC and the namespace, and keeps the
-  CRDs. Existing `Sandbox` objects are kept too. This was tested on a workload
-  cluster: the running sandbox kept its UID and stayed Ready while the controller
-  was gone.
-- **Upgrades** apply the new CRD schemas before the controller changes. For
-  example, `SandboxWarmPool` gains `readinessGracePeriodSeconds` in this version.
+- **Uninstall** removes the controller, its RBAC and the namespace, and keeps
+  the CRDs. This was tested on a workload cluster: the running sandbox kept its
+  UID and stayed Ready while the controller was gone.
+- **Upgrades** replace the CRDs before the controller changes. For example,
+  `SandboxWarmPool` gains `readinessGracePeriodSeconds` in this version.
 
 Only one application may own these CRDs. Do not install a second copy of Agent
 Sandbox on the same cluster.
