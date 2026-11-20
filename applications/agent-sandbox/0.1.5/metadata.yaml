@@ -27,6 +27,12 @@ overview: |
   - Uninstalling this application removes the controller and its RBAC, but **keeps the CRDs**. Existing `Sandbox` objects stay in the cluster as stored data.
   - Only one application may own these CRDs. Do not install a second copy of Agent Sandbox on the same cluster.
 
+  **How to use**
+
+  - Agent Sandbox has no user interface and no front-end service. Runtimes such as OpenShell create `Sandbox` objects through the `agents.x-k8s.io` API.
+  - Check the controller: `kubectl -n agent-sandbox-system get deploy agent-sandbox-controller`.
+  - List sandboxes: `kubectl get sandboxes -A`.
+
   **Dependencies**
 
   OpenShell requires this application. Enable Agent Sandbox first.

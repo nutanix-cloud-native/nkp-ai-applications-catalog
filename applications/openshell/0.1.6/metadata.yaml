@@ -37,6 +37,19 @@ overview: |
   - A CNI that **enforces ingress and egress NetworkPolicy** (for example Cilium, the NKP default). Without enforcement, sandboxes can bypass OpenShell network policy.
   - A default StorageClass, or set `server.dataStorageClass` and `server.workspaceStorageClass` in config overrides.
 
+  **How to use**
+
+  - **Install order:** enable **Agent Sandbox** first, then OpenShell. OpenShell declares Agent Sandbox as a required dependency, and its install fails without the Agent Sandbox API.
+  - **In-cluster address:** `openshell.openshell.svc.cluster.local:8080` (gRPC over mTLS).
+  - **From your workstation:**
+    1. Start a port-forward and keep it running: `kubectl -n openshell port-forward svc/openshell 8080:8080`.
+    2. Install the `openshell` CLI v0.1.6 from the [NVIDIA OpenShell release](https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.6).
+    3. Copy the client bundle from the `openshell-client-tls` Secret (`ca.crt`, `tls.crt`, `tls.key`) into `~/.config/openshell/gateways/k8s/mtls/`.
+    4. Register the gateway: `openshell gateway add https://127.0.0.1:8080 --name k8s --local`.
+    5. Check it: `openshell -g k8s status`, then create a sandbox: `openshell -g k8s sandbox create --name demo -- echo hello`.
+  - **Interactive terminal UI:** `openshell -g k8s term`.
+  - **Sandbox images:** sandboxes use the gateway's default workload image (Ubuntu 24.04). Pass `--from <image>` to choose another.
+
   **Notes**
 
   - The upstream Kubernetes deployment path is marked experimental by NVIDIA; values and defaults may change between releases.
