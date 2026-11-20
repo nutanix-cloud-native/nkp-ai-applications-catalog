@@ -3,10 +3,10 @@ displayName: Agent Sandbox
 appScreens:
   - ai
 allowMultipleInstances: false
+scope:
+  - workspace
 category:
   - data-and-agents
-certifications:
-  - qualified
 description: Kubernetes SIG Agent Sandbox controller. Provides the Sandbox API that runtimes such as OpenShell use to run agent workloads.
 dependencies: []
 requiredDependencies: []
@@ -42,4 +42,4 @@ overview: |
   Upstream: https://github.com/kubernetes-sigs/agent-sandbox
 supportLink: https://github.com/kubernetes-sigs/agent-sandbox
 type: nkp-catalog
-nkpVersionSupport: ">=2.19.0"
+nkpVersionSupport: ">=2.18.0"
