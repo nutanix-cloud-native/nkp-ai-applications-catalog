@@ -22,6 +22,7 @@ var enabledApps = []string{
 	"kuberay",
 	"ray-cluster",
 	"openshell",
+	"agent-sandbox",
 }
 
 // customTestApps are Flux/baked apps that share the Kustomize suite

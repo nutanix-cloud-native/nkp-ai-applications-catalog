@@ -5,7 +5,8 @@ namespace:
 
 image:
   repository: registry.k8s.io/agent-sandbox/agent-sandbox-controller
-  tag: ""  # required, eg. v0.3.10
+  # Catalog default: the controller release OpenShell 0.1.6 is tested with. Upstream has no default.
+  tag: "v1.0.9"  # eg. v0.3.10
   pullPolicy: IfNotPresent
 
 # imagePullSecrets adds image pull secrets to the controller PodSpec (spec.template.spec.imagePullSecrets).

@@ -10,6 +10,7 @@ keywords:
 home: https://github.com/kubernetes-sigs/agent-sandbox
 sources:
   - https://github.com/kubernetes-sigs/agent-sandbox
+  - https://github.com/nutanix-cloud-native/nkp-ai-applications-catalog
 maintainers:
   - name: Kubernetes SIGs
     url: https://github.com/kubernetes-sigs

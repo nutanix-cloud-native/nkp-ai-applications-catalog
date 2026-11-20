@@ -1,0 +1,6 @@
+ignore: []
+resources:
+- container_image: registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9
+  sources:
+  - ref: v1.0.9
+    url: https://github.com/kubernetes-sigs/agent-sandbox.git
