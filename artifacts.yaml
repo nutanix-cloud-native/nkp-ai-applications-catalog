@@ -185,9 +185,9 @@ applications:
       - oci://ghcr.io/nutanix-cloud-native/charts/open-webui:16.0.0
       - ghcr.io/open-webui/open-webui:0.11.0
   - name: agent-sandbox
-    version: 0.1.5
+    version: 0.1.6
     images:
-      - oci://ghcr.io/nutanix-cloud-native/charts/agent-sandbox:0.1.5
+      - oci://ghcr.io/nutanix-cloud-native/charts/agent-sandbox:0.1.6
       - registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.9
   - name: ray-cluster
     version: 1.7.0
