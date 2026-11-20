@@ -1,0 +1,45 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: Agent Sandbox
+appScreens:
+  - ai
+allowMultipleInstances: false
+scope:
+  - workspace
+category:
+  - data-and-agents
+description: Kubernetes SIG Agent Sandbox controller. Provides the Sandbox API that runtimes such as OpenShell use to run agent workloads.
+dependencies: []
+requiredDependencies: []
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIxNCIgZmlsbD0iIzAxOTRFMiIvPjxyZWN0IHg9IjMwIiB5PSIzNCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iI0ZGRkZGRiIvPjxjaXJjbGUgY3g9IjQyIiBjeT0iNDgiIHI9IjQiIGZpbGw9IiMwMTk0RTIiLz48Y2lyY2xlIGN4PSI1OCIgY3k9IjQ4IiByPSI0IiBmaWxsPSIjMDE5NEUyIi8+PC9zdmc+
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  Agent Sandbox is the Kubernetes SIG project that defines the `Sandbox` API and its controller. It is a cluster-wide prerequisite: it installs the `sandboxes.agents.x-k8s.io` CRD and the `agent-sandbox-controller` in the `agent-sandbox-system` namespace. Runtimes such as OpenShell create `Sandbox` objects through this API.
+
+  This catalog entry packages the upstream Helm chart, pinned to upstream commit `6cc854d` (chart version 0.1.7). The controller image is pinned to `v1.0.9`.
+
+  **Lifecycle and data**
+
+  - The application installs four CRDs: `sandboxes`, `sandboxclaims`, `sandboxtemplates` and `sandboxwarmpools`. The chart ships them with `crds: CreateReplace`, so each upgrade applies their current schemas.
+  - Uninstalling this application removes the controller and its RBAC, but **keeps the CRDs**. Existing `Sandbox` objects stay in the cluster as stored data.
+  - Only one application may own these CRDs. Do not install a second copy of Agent Sandbox on the same cluster.
+
+  **How to use**
+
+  - Agent Sandbox has no user interface and no front-end service. Runtimes such as OpenShell create `Sandbox` objects through the `agents.x-k8s.io` API.
+  - Check the controller: `kubectl -n agent-sandbox-system get deploy agent-sandbox-controller`.
+  - List sandboxes: `kubectl get sandboxes -A`.
+
+  **Dependencies**
+
+  OpenShell requires this application. Enable Agent Sandbox first.
+
+  **Support**
+
+  Upstream: https://github.com/kubernetes-sigs/agent-sandbox
+supportLink: https://github.com/kubernetes-sigs/agent-sandbox
+type: nkp-catalog
+nkpVersionSupport: ">=2.20.0"
