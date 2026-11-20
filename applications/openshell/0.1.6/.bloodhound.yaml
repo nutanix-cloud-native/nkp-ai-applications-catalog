@@ -1,0 +1,9 @@
+# Kubernetes versions (match https://github.com/yannh/kubernetes-json-schema)
+k8s_versions:
+  - 1.34.0
+  - 1.35.0
+  - 1.36.0
+
+# The chart's preflight fails to render unless the Agent Sandbox API is served.
+additional_crds:
+  - https://raw.githubusercontent.com/kubernetes-sigs/agent-sandbox/v1.0.9/helm/crds/agents.x-k8s.io_sandboxes.yaml
