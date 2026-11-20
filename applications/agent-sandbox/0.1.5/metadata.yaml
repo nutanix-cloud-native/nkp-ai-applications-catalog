@@ -42,4 +42,4 @@ overview: |
   Upstream: https://github.com/kubernetes-sigs/agent-sandbox
 supportLink: https://github.com/kubernetes-sigs/agent-sandbox
 type: nkp-catalog
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.20.0"

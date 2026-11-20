@@ -48,7 +48,7 @@ overview: |
     4. Register the gateway: `openshell gateway add https://127.0.0.1:8080 --name k8s --local`.
     5. Check it: `openshell -g k8s status`, then create a sandbox: `openshell -g k8s sandbox create --name demo -- echo hello`.
   - **Interactive terminal UI:** `openshell -g k8s term`.
-  - **Sandbox images:** sandboxes use the gateway's default workload image (Ubuntu 24.04). Pass `--from <image>` to choose another.
+  - **Sandbox images:** sandboxes use the gateway's default workload image, Ubuntu 24.04 (`nvcr.io/nvidia/base/ubuntu:24.04`), when you do not pass `--from`. Passing `--from nvcr.io/nvidia/base/ubuntu:24.04` gives the same image. To use a fuller image such as `ghcr.io/nvidia/openshell-community/sandboxes/base:latest` (Python, git, curl), pass `--from` **and** `--policy <file>`. Without a policy, that image stays in `ConfigurationInvalid` and never becomes Ready.
 
   **Notes**
 
@@ -61,7 +61,7 @@ overview: |
   [Documentation](https://docs.nvidia.com/openshell/kubernetes/setup) · [Project](https://github.com/NVIDIA/OpenShell) · [Helm chart](https://github.com/NVIDIA/OpenShell/tree/v0.1.6/deploy/helm/openshell)
 scope:
   - workspace
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.20.0"
 supportLink: https://docs.nvidia.com/openshell/kubernetes/setup
 type: nkp-catalog
 ---
