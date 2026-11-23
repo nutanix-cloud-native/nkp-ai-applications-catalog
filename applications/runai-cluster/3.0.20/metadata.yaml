@@ -39,10 +39,12 @@ overview: |
   **Prerequisites**
 
   1. In the Run:ai UI, create the cluster (Resources > Clusters > New Cluster).
-     The wizard shows the `controlPlane.url`, `controlPlane.clientSecret`,
-     `cluster.uid`, and `cluster.url` values for this cluster.
-  2. For a remote control plane, a cluster FQDN that resolves to the
-     `kommander-traefik` load balancer, and its TLS certificate:
+     The wizard shows the `controlPlane.url`, `controlPlane.bootstrapToken` (or
+     `controlPlane.clientSecret`), `cluster.uid`, and `cluster.url` values for
+     this cluster.
+  2. FQDNs for the control plane and for this cluster that resolve from the
+     cluster (cluster FQDN to the `kommander-traefik` load balancer). For a
+     remote control plane, also create the TLS certificate:
 
      ```
      kubectl create namespace runai
@@ -50,9 +52,20 @@ overview: |
        --cert=/path/to/fullchain.pem --key=/path/to/private.pem
      ```
 
-  3. If images are mirrored to a private registry, create the
+  3. If the control plane certificate is signed by a private CA (the default
+     for the **NVIDIA Run:ai Control Plane** app), create the CA secret. CA trust
+     is already enabled:
+
+     ```
+     kubectl create secret generic runai-ca-cert -n runai \
+       --from-file=runai-ca.pem=/path/to/ca.pem
+     ```
+
+  4. If images are mirrored to a private registry, create the
      `runai-reg-creds` pull secret in the `runai` namespace and set
      `global.image.registry` to the mirror.
+  5. For fractional GPU, GPU nodes need NVIDIA driver r615 or newer, the GPU
+     Operator device plugin enabled, and container toolkit v1.20.1 or newer.
 
   **Configuration**
 
@@ -60,17 +73,18 @@ overview: |
 
   ```yaml
   controlPlane:
-    url: https://runai.mycorp.local
-    clientSecret: <client-secret>
+    url: runai.mycorp.local
+    bootstrapToken: <bootstrap-token>
   cluster:
     uid: <cluster-uid>
     url: https://runai-cluster.mycorp.local
   ```
 
-  To keep the client secret out of the overrides, store it in a secret in the
-  `runai` namespace and set `controlPlane.existingSecret` (key
-  `client-secret`) instead of `controlPlane.clientSecret`. For a private CA,
-  set `global.customCA.enabled: true` and create the `runai-ca-cert` secret.
+  The ingress class, OpenShift mode, and CA trust are defaults. The bootstrap
+  token expires after about 2 hours and is reused by upgrades, so upgrade with
+  a fresh token, or use `controlPlane.clientSecret` instead. To keep the secret
+  out of the overrides, store it in a secret in the `runai` namespace and set
+  `controlPlane.existingSecret` (key `client-secret`).
 
   **Resources**
 
@@ -84,7 +98,7 @@ requiredDependencies:
   - kube-prometheus-stack
   - nvidia-gpu-operator
   - traefik
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.21.0"
 supportLink: https://run-ai-docs.nvidia.com/self-hosted
 type: nkp-catalog
 ---

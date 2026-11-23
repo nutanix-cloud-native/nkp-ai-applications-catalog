@@ -5,6 +5,154 @@ data:
       domain: ${runaiDomain:=localhost}
       ingress:
         ingressClass: kommander-traefik
+      # Trust the CA that signed runai-backend-tls (issued by
+      # helmrelease/runai-control-plane-certificate.yaml). The control plane calls
+      # its own HTTPS domain, so every pod needs the CA. The secret and key are
+      # optional: with a public CA (no ca.crt) pods still start.
+      customCA:
+        enabled: true
+        secret:
+          name: runai-backend-tls
+          key: ca.crt
+          optional: true
+        volumes:
+        - name: runai-ca-cert
+          secret:
+            secretName: runai-backend-tls
+            optional: true
+            items:
+            - key: ca.crt
+              path: runai-ca.pem
+    # Upstream resource requests do not fit next to the NKP platform apps on
+    # small clusters (4 x 8 vCPU workers). CPU requests are lowered for every
+    # service; limits stay at the chart defaults so services can still burst.
+    # Memory requests are also halved for metrics-service, keycloak, postgresql
+    # and nats, and the nats limits are halved too (the tested sizing).
+    assetsService:
+      resources:
+        requests:
+          cpu: 50m
+    auditService:
+      resources:
+        requests:
+          cpu: 50m
+    frontend:
+      resources:
+        requests:
+          cpu: 50m
+    identityManager:
+      resources:
+        requests:
+          cpu: 50m
+    tenantsManager:
+      resources:
+        requests:
+          cpu: 50m
+    authorization:
+      resources:
+        requests:
+          cpu: 50m
+    clusterService:
+      resources:
+        requests:
+          cpu: 50m
+    k8sObjectsTracker:
+      resources:
+        requests:
+          cpu: 50m
+    orgUnitService:
+      resources:
+        requests:
+          cpu: 50m
+    orgUnitHelper:
+      resources:
+        requests:
+          cpu: 50m
+    policyService:
+      resources:
+        requests:
+          cpu: 50m
+    traefik:
+      resources:
+        requests:
+          cpu: 50m
+    identityProviderReconciler:
+      resources:
+        requests:
+          cpu: 50m
+    workloads:
+      resources:
+        requests:
+          cpu: 50m
+    workloadsHelper:
+      resources:
+        requests:
+          cpu: 50m
+    notificationsService:
+      resources:
+        requests:
+          cpu: 50m
+    cliExposer:
+      resources:
+        requests:
+          cpu: 50m
+    datavolumes:
+      resources:
+        requests:
+          cpu: 50m
+    catalogService:
+      resources:
+        requests:
+          cpu: 50m
+    workloadsManager:
+      resources:
+        requests:
+          cpu: 50m
+    notificationsProxy:
+      resources:
+        requests:
+          cpu: 50m
+    bffService:
+      resources:
+        requests:
+          cpu: 50m
+    tempBackendSettings:
+      resources:
+        requests:
+          cpu: 50m
+    metricsService:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+    thanos:
+      query:
+        resources:
+          requests:
+            cpu: 50m
+      receive:
+        resources:
+          requests:
+            cpu: 100m
+    keycloakx:
+      resources:
+        requests:
+          cpu: 250m
+          memory: 1024Mi
+    postgresql:
+      primary:
+        resources:
+          requests:
+            cpu: 250m
+            memory: 1Gi
+    nats:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
 kind: ConfigMap
 metadata:
   name: ${releaseName}-${appVersion}-defaults

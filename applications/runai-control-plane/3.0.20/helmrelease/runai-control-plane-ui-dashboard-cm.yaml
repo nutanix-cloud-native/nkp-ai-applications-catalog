@@ -1,4 +1,5 @@
-# ConfigMap for the NKP Launch button.
+# ConfigMap for the NKP Launch button. Points at the Run:ai domain directly
+# (Run:ai cannot be served under an NKP path).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,7 +9,7 @@ metadata:
     kommander.d2iq.io/application: ${releaseName}
 data:
   name: NVIDIA Run:ai
-  dashboardLink: "/nkp/runai/"
+  dashboardLink: "https://${runaiDomain:=localhost}/"
   docsLink: "https://run-ai-docs.nvidia.com/self-hosted"
   version: "3.0.20"
 ---

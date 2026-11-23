@@ -5,4 +5,5 @@ k8s_versions:
   - 1.36.0
 
 additional_crds:
-  - https://raw.githubusercontent.com/traefik/traefik/v3.6/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+  # cert-manager Certificate for runai-backend-tls
+  - https://raw.githubusercontent.com/cert-manager/cert-manager/master/deploy/crds/cert-manager.io_certificates.yaml

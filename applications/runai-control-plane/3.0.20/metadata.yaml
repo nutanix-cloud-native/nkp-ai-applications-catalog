@@ -30,20 +30,14 @@ overview: |
   **Dependencies**
 
   Uses the NKP `traefik` platform app for ingress (`kommander-traefik` ingress
-  class is set by default).
+  class is set by default) and cert-manager (a platform component) to issue the
+  TLS certificate.
 
   **Prerequisites**
 
   - A fully qualified domain name (for example `runai.mycorp.local`) that
-    resolves to the `kommander-traefik` load balancer, and a TLS certificate
-    for it stored as `runai-backend-tls`:
-
-    ```
-    kubectl create namespace runai-backend
-    kubectl create secret tls runai-backend-tls -n runai-backend \
-      --cert=/path/to/fullchain.pem --key=/path/to/private.pem
-    ```
-
+    resolves to the `kommander-traefik` load balancer. For a name that is not
+    in DNS, add it to CoreDNS on each cluster that talks to the control plane.
   - A default StorageClass for PostgreSQL and Thanos volumes.
   - If images are mirrored to a private registry, a `runai-reg-creds` pull
     secret in `runai-backend` and `global.image.registry` set to the mirror.
@@ -51,17 +45,20 @@ overview: |
   **Configuration**
 
   Set the domain in the workspace namespace before deploying. It configures
-  the control plane and the **Application Dashboards** launch link, which
-  opens `/nkp/runai/` on the NKP ingress and redirects to `https://<domain>/`
-  (Run:ai cannot be served under a path):
+  the control plane, the TLS certificate, and the **Application Dashboards**
+  launch link (`https://<domain>/`; Run:ai cannot be served under a path):
 
   ```
   kubectl create configmap runai-control-plane-config -n <workspace-namespace> \
     --from-literal=runaiDomain=runai.mycorp.local
   ```
 
-  Do not set `global.domain` in App Config Overrides, or the launch redirect
-  will not match. Set the admin user in App Config Overrides:
+  No App Config Overrides are required. The `runai-backend` namespace, the
+  `runai-backend-tls` certificate (issued by the `kommander-ca` ClusterIssuer;
+  set `runaiTlsIssuerName` and `runaiTlsIssuerKind` in the same ConfigMap to
+  use another issuer), trust of that CA, and resource sizing for small clusters
+  are all defaults. Do not set `global.domain` in App Config Overrides, or the
+  launch link will not match. Optionally set the admin user:
 
   ```yaml
   tenantsManager:
@@ -71,9 +68,9 @@ overview: |
 
   If no admin password is supplied, one is generated and stored in the
   `runai-backend-gen-tenants-manager` secret (key `ADMIN_PASSWORD`) in
-  `runai-backend`.   For a private CA, also set `global.customCA.enabled: true`
-  and create the `runai-ca-cert` secret (key `runai-ca.pem`) in
-  `runai-backend`; the control plane calls its own domain over HTTPS.
+  `runai-backend`. Run:ai clusters on other clusters need the CA that signed the
+  certificate (`ca.crt` in the `runai-backend-tls` secret) unless a public CA
+  is used.
 
   **Resources**
 
@@ -83,7 +80,7 @@ scope:
 dependencies: []
 requiredDependencies:
   - traefik
-nkpVersionSupport: ">=2.18.0"
+nkpVersionSupport: ">=2.21.0"
 supportLink: https://run-ai-docs.nvidia.com/self-hosted
 type: nkp-catalog
 ---
