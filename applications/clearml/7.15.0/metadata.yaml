@@ -17,8 +17,7 @@ licensing:
 nkpVersionSupport: ">=2.19.0"
 overview: |
   **Overview**
-
-  ClearML Server is the backend control plane for the ClearML MLOps platform.  
+  ClearML Server is the backend control plane for the ClearML MLOps platform.
   It provides experiment tracking, model registry, dataset versioning, and a unified web UI for managing the end-to-end machine learning lifecycle.
 
   This catalog entry deploys the ClearML server stack, which includes:
