@@ -6,18 +6,13 @@ metadata:
 data:
   values.yaml: |
     ---
-    global:
-      imageRegistry: "docker.io"
-
     clearml:
-      apiAccessKey: "CLEARML_API_ACCESS_KEY"
-      apiSecretKey: "CLEARML_API_SECRET_KEY"
-      apiHost: "http://clearml-apiserver.clearml:8008"
-      filesHost: "http://clearml-fileserver.clearml:8081"
-      webHost: "http://clearml-webserver.clearml"
-      defaultBaseServeUrl: "http://127.0.0.1:8080/serve"
-      servingTaskId: "CLEARML_SERVING_TASK_ID"
-      kafkaServeUrl: ""
+      apiAccessKey: "OVERRIDE_KEY"
+      apiSecretKey: "OVERRIDE_KEY"
+      servingTaskId: "OVERRIDE_KEY"
+      apiHost: "http://clearml-clearml-apiserver.clearml:8008"
+      filesHost: "http://clearml-clearml-fileserver.clearml:8081"
+      webHost: "http://clearml-clearml-webserver.clearml"
 
     clearml_serving_statistics:
       enabled: true
@@ -31,10 +26,8 @@ data:
         limits:
           cpu: "500m"
           memory: 1Gi
-      pollFrequencyMinutes: "1.0"
 
     clearml_serving_inference:
-      enabled: true
       image:
         repository: "clearml/clearml-serving-inference"
         tag: "latest"
@@ -45,46 +38,15 @@ data:
         limits:
           cpu: "2"
           memory: 4Gi
-      autoscaling:
-        enabled: false
-        minReplicas: 1
-        maxReplicas: 11
-        targetCPU: 50
-        targetMemory: 50
-      pollFrequencyMinutes: "1.0"
-      ingress:
-        enabled: true
-        ingressClassName: kommander-traefik
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-        hosts:
-          - host: ""
-            paths:
-              - path: /nkp/clearml-serving
-                pathType: ImplementationSpecific
+      # The inference API routes are hardcoded at /serve/<model> with no base-path
+      # support, so it cannot be served under an NKP Traefik subpath. The Service is
+      # ClusterIP; use port-forward or in-cluster DNS.
 
-    clearml_serving_inference_triton:
+    clearml_serving_triton:
       enabled: false
-      image:
-        repository: "clearml/clearml-serving-triton"
-        tag: "latest"
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
-        limits:
-          cpu: "2"
-          memory: 4Gi
-      autoscaling:
-        enabled: false
-        minReplicas: 1
-        maxReplicas: 11
-        targetCPU: 50
-        targetMemory: 50
 
     kafka:
       enabled: true
-      replicaCount: 1
       resources:
         requests:
           cpu: 100m
@@ -94,25 +56,8 @@ data:
           memory: 1Gi
 
     prometheus:
-      enabled: true
-      prometheus:
-        prometheusSpec:
-          serviceMonitorSelectorNilUsesHelmValues: false
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: "500m"
-          memory: 1Gi
+      enabled: false
 
     grafana:
-      enabled: true
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: "500m"
-          memory: 1Gi
+      enabled: false
 ---

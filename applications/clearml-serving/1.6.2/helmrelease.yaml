@@ -9,7 +9,7 @@ spec:
   postBuild:
     substitute:
       appVersion: "1.6.2"
-      releaseName: ${releaseName}
+      releaseName: clearml
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
   prune: true

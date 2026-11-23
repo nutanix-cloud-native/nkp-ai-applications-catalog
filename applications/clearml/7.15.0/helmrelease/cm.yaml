@@ -6,26 +6,11 @@ metadata:
 data:
   values.yaml: |
     ---
-    global:
-      imageRegistry: "docker.io"
-
-    clearml:
-      existingSecret: ""
-      clearmlConfig: |-
-        sdk {
-          }
-        server {
-          }
-        api {
-          }
-
     apiserver:
-      enabled: true
       prepopulateEnabled: false
       image:
         repository: "clearml/server"
         tag: "2.4"
-      replicaCount: 1
       resources:
         requests:
           cpu: 500m
@@ -36,15 +21,11 @@ data:
       service:
         type: ClusterIP
         port: 8008
-      ingress:
-        enabled: false
 
     webserver:
-      enabled: true
       image:
         repository: "clearml/server"
         tag: "2.4"
-      replicaCount: 1
       resources:
         requests:
           cpu: 200m
@@ -55,21 +36,14 @@ data:
       service:
         type: ClusterIP
         port: 80
-      ingress:
-        enabled: true
-        ingressClassName: kommander-traefik
-        hosts:
-          - host: ""
-            paths:
-              - path: /nkp/clearml
-                pathType: ImplementationSpecific
+      # The ClearML web UI does not support a URL prefix (root-relative assets and
+      # /api calls), so it cannot share the NKP Traefik origin under a subpath.
+      # ClusterIP + port-forward exposes it at / on its own origin.
 
     fileserver:
-      enabled: true
       image:
         repository: "clearml/server"
         tag: "2.4"
-      replicaCount: 1
       resources:
         requests:
           cpu: 200m
@@ -80,17 +54,11 @@ data:
       service:
         type: ClusterIP
         port: 8081
-      ingress:
-        enabled: false
 
     mongodb:
-      enabled: true
-      auth:
-        enabled: false
-      primary:
-        persistence:
-          enabled: true
-          size: 8Gi
+      persistence:
+        enabled: true
+        size: 8Gi
       resources:
         requests:
           cpu: 100m
@@ -100,14 +68,9 @@ data:
           memory: 1Gi
 
     dragonfly:
-      enabled: true
-      replicaCount: 1
       storage:
         enabled: true
         requests: 5Gi
-      image:
-        repository: "docker.dragonflydb.io/dragonflydb/dragonfly"
-        tag: "v1.36.0"
       resources:
         requests:
           cpu: 100m
@@ -117,10 +80,8 @@ data:
           memory: 1Gi
 
     elasticsearch:
-      enabled: true
       esJavaOpts: "-Xms512m -Xmx512m"
       volumeClaimTemplate:
-        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 4Gi
