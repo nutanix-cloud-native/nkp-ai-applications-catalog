@@ -43,7 +43,7 @@ spec:
         - name: DOMAIN
           value: ${airmDomain}
         - name: KEYCLOAK_CLIENT_ID
-          value: ${keycloakAdminClientId:=354a0fa1-35ac-4a6d-9c4d-d661129c2cd0}
+          value: ${keycloakAdminClientId}
         command:
         - /bin/sh
         - /scripts/register.sh

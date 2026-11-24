@@ -4,7 +4,8 @@
 #
 # 1. Validate required NKP application dependencies:
 #    - Confirm kubectl/jq and Kubernetes API connectivity.
-#    - Wait for CloudNativePG, Gateway API CRDs, Prometheus, and Traefik.
+#    - Wait for CloudNativePG, Gateway API CRDs (including BackendTLSPolicy
+#      v1 served as the storage version), Prometheus, and Traefik.
 #    - Fail if they do not become ready within the dependency timeout. These
 #      dependencies are declared in metadata.yaml and are owned by NKP; AIRM
 #      must not install replacement controllers when reconciliation is delayed.
@@ -39,6 +40,17 @@ crd_ready() {
   for crd in "$@"; do
     kubectl wait --timeout=120s --for=condition=Established "crd/$crd" || return 1
   done
+}
+
+# AIRM requires BackendTLSPolicy/v1 to be served and used as the storage
+# version. This is supplied by Gateway API v1.4.0 and newer.
+backendtlspolicy_v1_ready() {
+  kubectl get crd backendtlspolicies.gateway.networking.k8s.io -o json |
+    jq -e '
+      any(.spec.versions[];
+        .name == "v1" and .served == true and .storage == true
+      )
+    ' >/dev/null
 }
 
 prometheus_service_data() {
@@ -77,7 +89,9 @@ dependencies_ready() {
   crd_ready \
     gatewayclasses.gateway.networking.k8s.io \
     gateways.gateway.networking.k8s.io \
-    httproutes.gateway.networking.k8s.io || return 1
+    httproutes.gateway.networking.k8s.io \
+    backendtlspolicies.gateway.networking.k8s.io || return 1
+  backendtlspolicy_v1_ready || return 1
   kubectl get gatewayclass "$GATEWAY_CLASS_NAME" >/dev/null 2>&1 || return 1
 
   kubectl get statefulsets -A -l app.kubernetes.io/name=prometheus \
@@ -106,11 +120,12 @@ dependency_poll_seconds=10
 dependency_deadline="$(($(date +%s) + dependency_timeout_seconds))"
 until dependencies_ready; do
   if [ "$(date +%s)" -ge "$dependency_deadline" ]; then
-    fail "required dependencies did not become ready within $dependency_timeout_seconds seconds: cloudnative-pg, gateway-api-crds, kube-prometheus-stack, traefik"
+    fail "required dependencies did not become ready within $dependency_timeout_seconds seconds: cloudnative-pg, gateway-api-crds (including BackendTLSPolicy v1 served as storage), kube-prometheus-stack, traefik"
   fi
   sleep "$dependency_poll_seconds"
 done
 log "Required NKP application dependencies are ready"
+log "Gateway API BackendTLSPolicy v1 is served as the storage version; no Gateway API CRD upgrade is required"
 
 domain="$DOMAIN_OVERRIDE"
 if [ -z "$domain" ]; then
