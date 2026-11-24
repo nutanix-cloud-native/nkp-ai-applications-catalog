@@ -1,6 +1,6 @@
-# Stage 03 — Keycloak application configuration Job
+# Stage 03b-keycloak-config — Keycloak application configuration Job
 #
-# The HelmRelease in resources.yaml installs Keycloak; this Job then configures
+# The HelmRelease in stage 03a-keycloak installs Keycloak; this Job then configures
 # AIRM-specific state that is not part of the generic chart: realm, clients,
 # users, roles, service-account access, and synchronized Kubernetes Secrets.
 #
@@ -14,9 +14,9 @@
 # needed for client and user configuration. Retries are safe because the
 # script reconciles existing Keycloak objects and preserves stable credentials.
 #
-# Flux health-checks both the Keycloak HelmRelease and this Job, so stage 04
-# cannot begin until Keycloak is installed and a real AIRM password grant has
-# succeeded.
+# Stage 03a-keycloak waits for the Keycloak HelmRelease. This stage waits for this
+# Job, and stage 04 depends on this stage, so stage 04 cannot begin until
+# Keycloak is installed and a real AIRM password grant has succeeded.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,7 +30,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/component: keycloak-config
-        airm.nutanix.com/stage: 03-keycloak
+        airm.nutanix.com/stage: 03b-keycloak-config
     spec:
       restartPolicy: Never
       serviceAccountName: airm-keycloak-config

@@ -1,4 +1,4 @@
-# Stage 03 — Keycloak realm, clients, users, and role configuration
+# Stage 03b-keycloak-config — Keycloak realm, clients, users, and role configuration
 #
 # This script configures the AIRM-specific parts of Keycloak:
 # - create the `airm` realm, OIDC clients, and service-account role mapping.
@@ -21,8 +21,11 @@
 #   a specific Keycloak pod.
 # - Existing clients and users are read and updated with PUT, so retries repair
 #   configuration drift.
-# - The Keycloak client secret is authoritative and is synced back to both
-#   Kubernetes Secret shapes created by stage 01.
+# - The Keycloak client secret is authoritative. This stage creates and
+#   synchronizes both Kubernetes Secret shapes, `airm-keycloak-admin-client` and
+#   `airm-keycloak-ui-creds`, on every run. Kubernetes copies are read only as
+#   bootstrap candidates for a client that does not exist yet, so a missing or
+#   stale copy never blocks the Keycloak query.
 # - An existing `keycloak-kcadmin` password is preserved across retries.
 # - The default user's profile, password, and empty `requiredActions` are
 #   reconciled even when the user already exists.
@@ -46,6 +49,23 @@ fail() {
 
 rand_hex() {
   od -An -N "$1" -tx1 /dev/urandom | tr -d ' \n'
+}
+
+# Prints a decoded Secret value, or nothing when the Secret or key is absent.
+read_secret() {
+  kubectl get secret "$1" -n "$AIRM_NAMESPACE" -o jsonpath="{.data.$2}" 2>/dev/null |
+    base64 -d 2>/dev/null || true
+}
+
+# Creates or updates a Kubernetes client Secret from Keycloak's value.
+sync_client_secret() {
+  name="$1"
+  shift
+  kubectl create secret generic "$name" \
+    -n "$AIRM_NAMESPACE" \
+    "$@" \
+    --dry-run=client -o yaml | kubectl apply -f - ||
+    fail "could not create or synchronize Secret $name in $AIRM_NAMESPACE"
 }
 
 command -v curl >/dev/null || fail "curl is unavailable"
@@ -126,14 +146,19 @@ kc_write_idempotent() {
 log "Ensuring AIRM realm"
 kc_write_idempotent POST /admin/realms '{"realm":"airm","enabled":true}'
 
-UI_CLIENT_SECRET="$(kubectl get secret airm-keycloak-ui-creds \
-  -n "$AIRM_NAMESPACE" -o jsonpath='{.data.KEYCLOAK_SECRET}' | base64 -d)"
-[ -n "$UI_CLIENT_SECRET" ] || fail "airm-keycloak-ui-creds is empty"
-
 ADMIN_INTERNAL_ID="$(kc_get \
   "/admin/realms/airm/clients?clientId=$KEYCLOAK_CLIENT_ID" |
   jq -r '.[0].id // empty')"
+# A Kubernetes copy is a bootstrap candidate only when the Keycloak client does
+# not exist yet. Once the client exists, Keycloak's value is the only source.
 if [ -z "$ADMIN_INTERNAL_ID" ]; then
+  CANDIDATE_SECRET="$(read_secret airm-keycloak-ui-creds KEYCLOAK_SECRET)"
+  if [ -z "$CANDIDATE_SECRET" ]; then
+    CANDIDATE_SECRET="$(read_secret airm-keycloak-admin-client client-secret)"
+  fi
+  if [ -z "$CANDIDATE_SECRET" ]; then
+    CANDIDATE_SECRET="$(rand_hex 24)"
+  fi
   log "Creating AIRM admin client"
   kc_write_idempotent POST /admin/realms/airm/clients "{
     \"clientId\":\"$KEYCLOAK_CLIENT_ID\",
@@ -143,7 +168,7 @@ if [ -z "$ADMIN_INTERNAL_ID" ]; then
     \"serviceAccountsEnabled\":true,
     \"directAccessGrantsEnabled\":true,
     \"standardFlowEnabled\":true,
-    \"secret\":\"$UI_CLIENT_SECRET\",
+    \"secret\":\"$CANDIDATE_SECRET\",
     \"redirectUris\":[\"*\"],
     \"webOrigins\":[\"*\"]
   }"
@@ -169,21 +194,56 @@ ADMIN_CLIENT_JSON="$(kc_get \
 kc_write PUT "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID" \
   "$ADMIN_CLIENT_JSON" >/dev/null
 
+# Ensures the admin client emits a `groups` claim in its tokens, which AIRM
+# uses for project membership. The mapper is found by type and claim name, so
+# an existing mapper is updated (and renamed) instead of duplicated.
+log "Ensuring groups claim mapper on AIRM admin client"
+MAPPER_NAME="$KEYCLOAK_CLIENT_ID""_Mapper"
+GROUPS_MAPPER_ID="$(kc_get \
+  "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/protocol-mappers/models" |
+  jq -r '[.[] | select(.protocolMapper == "oidc-group-membership-mapper"
+    and .config["claim.name"] == "groups")] | .[0].id // empty')"
+GROUPS_MAPPER_JSON="$(jq -n \
+  --arg name "$MAPPER_NAME" \
+  --arg id "$GROUPS_MAPPER_ID" '
+  {
+    name: $name,
+    protocol: "openid-connect",
+    protocolMapper: "oidc-group-membership-mapper",
+    consentRequired: false,
+    config: {
+      "claim.name": "groups",
+      "full.path": "false",
+      "id.token.claim": "true",
+      "access.token.claim": "true",
+      "userinfo.token.claim": "true",
+      "lightweight.claim": "false",
+      "jsonType.label": "String"
+    }
+  }
+  | if $id == "" then . else . + {id: $id} end
+')"
+if [ -z "$GROUPS_MAPPER_ID" ]; then
+  kc_write POST \
+    "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/protocol-mappers/models" \
+    "$GROUPS_MAPPER_JSON" >/dev/null || fail "could not create groups claim mapper"
+else
+  kc_write PUT \
+    "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/protocol-mappers/models/$GROUPS_MAPPER_ID" \
+    "$GROUPS_MAPPER_JSON" >/dev/null || fail "could not update groups claim mapper"
+fi
+
 KC_CLIENT_SECRET="$(kc_get \
   "/admin/realms/airm/clients/$ADMIN_INTERNAL_ID/client-secret" |
   jq -r '.value // empty')"
 [ -n "$KC_CLIENT_SECRET" ] || fail "Keycloak client secret is unavailable"
 
 log "Synchronizing Keycloak client Secrets"
-kubectl create secret generic airm-keycloak-admin-client \
-  -n "$AIRM_NAMESPACE" \
+sync_client_secret airm-keycloak-admin-client \
   --from-literal=client-id="$KEYCLOAK_CLIENT_ID" \
-  --from-literal=client-secret="$KC_CLIENT_SECRET" \
-  --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic airm-keycloak-ui-creds \
-  -n "$AIRM_NAMESPACE" \
-  --from-literal=KEYCLOAK_SECRET="$KC_CLIENT_SECRET" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --from-literal=client-secret="$KC_CLIENT_SECRET"
+sync_client_secret airm-keycloak-ui-creds \
+  --from-literal=KEYCLOAK_SECRET="$KC_CLIENT_SECRET"
 
 REALM_MGMT_ID="$(kc_get \
   '/admin/realms/airm/clients?clientId=realm-management' |
