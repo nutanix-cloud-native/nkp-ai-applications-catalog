@@ -1,7 +1,6 @@
 # Stage 03 — Keycloak platform resources
 #
-# These resources implement the installation and exposure portions of
-# installer step 7 declaratively:
+# These resources install Keycloak and expose it through the AIRM Gateway:
 #
 # - Namespace: owns the isolated Keycloak workload.
 # - OCIRepository: fetches the configured Keycloak chart by explicit version tag.
@@ -11,12 +10,9 @@
 # - HTTPRoute: exposes the internal Keycloak Service as `kc.${airmDomain}` on
 #   stage 02's HTTPS Gateway listener.
 #
-# Compared with the installer, Flux replaces `helm repo add` and host-side
-# `helm upgrade --install`; the chart and images are pinned for reproducibility
-# instead of relying on repository state. The script passed a generated admin
-# password explicitly, while this HelmRelease lets the chart manage its
-# bootstrap admin Secret, which keycloak-config.sh reads. The imperative
-# step-7c `kubectl apply` is represented by the HTTPRoute below.
+# The chart and images are pinned for reproducibility. The chart manages its
+# bootstrap admin Secret, which keycloak-config.sh reads. The HTTPRoute below is
+# applied declaratively with the rest of this stage.
 #
 # `KC_HOSTNAME` and forwarded proxy headers are required because Traefik
 # terminates TLS. Without them Keycloak can emit internal HTTP URLs, breaking

@@ -31,17 +31,17 @@ spec:
     substitute:
       releaseName: {{ $releaseName | quote }}
       releaseNamespace: {{ $releaseNamespace | quote }}
+      airmUsername: {{ required "airm.username must be set" $root.Values.airm.username | quote }}
       discoveryDomain: {{ $root.Values.discovery.domain | quote }}
       discoveryStorageClass: {{ $root.Values.discovery.storageClass | quote }}
       discoveryPrometheusUrl: {{ $root.Values.discovery.prometheusUrl | quote }}
       airmNamespace: {{ $root.Values.airm.namespace | quote }}
       keycloakNamespace: {{ $root.Values.keycloak.namespace | quote }}
-      keycloakAdminClientId: {{ $root.Values.keycloak.adminClientId | quote }}
+      keycloakAdminClientId: {{ required "keycloak.adminClientId must be set (cluster UUID supplied by cm.yaml)" $root.Values.keycloak.adminClientId | quote }}
       gatewayName: {{ $root.Values.gateway.name | quote }}
       gatewayClassName: {{ $root.Values.gateway.gatewayClassName | quote }}
       gatewayListenerName: {{ $root.Values.gateway.listenerName | quote }}
       gatewayTlsSecretName: {{ $root.Values.gateway.tlsSecretName | quote }}
-      gatewayApiVersion: {{ $root.Values.versions.gatewayApi | quote }}
       clusterToolImage: {{ $root.Values.toolImages.cluster | quote }}
       opensslImage: {{ $root.Values.toolImages.openssl | quote }}
       {{ if eq $stage.name "03-keycloak" -}}

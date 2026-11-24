@@ -9,6 +9,7 @@ spec:
   postBuild:
     substitute:
       clusterName: ${clusterName}
+      clusterUUID: ${clusterUUID}
       releaseName: ${releaseName}
       releaseNamespace: ${releaseNamespace}
       workspaceNamespace: ${workspaceNamespace}
