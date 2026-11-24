@@ -1,7 +1,0 @@
-# Created here (not only by the HelmRelease) so the TLS Certificate can be
-# applied before the chart installs.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: runai-backend
----
