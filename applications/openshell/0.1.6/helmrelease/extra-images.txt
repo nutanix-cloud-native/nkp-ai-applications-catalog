@@ -1,0 +1,3 @@
+ghcr.io/nvidia/openshell/sandbox:0.1.6
+ghcr.io/nvidia/openshell/supervisor:0.1.6
+nvcr.io/nvidia/base/ubuntu:24.04
