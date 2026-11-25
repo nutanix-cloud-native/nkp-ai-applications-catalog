@@ -1,0 +1,16 @@
+ignore: []
+resources:
+- container_image: ghcr.io/nvidia/openshell/gateway:0.1.6
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/NVIDIA/OpenShell.git
+- container_image: ghcr.io/nvidia/openshell/sandbox:0.1.6
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/NVIDIA/OpenShell.git
+- container_image: ghcr.io/nvidia/openshell/supervisor:0.1.6
+  sources:
+  - ref: v${image_tag}
+    url: https://github.com/NVIDIA/OpenShell.git
+- container_image: nvcr.io/nvidia/base/ubuntu:24.04
+  sources: []
