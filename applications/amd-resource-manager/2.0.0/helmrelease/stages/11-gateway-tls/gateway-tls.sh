@@ -2,37 +2,35 @@
 #
 # Stage 11 — Gateway TLS publication and external route verification
 #
-# This script implements and extends installer step 11. The Job's init
-# container generates the same one-year self-signed wildcard certificate; this
+# This script publishes the Gateway TLS Secret and verifies the routes. The Job's
+# init container generates a one-year self-signed wildcard certificate; this
 # script preserves an existing TLS Secret or creates it from the generated
 # files, then verifies the Gateway, all three HTTPRoutes, and their external
 # HTTPS endpoints.
 #
-# Differences from the original installer step 11:
-# 1. Certificate generation runs in a separate pinned openssl init container;
-#    the kubectl utility container never needs openssl installed.
-# 2. TLS files are exchanged through a memory-backed emptyDir and are never
-#    stored in a ConfigMap or Job environment variable.
-# 3. Existing `airm-gateway-tls` is preserved, matching the script's skip
-#    behavior. The init container still generates temporary files on every Job
-#    run, but they are discarded when the existing Secret is retained.
-# 4. Gateway readiness requires both Programmed=True and ResolvedRefs=True for
-#    the configured listener. The installer only printed a status value and
-#    checked a hardcoded listener name that did not match `websecure`.
-# 5. AIRM API/UI and Keycloak HTTPRoutes must each report Accepted=True and
-#    ResolvedRefs=True. The installer only listed AIRM routes.
-# 6. The public AIRM API, UI, and Keycloak OIDC discovery endpoints are tested
-#    over HTTPS. `curl -k` is intentional because this stage creates a
-#    self-signed certificate; reachability and routing, not public trust, are
-#    being verified.
-# 7. Readiness and endpoint failures are hard Flux failures with bounded
-#    retries instead of informational post-install output.
-# 8. Domain, Gateway/listener/Secret names, and namespaces come from catalog
-#    values rather than hardcoded installer constants.
+# Notes:
+# - Certificate generation runs in a separate pinned openssl init container, so
+#   the kubectl utility container never needs openssl installed.
+# - TLS files are exchanged through a memory-backed emptyDir and are never stored
+#   in a ConfigMap or Job environment variable.
+# - An existing `airm-gateway-tls` is preserved. The init container still
+#   generates temporary files on every run, but they are discarded when the
+#   existing Secret is kept.
+# - Gateway readiness requires both Programmed=True and ResolvedRefs=True for the
+#   configured listener.
+# - The AIRM API, AIRM UI, and Keycloak HTTPRoutes must each report Accepted=True
+#   and ResolvedRefs=True.
+# - The public AIRM API, UI, and Keycloak OIDC discovery endpoints are tested
+#   over HTTPS. `curl -k` is intentional because this stage creates a
+#   self-signed certificate; reachability and routing, not public trust, are
+#   being verified.
+# - Readiness and endpoint failures are hard Flux failures with bounded retries.
+# - Domain, Gateway, listener, Secret, and namespace names come from catalog
+#   values.
 #
-# This certificate is for development/test parity with the installer. A
-# production deployment should pre-create the named Secret using its approved
-# certificate issuer; this stage will preserve that Secret.
+# The generated certificate is for development and test use. A production
+# deployment should pre-create the named Secret using its approved certificate
+# issuer; this stage will preserve that Secret.
 set -eu
 
 log() {

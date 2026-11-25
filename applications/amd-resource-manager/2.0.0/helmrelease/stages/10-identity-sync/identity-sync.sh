@@ -8,12 +8,11 @@
 # `vh_airm_common`, creates the per-cluster consumer vhost `vh_<cluster-id>`,
 # grants consumer/admin permissions, and ensures the durable cluster queue.
 #
-# This is the local all-mode equivalent of the RabbitMQ provisioning section in
-# the installer's agent-mode `register` step. It is also the broker-side half of
-# the upstream configure behavior that was removed when stage 08 set
-# `includeDemoSetup: false`.
+# This provisions the RabbitMQ side of the registered cluster identity. It is the
+# broker-side work that the upstream configure Job would otherwise perform. That
+# Job is disabled when stage 08 sets `includeDemoSetup: false`.
 #
-# Differences from the original installer provisioning logic:
+# Notes:
 # 1. Identity synchronization is a separate Flux stage after registration,
 #    allowing retries without issuing another one-time cluster identity.
 # 2. The Job rejects the temporary username `airm-user`; stage 09 must have
@@ -25,11 +24,11 @@
 # 5. Before queue declaration, the script checks whether the API/configure flow
 #    already created it. RabbitMQ rejects redeclaration if an existing queue has
 #    additional immutable quorum or dead-letter arguments.
-# 6. The queue declaration otherwise preserves the installer's durable-queue
-#    syntax; this stage does not force different queue arguments.
+# 6. The queue declaration uses durable-queue syntax and does not force
+#    different queue arguments.
 # 7. User, vhost, publisher/consumer permissions, queue durability, and
 #    Kubernetes/RabbitMQ identity agreement are all read back and verified.
-#    The installer logged success even when provisioning commands were ignored.
+#    Failed provisioning commands stop the stage instead of being ignored.
 # 8. No agent restart occurs here. The catalog orders agent deployment after
 #    this health gate so the agent starts with synchronized credentials.
 #
@@ -92,7 +91,7 @@ rmq_exec rabbitmqctl set_permissions -p "$consumer_vhost" \
 rmq_exec rabbitmqctl set_permissions -p "$consumer_vhost" \
   admin ".*" ".*" ".*"
 
-# Keeping the installer's declaration syntax, but not redeclaring an existing
+# Keeping the declaration syntax, but not redeclaring an existing
 # queue: RabbitMQ rejects redeclaration when the API-created queue has
 # additional immutable quorum/DLX arguments.
 if ! rmq_exec rabbitmqctl list_queues -p "$consumer_vhost" \

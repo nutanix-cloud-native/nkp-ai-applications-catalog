@@ -1,8 +1,9 @@
 # Stage 02 — Gateway setup Job
 #
 # This Job executes gateway.sh after discovery and Secret initialization. It
-# upgrades/assures the Gateway API CRDs and creates the Traefik-backed Gateway
-# that later Keycloak and AIRM HTTPRoutes reference.
+# creates the Traefik-backed Gateway that later Keycloak and AIRM HTTPRoutes
+# reference. Gateway API CRDs are platform-provided and verified by 00-preflight;
+# this Job never installs or upgrades them.
 #
 # Cluster-specific and configurable values are passed as environment variables:
 # the domain comes from stage 00 through Flux substitution, while Gateway,
@@ -54,8 +55,6 @@ spec:
           value: ${keycloakNamespace:=keycloak}
         - name: DOMAIN
           value: ${airmDomain}
-        - name: GATEWAY_API_VERSION
-          value: ${gatewayApiVersion:=v1.4.0}
         command:
         - /bin/sh
         - /scripts/gateway.sh

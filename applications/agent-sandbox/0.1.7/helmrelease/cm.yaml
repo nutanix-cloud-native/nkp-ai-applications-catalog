@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    # The chart has no default image tag and fails to render without one. Pin the
+    # controller to v1.0.12, the first release whose SandboxWarmPool CRD matches the
+    # chart's CRDs (readinessGracePeriodSeconds). Bump it together with the chart
+    # version and extra-images.txt.
+    image:
+      tag: v1.0.12
+    # Requests and limits for the controller. The memory limit leaves headroom to avoid OOM kills.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+---

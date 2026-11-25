@@ -1,0 +1,15 @@
+# Stage 03a-keycloak — Kustomize assembly
+#
+# This stage installs Keycloak and its stateful resources. It owns only the
+# namespace, chart source, HelmRelease, and external HTTPRoute declared in
+# resources.yaml. Flux applies it with `force: false` (values.yaml), so a
+# Kustomize apply never deletes and recreates these objects to resolve a
+# conflict.
+#
+# The AIRM configuration Job and its RBAC live in stage 03b-keycloak-config,
+# which depends on this stage.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- resources.yaml
+---
