@@ -104,7 +104,10 @@ stages:
   interval: 1m
   timeout: 5m
   retryInterval: 1m
+  # Default prune for stages that do not set their own. Removing a stage, or an
+  # object from a stage, makes Flux delete that object. Stateful stages override this.
   prune: true
+  # Flux waits for every object in a stage to be Ready before dependent stages start.
   wait: true
 
 # All-mode stage order and dependencies.
@@ -118,13 +121,37 @@ allModeStages:
   - name: 02-gateway
     dependsOn:
       - 01-secrets
-  - name: 03-keycloak
+  - name: 03a-keycloak
     dependsOn:
       - 01-secrets
       - 02-gateway
+    # Keycloak's HelmRelease, namespace, and PVC-backed database (stateful).
+    # Renaming this stage removes its old Kustomization. That is only safe while
+    # the old name also has prune false. Upgrades from the 2.0.0 chart (03-keycloak,
+    # prune true) delete Keycloak.
+    # prune false: removing or renaming this stage leaves Keycloak in the cluster.
+    # Without it, Flux deletes these objects, including the database.
+    prune: false
+    # force false: if a change needs an immutable field replaced, the apply fails.
+    # Flux does not delete and recreate the objects. The HelmRelease's own
+    # upgrade.force (see resources.yaml) is a separate setting.
+    force: false
+    healthChecks:
+      - apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        name: airm-keycloak
+  - name: 03b-keycloak-config
+    dependsOn:
+      - 03a-keycloak
+    # AIRM configuration Job. Keeps force true (the default), so a changed Job
+    # template is recreated. Job templates are immutable.
+    healthChecks:
+      - apiVersion: batch/v1
+        kind: Job
+        name: airm-keycloak-config
   - name: 04-storage
     dependsOn:
-      - 03-keycloak
+      - 03b-keycloak-config
     healthChecks:
       - apiVersion: batch/v1
         kind: Job
@@ -136,6 +163,9 @@ allModeStages:
     # Prune disabled so removing this stage never deletes the RabbitMQ operator
     # CRDs or the RabbitmqCluster resources stored under them.
     prune: false
+    # force false: without this, the stage inherits force: true. Replacing the CRD
+    # would delete every RabbitmqCluster stored under it.
+    force: false
     healthChecks:
       - apiVersion: apps/v1
         kind: Deployment
@@ -145,6 +175,14 @@ allModeStages:
     dependsOn:
       - 05a-operators
     timeout: 12m
+    # Prune and force disabled so removing or regenerating this stage never
+    # deletes the CNPG Cluster, RabbitMQ cluster, or their PVCs. Stages with
+    # Jobs keep force: true, because Job specs are immutable.
+    # prune false: removing this stage leaves the CNPG and RabbitMQ clusters and their PVCs.
+    prune: false
+    # force false: a change that needs the CNPG or RabbitMQ cluster replaced fails
+    # instead of Flux deleting and recreating it.
+    force: false
     healthChecks:
       - apiVersion: helm.toolkit.fluxcd.io/v2
         kind: HelmRelease
@@ -174,6 +212,9 @@ allModeStages:
     # Prune disabled so removing this stage never deletes the CRDs or the
     # custom resources stored under them.
     prune: false
+    # force false: without this, the stage inherits force: true. Replacing a CRD
+    # would delete every custom resource stored under it.
+    force: false
     timeout: 15m
   - name: 07b-kaiwo-queue-seed
     # Depends only on 07a: 07a already depends on 06, and 07a is Ready only

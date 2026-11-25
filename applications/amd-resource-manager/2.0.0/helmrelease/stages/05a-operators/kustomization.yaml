@@ -8,8 +8,9 @@
 # Stage 05b-infrastructure depends on this stage, so its RabbitmqCluster custom
 # resource is not submitted before the operator is Ready.
 #
-# This stage uses prune: false (see the chart's allModeStages), so removing the
-# stage never deletes the operator CRDs or the RabbitMQ clusters they hold.
+# This stage uses prune: false and force: false (see the chart's allModeStages), so
+# removing the stage never deletes the operator CRDs or the RabbitMQ clusters they
+# hold, and a change that needs a replacement fails instead of being recreated.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

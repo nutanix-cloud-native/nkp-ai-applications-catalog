@@ -7,8 +7,6 @@
 #
 # Secrets created in the AIRM namespace:
 # - airm-cnpg-user / airm-cnpg-superuser: PostgreSQL credentials.
-# - airm-keycloak-admin-client / airm-keycloak-ui-creds: two Kubernetes views
-#   of the same Keycloak client secret.
 # - airm-user-credentials: initial AIRM UI user and password.
 # - airm-rabbitmq-admin: operator bootstrap credentials and default_user.conf.
 # - airm-rabbitmq-common-vhost-user: temporary `airm-user` identity; stage 09
@@ -21,9 +19,13 @@
 # - Random hex values come from `/dev/urandom` with `od`, which the pinned
 #   in-cluster utility image supports without openssl.
 # - Existing Secrets are preserved, so retries are non-destructive.
-# - The two Keycloak client Secrets are reconciled with apply semantics. The UI
-#   Secret is preferred, then the admin-client Secret, then a new value. Stage 03
-#   later makes Keycloak's value authoritative.
+# - Before any credential is generated, the database guard checks the named CNPG
+#   Cluster and PVCs. If the database exists and any of airm-cnpg-user,
+#   airm-cnpg-superuser, or airm-rabbitmq-common-vhost-user is missing, the stage
+#   stops instead of generating a replacement.
+# - The two Keycloak client Secrets (airm-keycloak-admin-client and
+#   airm-keycloak-ui-creds) are not created here. Stage 03b creates them from
+#   Keycloak's value, because Keycloak is authoritative for the client secret.
 # - Every required Secret and key is verified after creation. A failed stage
 #   stops before dependent components start.
 # - The script waits for discovery status and validates in-cluster API and tool
@@ -59,15 +61,6 @@ ensure_secret() {
     --dry-run=client -o yaml | kubectl apply -f -
 }
 
-apply_secret() {
-  name="$1"
-  shift
-  kubectl create secret generic "$name" \
-    --namespace "$AIRM_NAMESPACE" \
-    "$@" \
-    --dry-run=client -o yaml | kubectl apply -f -
-}
-
 get_secret_value() {
   kubectl get secret "$1" --namespace "$AIRM_NAMESPACE" -o json 2>/dev/null |
     jq -r --arg key "$2" '.data[$key] // empty' |
@@ -84,8 +77,91 @@ require_secret_keys() {
   done
 }
 
+# Database guard. Reads the Kubernetes API directly with the Job's service
+# account token so that the HTTP status and the JSON Status body are available.
+# kubectl's error text is not used. The token is sent through a curl config on
+# stdin, not in argv, and Secret bodies are never written to disk.
+SA_TOKEN_FILE=/var/run/secrets/kubernetes.io/serviceaccount/token
+SA_CA_FILE=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+api_status() {
+  # $1 = API path, $2 = file that receives the response body. Prints the HTTP status.
+  printf 'header = "Authorization: Bearer %s"\n' "$(cat "$SA_TOKEN_FILE")" |
+    curl -sS -K - -o "$2" -w '%{http_code}' --cacert "$SA_CA_FILE" \
+      "https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT$1"
+}
+
+object_state() {
+  # $1 = API path. Prints one of: present, absent, not_served, error.
+  #   200                       -> present
+  #   404 with a Status NotFound -> absent (the object is missing)
+  #   404 without a Status body -> not_served (the resource type's API group is
+  #                                not installed yet, for example the CNPG CRD)
+  #   anything else             -> error (Forbidden, server error, unreachable API)
+  code="$(api_status "$1" /dev/null)"
+  case "$code" in
+  200)
+    echo present
+    return 0
+    ;;
+  404) ;;
+  *)
+    echo error
+    return 0
+    ;;
+  esac
+  body_file="$(mktemp)"
+  api_status "$1" "$body_file" >/dev/null
+  kind="$(jq -r '.kind // empty' "$body_file" 2>/dev/null || true)"
+  reason="$(jq -r '.reason // empty' "$body_file" 2>/dev/null || true)"
+  rm -f "$body_file"
+  if [ "$kind" = "Status" ] && [ "$reason" = "NotFound" ]; then
+    echo absent
+  elif [ -z "$kind" ]; then
+    echo not_served
+  else
+    echo error
+  fi
+}
+
+database_guard() {
+  # Runs before any credential is generated. If the database exists, the database
+  # credentials and the RabbitMQ identity Secret must already exist, and stage 01
+  # never generates them then. Stage 05b, which creates the database, depends on
+  # stage 01, so a database that exists means stage 01 already created the identity Secret.
+  cluster_state="$(object_state "/apis/postgresql.cnpg.io/v1/namespaces/$AIRM_NAMESPACE/clusters/$CNPG_CLUSTER_NAME")"
+  data_state="$(object_state "/api/v1/namespaces/$AIRM_NAMESPACE/persistentvolumeclaims/$CNPG_DATA_PVC_NAME")"
+  wal_state="$(object_state "/api/v1/namespaces/$AIRM_NAMESPACE/persistentvolumeclaims/$CNPG_WAL_PVC_NAME")"
+  log "Database check: cluster=$cluster_state data-pvc=$data_state wal-pvc=$wal_state"
+  for state in "$cluster_state" "$data_state" "$wal_state"; do
+    case "$state" in
+    present | absent | not_served) ;;
+    *) fail "database check could not read the Kubernetes API; not generating credentials" ;;
+    esac
+  done
+
+  if [ "$cluster_state" = present ] || [ "$data_state" = present ] || [ "$wal_state" = present ]; then
+    log "Database exists; checking that its credential and identity Secrets are present"
+    for name in airm-cnpg-user airm-cnpg-superuser airm-rabbitmq-common-vhost-user; do
+      state="$(object_state "/api/v1/namespaces/$AIRM_NAMESPACE/secrets/$name")"
+      case "$state" in
+      present) ;;
+      absent)
+        fail "database exists but Secret $name is missing. Stage 01 will not generate a replacement. Recover it with the procedure for $name in SECRET-RECOVERY.md"
+        ;;
+      *)
+        fail "could not read Secret $name; not generating credentials"
+        ;;
+      esac
+    done
+  else
+    log "No existing database; bootstrap database credentials may be created"
+  fi
+}
+
 command -v kubectl >/dev/null || fail "kubectl is unavailable"
 command -v jq >/dev/null || fail "jq is unavailable"
+command -v curl >/dev/null || fail "curl is unavailable"
 command -v od >/dev/null || fail "od is unavailable"
 command -v tr >/dev/null || fail "tr is unavailable"
 [ -r /dev/urandom ] || fail "/dev/urandom is unavailable"
@@ -94,6 +170,9 @@ AIRM_NAMESPACE="$${AIRM_NAMESPACE:?AIRM_NAMESPACE is required}"
 RELEASE_NAMESPACE="$${RELEASE_NAMESPACE:?RELEASE_NAMESPACE is required}"
 KEYCLOAK_CLIENT_ID="$${KEYCLOAK_CLIENT_ID:?KEYCLOAK_CLIENT_ID is required}"
 AIRM_USERNAME="$${AIRM_USERNAME:?AIRM_USERNAME is required}"
+CNPG_CLUSTER_NAME="$${CNPG_CLUSTER_NAME:?CNPG_CLUSTER_NAME is required}"
+CNPG_DATA_PVC_NAME="$${CNPG_DATA_PVC_NAME:?CNPG_DATA_PVC_NAME is required}"
+CNPG_WAL_PVC_NAME="$${CNPG_WAL_PVC_NAME:?CNPG_WAL_PVC_NAME is required}"
 # The client ID is the cluster UUID (or a legacy UUID). An unresolved Flux
 # variable such as a literal clusterUUID placeholder must fail here, before
 # any Keycloak client is created under that name.
@@ -139,27 +218,9 @@ done
 [ -n "$DOMAIN" ] || fail "airm-discovered ConfigMap did not provide airmDomain in namespace $RELEASE_NAMESPACE"
 [ "$STATUS" = "ready" ] || fail "airm-discovered ConfigMap status is '$${STATUS:-<empty>}', expected 'ready'"
 
+database_guard
+
 log "Creating AIRM secrets"
-UI_CLIENT_SECRET="$(get_secret_value airm-keycloak-ui-creds KEYCLOAK_SECRET)"
-ADMIN_CLIENT_SECRET="$(get_secret_value airm-keycloak-admin-client client-secret)"
-
-# The UI secret is the canonical Kubernetes source during secret initialization
-# and is read first; the admin-client secret is only a fallback. If both exist
-# and disagree, keep the stage moving by
-# syncing the admin-client Secret to the UI value; the Keycloak configuration
-# stage later reconciles both Kubernetes Secrets from Keycloak itself.
-if [ -n "$UI_CLIENT_SECRET" ] && [ -n "$ADMIN_CLIENT_SECRET" ] &&
-  [ "$UI_CLIENT_SECRET" != "$ADMIN_CLIENT_SECRET" ]; then
-  log "Keycloak client Kubernetes Secrets differ; using airm-keycloak-ui-creds as the temporary canonical value"
-fi
-
-KC_CLIENT_SECRET="$UI_CLIENT_SECRET"
-if [ -z "$KC_CLIENT_SECRET" ]; then
-  KC_CLIENT_SECRET="$ADMIN_CLIENT_SECRET"
-fi
-if [ -z "$KC_CLIENT_SECRET" ]; then
-  KC_CLIENT_SECRET="$(rand_hex 24)"
-fi
 
 ensure_secret airm-cnpg-user \
   --from-literal=username=airm_user \
@@ -168,13 +229,6 @@ ensure_secret airm-cnpg-user \
 ensure_secret airm-cnpg-superuser \
   --from-literal=username=postgres \
   --from-literal=password="$(rand_hex 16)"
-
-apply_secret airm-keycloak-admin-client \
-  --from-literal=client-id="$KEYCLOAK_CLIENT_ID" \
-  --from-literal=client-secret="$KC_CLIENT_SECRET"
-
-apply_secret airm-keycloak-ui-creds \
-  --from-literal=KEYCLOAK_SECRET="$KC_CLIENT_SECRET"
 
 # The username is the local part of the login email. An existing Secret keeps its
 # current value. To change the username on an installed cluster, delete
@@ -203,8 +257,6 @@ ensure_secret airm-secrets-airm \
 
 require_secret_keys airm-cnpg-user username password
 require_secret_keys airm-cnpg-superuser username password
-require_secret_keys airm-keycloak-admin-client client-id client-secret
-require_secret_keys airm-keycloak-ui-creds KEYCLOAK_SECRET
 require_secret_keys airm-user-credentials USER_PASSWORD USER_EMAIL
 require_secret_keys airm-rabbitmq-admin username password default_user.conf
 require_secret_keys airm-rabbitmq-common-vhost-user username password
