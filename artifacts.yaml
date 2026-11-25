@@ -2,6 +2,7 @@ applications:
   - name: ""
     version: ""
     images:
+      - oci://<registry-url>/nkp-ai-applications-catalog/agent-sandbox:0.1.7
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-gpu-operator:1.5.1
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
@@ -19,6 +20,11 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/open-webui:16.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/ray-cluster:1.7.0
       - oci://<registry-url>/nkp-ai-applications-catalog/slurm-operator:1.1.1
+  - name: agent-sandbox
+    version: 0.1.7
+    images:
+      - oci://ghcr.io/nutanix-cloud-native/charts/agent-sandbox:0.1.7
+      - registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.12
   - name: amd-gpu-operator
     version: 1.5.0
     images:
