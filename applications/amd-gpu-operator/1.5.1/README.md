@@ -116,11 +116,13 @@ node labels.
 ## Metrics Exporter Configuration
 
 The metrics exporter configuration is vendored from the upstream
-[GPU configuration example](https://github.com/ROCm/device-metrics-exporter/blob/main/example/config-gpu.json)
+[GPU configuration example](https://github.com/ROCm/device-metrics-exporter/blob/release-v1.5.4/example/config-gpu.json)
 at `helmrelease/metrics-exporter-config/config.json`. It enables GPU labels,
-including `GPU_UUID`, uses unprefixed metric names, and omits the upstream
-static `CLUSTER_NAME` label so NKP Thanos provides cluster attribution.
-Review the upstream example when updating the exporter.
+including `GPU_UUID`, and sets `MetricsFieldPrefix` to `amd_`, so exported
+metrics are named `amd_gpu_*` / `amd_pcie_*`. The bundled dashboards match this
+through their `g_metrics_prefix` template variable, which defaults to `amd_`.
+If you change `MetricsFieldPrefix`, update that variable to match or the
+panels will show no data. Review the upstream example when updating the exporter.
 
 ### Staged Operator and Driver Upgrades
 
