@@ -88,14 +88,17 @@ data:
         # and draDriver.enable: false (they are mutually exclusive).
         devicePlugin:
           enableDevicePlugin: false
-          devicePluginImage: rocm/k8s-device-plugin:1.31.0.10
+          devicePluginImage: rocm/k8s-device-plugin:1.31.0.12
           devicePluginImagePullPolicy: IfNotPresent
-          enableNodeLabeller: false
-          nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.10
+          # Enabled by default. The node labeller is the only component that writes
+          # the host amdgpu blacklist (/etc/modprobe.d/blacklist-amdgpu.conf).
+          # Set to false only if the blacklist is managed outside the operator.
+          enableNodeLabeller: true
+          nodeLabellerImage: rocm/k8s-device-plugin:labeller-1.31.0.12
           nodeLabellerImagePullPolicy: IfNotPresent
         metricsExporter:
           enable: true
-          image: rocm/device-metrics-exporter:v1.5.1
+          image: rocm/device-metrics-exporter:v1.5.4
           imagePullPolicy: IfNotPresent
           config:
             name: ${releaseName}-${appVersion}-metrics-exporter-config

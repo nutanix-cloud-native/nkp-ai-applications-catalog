@@ -129,7 +129,9 @@ overview: |-
         image: "docker.io/rocm/k8s-gpu-dra-driver:v1.0.1"
       devicePlugin:
         enableDevicePlugin: false
-        enableNodeLabeller: false
+        # Enabled by default: the labeller writes the host amdgpu blacklist that
+        # driver.blacklist: true depends on. Runs even when enableDevicePlugin is false.
+        enableNodeLabeller: true
       metricsExporter:
         enable: true
   ```

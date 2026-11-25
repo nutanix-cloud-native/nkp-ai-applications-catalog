@@ -169,10 +169,10 @@ active driver upgrade, and retry; do not bypass the hook.
 |---|---|---|
 | GPU Operator Controller | `docker.io/rocm/gpu-operator` | `v1.5.1` |
 | GPU Operator Utils | `docker.io/rocm/gpu-operator-utils` | `v1.5.1` |
-| Device Metrics Exporter | `docker.io/rocm/device-metrics-exporter` | `v1.5.1` |
+| Device Metrics Exporter | `docker.io/rocm/device-metrics-exporter` | `v1.5.4` |
 | DRA Driver | `docker.io/rocm/k8s-gpu-dra-driver` | `v1.0.1` |
-| Device Plugin | `docker.io/rocm/k8s-device-plugin` | `1.31.0.10` |
-| Node Labeller | `docker.io/rocm/k8s-device-plugin` | `labeller-1.31.0.10` |
+| Device Plugin | `docker.io/rocm/k8s-device-plugin` | `1.31.0.12` |
+| Node Labeller | `docker.io/rocm/k8s-device-plugin` | `labeller-1.31.0.12` |
 | KMM (shared) | `docker.io/rocm/kernel-module-management-operator` | `v1.0.0` |
 | NFD (platform) | `registry.k8s.io/nfd/node-feature-discovery` | `v0.18.3` |
 
