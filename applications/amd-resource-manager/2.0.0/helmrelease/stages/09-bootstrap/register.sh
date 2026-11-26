@@ -9,15 +9,10 @@
 # temporary `airm-user` Kubernetes Secret with the returned cluster ID and
 # one-time RabbitMQ secret.
 #
-# Relationship to the tested installer:
-# - In all mode, installer step 10 enabled the chart configure Job.
-# - Installer step 2 patched configure.sh so the pre-created RabbitMQ Secret was
-#   replaced with `kubectl apply` and the agent restarted.
-# - The script's explicit `register` step serves remote agent-mode clusters
-#   using management-cluster kubeconfig/API/RabbitMQ arguments. This stage is
-#   local all-mode registration and therefore does not use cross-cluster access.
+# Notes:
+# - This stage is local all-mode registration and does not use cross-cluster
+#   access. It does not restart the agent.
 #
-# Differences from the original all-mode configure flow and installer patch:
 # 1. Registration is a dedicated, observable Flux Job instead of hidden inside
 #    the API chart's configure Job.
 # 2. Keycloak and AIRM are called through stable internal Services; no public
@@ -29,13 +24,12 @@
 #    missing, the Job fails instead of registering again and leaking another
 #    unrecoverable identity.
 # 5. Token and registration HTTP status/body fields are validated explicitly.
-# 6. The installer's patched apply semantics are preserved when replacing
-#    `airm-rabbitmq-common-vhost-user`.
+# 6. `airm-rabbitmq-common-vhost-user` is replaced with apply semantics, so the
+#    update is idempotent.
 # 7. The agent is not restarted or installed here. Stage 10 first provisions
 #    the corresponding RabbitMQ user/vhost/queue; agent deployment is ordered
 #    afterward so it never starts with the temporary identity.
-# 8. The local all-mode payload uses `https://aiwbui.$DOMAIN/`; the script's
-#    remote-agent `register` path uses `https://workspaces.$DOMAIN/`.
+# 8. The all-mode payload uses `https://aiwbui.$DOMAIN/` as the workbench URL.
 #
 # The AIRM API returns the RabbitMQ secret only once. Protecting and preserving
 # the updated Kubernetes Secret is therefore essential for safe reconciliation.
@@ -126,7 +120,7 @@ cluster_id="$(printf '%s' "$clusters" | jq -r \
     | .id
   ' | head -n 1)"
 [ -z "$cluster_id" ] ||
-  fail "cluster '$cluster_id' is already registered for $expected_kube_api_url but its one-time identity is not available in airm-rabbitmq-common-vhost-user"
+  fail "cluster '$cluster_id' is already registered for $expected_kube_api_url but its one-time user secret is not available in airm-rabbitmq-common-vhost-user. Recover with Step 2 (restore from backup) or Step 3 (manual recovery) in SECRET-RECOVERY.md, section airm-rabbitmq-common-vhost-user"
 
 log "Registering the local cluster"
 payload="$(jq -n \
@@ -153,13 +147,29 @@ rm -f "$response_file"
 [ -n "$cluster_id" ] || fail "cluster registration returned no cluster ID"
 [ -n "$cluster_secret" ] || fail "cluster registration returned no user secret"
 
-# Preserve the installer's configure.sh patch: replace the temporary airm-user
-# credentials using apply semantics. The agent is intentionally installed later.
-kubectl create secret generic airm-rabbitmq-common-vhost-user \
-  --from-literal="username=$cluster_id" \
-  --from-literal="password=$cluster_secret" \
-  -n "$AIRM_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+# Persist the one-time user secret. The API returns userSecret only once, and a
+# rerun cannot recover it, so a failed write is retried within this run. The
+# read-back checks both username and password without printing either value.
+persist_registration() {
+  attempt=1
+  while [ "$attempt" -le 5 ]; do
+    if kubectl create secret generic airm-rabbitmq-common-vhost-user \
+      --from-literal="username=$cluster_id" \
+      --from-literal="password=$cluster_secret" \
+      -n "$AIRM_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f - &&
+      [ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] &&
+      [ "$(read_secret airm-rabbitmq-common-vhost-user password)" = "$cluster_secret" ]; then
+      return 0
+    fi
+    log "persisting the RabbitMQ user secret failed (attempt $attempt of 5)"
+    attempt=$((attempt + 1))
+    sleep 5
+  done
+  return 1
+}
 
-[ "$(read_secret airm-rabbitmq-common-vhost-user username)" = "$cluster_id" ] ||
-  fail "registered cluster identity was not persisted"
-log "Registered local cluster '$cluster_id' and persisted its RabbitMQ identity"
+# Replace the temporary airm-user credentials using apply semantics. The agent
+# is intentionally installed later.
+persist_registration ||
+  fail "registered cluster '$cluster_id' but its one-time user secret could not be persisted after 5 attempts. The API will not issue it again. Recover with Step 2 (restore from backup) or Step 3 (manual recovery) in SECRET-RECOVERY.md, section airm-rabbitmq-common-vhost-user"
+log "Registered local cluster '$cluster_id' and persisted its RabbitMQ user secret"

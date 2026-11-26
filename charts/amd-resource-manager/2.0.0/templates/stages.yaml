@@ -19,9 +19,15 @@ spec:
   interval: {{ $root.Values.stages.interval }}
   retryInterval: {{ $root.Values.stages.retryInterval }}
   timeout: {{ default $root.Values.stages.timeout $stage.timeout }}
+  # prune: the stage's own value, else stages.prune (true). When true, removing a
+  # stage or an object from it makes Flux delete the objects. Stateful stages set false.
   prune: {{ if hasKey $stage "prune" }}{{ $stage.prune }}{{ else }}{{ $root.Values.stages.prune }}{{ end }}
+  # wait: Flux waits for the stage's objects to be Ready before dependent stages run.
   wait: {{ $root.Values.stages.wait }}
-  force: true
+  # force: the stage's own value, else true. When true, a change to an immutable
+  # field (for example a Job spec) deletes and recreates the object. Stateful stages set
+  # false, so the apply fails instead of recreating them.
+  force: {{ if hasKey $stage "force" }}{{ $stage.force }}{{ else }}true{{ end }}
   path: ./helmrelease/stages/{{ $stage.name }}
   sourceRef:
     kind: OCIRepository
@@ -31,6 +37,7 @@ spec:
     substitute:
       releaseName: {{ $releaseName | quote }}
       releaseNamespace: {{ $releaseNamespace | quote }}
+      airmUsername: {{ required "airm.username must be set" $root.Values.airm.username | quote }}
       discoveryDomain: {{ $root.Values.discovery.domain | quote }}
       discoveryStorageClass: {{ $root.Values.discovery.storageClass | quote }}
       discoveryPrometheusUrl: {{ $root.Values.discovery.prometheusUrl | quote }}
@@ -43,7 +50,7 @@ spec:
       gatewayTlsSecretName: {{ $root.Values.gateway.tlsSecretName | quote }}
       clusterToolImage: {{ $root.Values.toolImages.cluster | quote }}
       opensslImage: {{ $root.Values.toolImages.openssl | quote }}
-      {{ if eq $stage.name "03-keycloak" -}}
+      {{ if eq $stage.name "03a-keycloak" -}}
       keycloakChartUrl: {{ $root.Values.keycloak.chartUrl | quote }}
       keycloakChartVersion: {{ $root.Values.versions.keycloakChart | quote }}
       keycloakImageRepository: {{ $root.Values.keycloak.images.keycloak.repository | quote }}
@@ -107,16 +114,6 @@ spec:
     - apiVersion: batch/v1
       kind: Job
       name: airm-gateway
-      namespace: {{ $releaseNamespace }}
-  {{- else if eq $stage.name "03-keycloak" }}
-  healthChecks:
-    - apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      name: airm-keycloak
-      namespace: {{ $releaseNamespace }}
-    - apiVersion: batch/v1
-      kind: Job
-      name: airm-keycloak-config
       namespace: {{ $releaseNamespace }}
   {{- else }}
   {{- with $stage.healthChecks }}

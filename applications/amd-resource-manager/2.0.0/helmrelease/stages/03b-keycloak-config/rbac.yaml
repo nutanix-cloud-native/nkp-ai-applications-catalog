@@ -1,4 +1,4 @@
-# Stage 03 — Keycloak configuration permissions
+# Stage 03b-keycloak-config — Keycloak configuration permissions
 #
 # The configuration Job crosses two namespace boundaries, each with a separate
 # Role so it receives no cluster-wide access.
@@ -14,10 +14,12 @@
 #
 # AIRM namespace:
 # - Read the two Keycloak client Secrets and `airm-user-credentials`.
-# - Patch only the two Keycloak client Secrets when synchronizing Keycloak's
-#   authoritative client secret.
-# - Secret creation is intentionally absent. Stage 01 must create all three
-#   prerequisites, and this stage should fail if that dependency is missing.
+# - Create the two Keycloak client Secrets on first install, and patch them when
+#   synchronizing Keycloak's authoritative client secret. Kubernetes cannot
+#   restrict create requests by resourceName, so the create rule below is
+#   namespaced and bound only to this Job's ServiceAccount.
+# - Stage 01 still creates `airm-user-credentials`. This stage fails if it is
+#   missing.
 #
 # Realm, client, user, and role changes use Keycloak's HTTP API and require no
 # additional Kubernetes permissions.
@@ -96,6 +98,12 @@ rules:
   - secrets
   verbs:
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

@@ -23,6 +23,8 @@ var enabledApps = []string{
 	"ray-cluster",
 	"clearml",
 	"clearml-serving",
+	"agent-sandbox",
+	"openshell",
 }
 
 // customTestApps are Flux/baked apps that share the Kustomize suite
