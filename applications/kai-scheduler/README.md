@@ -31,7 +31,8 @@ Kubernetes-native scheduler for AI and ML workloads with queue-based and fair-sh
 - [Dependencies](#dependencies)
 - [Smoke Test Validation](#smoke-test-validation)
 - [Release Features](#release-features)
-  - [v0.17.0](#v0170)
+  - [v0.15.2](#v0152)
+  - [v0.18.0](#v0180)
 - [Links](#links)
 
 ## Introduction
@@ -498,6 +499,61 @@ After all tests:
 kubectl delete namespace kai-test
 ```
 
+#### 8. Uninstall and Reinstall Validation (incl. NCN-119516 Gatekeeper regression gate)
+
+Verifies catalog uninstall fully cleans KAI resources and reinstall restores queues. This section is the regression gate for NCN-119516 / upstream [kai-scheduler/KAI-Scheduler#751](https://github.com/kai-scheduler/KAI-Scheduler/issues/751): in 0.17.0 the post-delete job ran `kubectl delete config kai-config` (unqualified `Config` kind) which collided with Gatekeeper's `config.gatekeeper.sh` CRD, got `Forbidden: cannot delete configs.config.gatekeeper.sh`, and left `configs.kai.scheduler/kai-config` plus `queue-validation.kai.scheduler` webhooks pointing at deleted `queue-controller.kai-scheduler.svc`. Reinstall then looped `InstallFailed: dial tcp ... no route to host`. Fixed in 0.18.0 by the Go `helm-hooks` binary (`cleanup --delete-config=kai-config` with qualified GVR and `postCleanup.serviceAccountName` honored).
+
+**Prereq:** Test on a Gatekeeper-enabled cluster (`kubectl get crd configs.config.gatekeeper.sh` exists — standard on NKP).
+
+**Uninstall (via NKP) → verify no leak:**
+
+```bash
+# Uninstall via NKP AppDeployment delete (or HelmRelease delete for helm-only test):
+# kubectl delete appdeployment kai-scheduler -n <workspaceNamespace>
+kubectl get pods -n kai-scheduler
+kubectl get configs.kai.scheduler -A
+kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations | grep -i kai
+kubectl logs -n kai-scheduler -l app.kubernetes.io/name=post-delete-cleanup --tail=100
+kubectl get crd configs.kai.scheduler configs.config.gatekeeper.sh 2>&1 | head -20
+```
+
+Expected (0.18.0 must pass — 0.17.0 failed here):
+
+- Post-delete log shows `helm-hooks:v0.18.0` Go binary `cleanup --namespace=kai-scheduler --delete-config=kai-config`, no `Forbidden: ... configs.config.gatekeeper.sh`.
+- `kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations | grep -i kai` → empty (no leaked `queue-validation.kai.scheduler` / `kai-admission`).
+- `kubectl get configs.kai.scheduler kai-config` → `NotFound` (qualified delete succeeded).
+- `kubectl get configs.config.gatekeeper.sh` → still present (wrong target untouched).
+- `kubectl get helmrelease kai-scheduler -n <releaseNamespace>` → gone or `Remediated: UninstallSucceeded` (not `InstallFailed` loop).
+
+If webhooks remain, **stop — bug reproduced**. Capture `kubectl get validatingwebhookconfigurations <name> -o yaml` and reopen as blocker.
+
+**Manual workaround for 0.17.0 (do NOT run for 0.18.0 — reinstall must pass without it):**
+
+```bash
+kubectl delete configs.kai.scheduler kai-config --ignore-not-found
+kubectl delete validatingwebhookconfigurations,mutatingwebhookconfigurations -l app.kubernetes.io/name=kai-scheduler --ignore-not-found
+# verify:
+kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations | grep kai  # should be empty
+```
+
+**Reinstall (same catalog version) → verify no InstallFailed:**
+
+```bash
+# Recreate via catalog (or helm install for isolated test):
+# nkp create catalog-collection --url oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/collection --tag 2.19-dev --workspace <workspace>
+# or:
+helm upgrade -i kai-scheduler oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler --version v0.18.0 -n kai-scheduler --create-namespace
+
+kubectl wait --for=condition=Ready helmrelease/kai-scheduler -n <releaseNamespace> --timeout=300s
+kubectl get hr kai-scheduler -n <releaseNamespace> -o yaml | grep -E "Ready|Released|InstallFailed|no route to host"
+kubectl wait --for=condition=Available deployment --all -n kai-scheduler --timeout=180s
+kubectl get pods -n kai-scheduler
+kubectl get queue -A  # expect default-queue + default-parent-queue recreated
+kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations | grep -i kai  # back, healthy
+```
+
+Then re-run smoke procedure 2 (single CPU pod) to confirm `kai-scheduler` still schedules (events `Scheduled` + `Bound` from `kai-scheduler`). If HelmRelease shows `InstallFailed: failed calling webhook "queue-validation.kai.scheduler" ... no route to host` with `UninstallSucceeded` loop, the NCN-119516 bug regressed.
+
 ### Cluster test results
 
 #### `workload-cluster-01.conf`
@@ -523,15 +579,21 @@ KAI Scheduler installation and queue-based CPU scheduling are validated. GPU sch
 
 This section summarizes the main user-facing features included in each cataloged KAI Scheduler release.
 
-### v0.17.0
+### v0.15.2
 
-- **Preemption delay:** Configure a minimum pending time before a workload can trigger preemption, reclaim, or consolidation, giving cluster autoscalers time to provision capacity.
-- **Topology aliases:** Use friendly aliases for topology levels in workload placement constraints.
-- **Karta fallback podgrouper:** Translate Karta gang-scheduling definitions into KAI PodGroups while preserving native KAI plugin precedence.
-- **DRA-backed extended resources:** Schedule workloads that request extended resources provided through Kubernetes Dynamic Resource Allocation.
-- **FIPS image variants:** Use FIPS-enabled KAI images through the `global.fips` Helm value.
-- **GitOps support:** Render `kai-config` as a tracked resource for GitOps tools such as Argo CD.
-- **Operational improvements:** Add configurable priority classes, NUMA-aware scoring, resource-reservation controls, and PodDisruptionBudget settings.
+- Initial catalog release — queue-based scheduling, fair-share policies, gang scheduling, and topology-aware placement for GPU workloads.
+
+### v0.18.0
+
+- **Fractional GPU (NvFractions) —** DRA-backed GPU memory sharing (typed group API, per-container `gpu-memory` portion limits, scheduler accounting/binding, optional `gpu-fractioning` subchart `v0.1.3` via `global.nvFractions.set`).
+- **In-place pod resize (KEP-1287) + queue admission webhook —** resize accounting with validation for eligible controllers.
+- **Background pods & semi-preemptible (alpha) —** ignore/evict maintenance pods; elastic surplus beyond min-guaranteed with staleness respecting `minSubGroup`.
+- **GPU affinity plugins —** `gpujoborder` tie-break on priority ties, hardened `gpusharing` (no-score for non-GPU, HamiCore fail-closed), greedy GPU matching performance.
+- **FIPS parity —** `global.fipsMode: on|only|off` (renamed from `global.fips`), scratch-based images, `helm-hooks` binary replaces `crd-upgrader`, TLS ML-KEM hybrid-curve fix.
+- **Ops —** PDB for binder/queue-controller (multi-replica), priority classes (`build`/`train`/`inference`), NUMA-aware scoring, resource-reservation controls.
+- **Fixes —** Gatekeeper Config collision on post-delete (NCN-119516 / upstream [#751](https://github.com/kai-scheduler/KAI-Scheduler/issues/751)) — Go `helm-hooks` with qualified `configs.kai.scheduler/kai-config` delete; OpenShift SCC for post-delete ServiceAccount.
+
+Release: [v0.18.0 notes](https://github.com/kai-scheduler/KAI-Scheduler/releases/tag/v0.18.0) · commit [`2df9a1f`](https://github.com/kai-scheduler/KAI-Scheduler/commit/2df9a1ffca535d602d57023074b824606e312797)
 
 ## Links
 
