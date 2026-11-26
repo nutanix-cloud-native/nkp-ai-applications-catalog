@@ -29,6 +29,7 @@ var dependencyProvisioners = map[string]func(context.Context) error{
 	"cert-manager": provisionCertManager,
 	"istio-helm":   provisionIstioCRDs,
 	"kuberay":      provisionKubeRay,
+	"clearml":      provisionClearML,
 }
 
 type dependsOnEntry struct {
@@ -131,6 +132,20 @@ func provisionKubeRay(ctx context.Context) error {
 	return harness.WaitForCondition(
 		ctx, harness.Default.Client(), helmReleaseGVK,
 		harness.Default.Namespace(), "kuberay", "Ready",
+		helmReleaseReadyTimeout, harness.Default.PollInterval(),
+	)
+}
+
+// provisionClearML installs the ClearML catalog app dependency so downstream
+// apps like clearml-serving can reconcile their CRs in E2E.
+func provisionClearML(ctx context.Context) error {
+	const version = "7.15.0"
+	if err := harness.Default.InstallApp(ctx, "clearml", version); err != nil {
+		return err
+	}
+	return harness.WaitForCondition(
+		ctx, harness.Default.Client(), helmReleaseGVK,
+		harness.Default.Namespace(), "clearml", "Ready",
 		helmReleaseReadyTimeout, harness.Default.PollInterval(),
 	)
 }
