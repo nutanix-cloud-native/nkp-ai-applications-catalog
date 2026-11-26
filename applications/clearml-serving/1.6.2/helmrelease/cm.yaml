@@ -7,9 +7,6 @@ data:
   values.yaml: |
     ---
     clearml:
-      apiAccessKey: "OVERRIDE_KEY"
-      apiSecretKey: "OVERRIDE_KEY"
-      servingTaskId: "OVERRIDE_KEY"
       apiHost: "http://clearml-clearml-apiserver.clearml:8008"
       filesHost: "http://clearml-clearml-fileserver.clearml:8081"
       webHost: "http://clearml-clearml-webserver.clearml"
