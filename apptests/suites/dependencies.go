@@ -26,9 +26,10 @@ var deploymentGVK = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: 
 // dependencyProvisioners installs a lightweight stand-in on Kind for each
 // hard platform dependency an app names in metadata dependsOn (optional: false).
 var dependencyProvisioners = map[string]func(context.Context) error{
-	"cert-manager": provisionCertManager,
-	"istio-helm":   provisionIstioCRDs,
-	"kuberay":      provisionKubeRay,
+	"agent-sandbox": provisionAgentSandbox,
+	"cert-manager":  provisionCertManager,
+	"istio-helm":    provisionIstioCRDs,
+	"kuberay":       provisionKubeRay,
 }
 
 type dependsOnEntry struct {
@@ -131,6 +132,24 @@ func provisionKubeRay(ctx context.Context) error {
 	return harness.WaitForCondition(
 		ctx, harness.Default.Client(), helmReleaseGVK,
 		harness.Default.Namespace(), "kuberay", "Ready",
+		helmReleaseReadyTimeout, harness.Default.PollInterval(),
+	)
+}
+
+// provisionAgentSandbox installs the Agent Sandbox catalog app that runtimes
+// like openshell build on. Agent Sandbox is versioned independently of the app
+// under test, so it installs its own latest version, not AppVersion().
+func provisionAgentSandbox(ctx context.Context) error {
+	version, err := harness.LatestVersion("agent-sandbox")
+	if err != nil {
+		return err
+	}
+	if err := harness.Default.InstallApp(ctx, "agent-sandbox", version); err != nil {
+		return err
+	}
+	return harness.WaitForCondition(
+		ctx, harness.Default.Client(), helmReleaseGVK,
+		harness.Default.Namespace(), "agent-sandbox", "Ready",
 		helmReleaseReadyTimeout, harness.Default.PollInterval(),
 	)
 }

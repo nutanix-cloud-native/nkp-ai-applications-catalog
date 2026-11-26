@@ -162,6 +162,19 @@ func previousVersion(name, current string) (string, error) {
 	return prev, nil
 }
 
+// LatestVersion returns the highest version directory of an app, in the same
+// order previousVersion uses.
+func LatestVersion(name string) (string, error) {
+	versions, err := appVersionDirs(name)
+	if err != nil {
+		return "", err
+	}
+	if len(versions) == 0 {
+		return "", fmt.Errorf("app %q has no version directories", name)
+	}
+	return versions[len(versions)-1], nil
+}
+
 // appVersionDirs returns an app's version directory names, sorted ascending.
 // Only real subdirectories count; files and dot-prefixed entries (for example
 // .catalog-source.yaml) are catalog metadata, not versions.
