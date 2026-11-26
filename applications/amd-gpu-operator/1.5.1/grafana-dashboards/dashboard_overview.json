@@ -2578,8 +2578,8 @@
     "list": [
       {
         "current": {
-          "text": "",
-          "value": ""
+          "text": "amd_",
+          "value": "amd_"
         },
         "description": "string to prefix names of metrics queries (e.g. gpu_gfx_activity -> amd_gpu_gfx_activity)",
         "hide": 0,
@@ -2588,11 +2588,11 @@
         "options": [
           {
             "selected": true,
-            "text": "",
-            "value": ""
+            "text": "amd_",
+            "value": "amd_"
           }
         ],
-        "query": "",
+        "query": "amd_",
         "skipUrlSync": false,
         "type": "textbox"
       },
