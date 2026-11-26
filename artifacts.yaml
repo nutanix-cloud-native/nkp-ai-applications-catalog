@@ -8,8 +8,8 @@ applications:
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-kmm-operator:1.0.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-network-operator:1.2.0
       - oci://<registry-url>/nkp-ai-applications-catalog/amd-resource-manager:2.0.0
-      - oci://<registry-url>/nkp-ai-applications-catalog/clearml:7.15.0
       - oci://<registry-url>/nkp-ai-applications-catalog/clearml-serving:1.6.2
+      - oci://<registry-url>/nkp-ai-applications-catalog/clearml:7.15.0
       - oci://<registry-url>/nkp-ai-applications-catalog/jupyterhub:4.3.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.15.2
       - oci://<registry-url>/nkp-ai-applications-catalog/kai-scheduler:0.17.0
