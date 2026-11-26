@@ -571,6 +571,18 @@ Then re-run smoke procedure 2 (single CPU pod) to confirm `kai-scheduler` still 
   - `No node in the default node-pool has GPU resources.`
 - Autoscaler also reported node group at max size during attempts.
 
+#### `jaden-cluster-1.conf` — NKP 2.19 dev (k8s v1.37.0, 1× control-plane + 4× workers, Gatekeeper 3.23.0, chart `kai-scheduler:v0.18.0`)
+
+- **Install (Helm `v0.18.0`):** `helm upgrade -i kai-scheduler oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler --version v0.18.0 -n kai-scheduler` → `STATUS: deployed`, 7 deployments `Available` in 26s (`admission`, `binder`, `kai-operator`, `kai-scheduler-default`, `pod-grouper`, `podgroup-controller`, `queue-controller`).
+- **Smoke 2 (single CPU pod):** `kai-cpu-smoke` → `Running` on `jaden-cluster-1-md-0-xrtjk-th5nl-wx6n8`, events `Scheduled` by `kai-scheduler` + `Bound` by `binder`.
+- **Smoke 3 (parallel Job, 3 pods):** `kai-parallel-cpu` → 3/3 `Running` across 2 nodes, `PodGroup` `pg-kai-parallel-cpu-...` created.
+- **Smoke 4 (coexistence):** `kai-targeted` → `kai-scheduler`, `kai-default` → `default-scheduler` (both `Running`).
+- **Smoke 5 (invalid queue):** `kai-invalid-queue` → `Pending`, `Warning Unschedulable: QueueDoesNotExist: Queue 'queue-does-not-exist' does not exist.` from `kai-scheduler`.
+- **Gatekeeper present:** `crd configs.config.gatekeeper.sh v1alpha1` + `config/kommander` intact.
+- **NCN-119516 uninstall gate (0.18.0):** `helm uninstall` → `No resources found` in `kai-scheduler` (pods gone), `validating/mutating | grep kai` → empty (**no leaked `kai-queue-validation-v2` / `validating-kai-admission`**), `configs.kai.scheduler/kai-config` → `NotFound` (qualified `helm-hooks` Go `cleanup --delete-config=kai-config` succeeded), `configs.config.gatekeeper.sh/kommander/config` → still present (wrong target not deleted). Queues `default-queue`/`default-parent-queue` + CRDs `configs.kai.scheduler` retained per chart `resource policy` (expected).
+- **Reinstall without workaround:** `helm upgrade -i ... --version v0.18.0` (no manual `kubectl delete configs.kai.scheduler`) → `STATUS: deployed` revision 1, no `InstallFailed: no route to host` loop, 7 deployments `Available` in 22s, queues + `kai-config` (now `v0.18.0`, `tag: v0.18.0`) + 4 webhooks recreated, post-reinstall `kai-cpu-smoke` → `Running` via `kai-scheduler`.
+- **Images verified:** `ghcr.io/kai-scheduler/kai-scheduler/operator:v0.18.0` + operand images `v0.18.0`; Helm release no longer references `crd-upgrader` (now implied `helm-hooks`).
+
 ### Conclusion
 
 KAI Scheduler installation and queue-based CPU scheduling are validated. GPU scheduling remains blocked by cluster GPU resource exposure/capacity, not by KAI deployment manifests.
