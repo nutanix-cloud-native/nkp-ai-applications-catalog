@@ -1,0 +1,44 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${releaseName}-chart
+  namespace: ${releaseNamespace}
+spec:
+  interval: 24h
+  ref:
+    tag: 3.0.20
+  url: oci://ghcr.io/nutanix-cloud-native/nkp-ai-applications-catalog/charts/runai-cluster
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  # Must be the app ID (not ${releaseName}). Kommander patches App Config
+  # Overrides onto the HelmRelease by name before Flux substitutes variables,
+  # so a literal ${releaseName} never matches and overrides are silently skipped.
+  name: runai-cluster
+  namespace: ${releaseNamespace}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${releaseName}-chart
+    namespace: ${releaseNamespace}
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: 30
+    timeout: 15m0s
+  interval: 15s
+  # Run:ai requires the Helm release name runai-cluster in the runai namespace;
+  # without releaseName Flux would name it runai-runai-cluster.
+  releaseName: runai-cluster
+  targetNamespace: runai
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 30
+    timeout: 15m0s
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${releaseName}-${appVersion}-defaults
+---

@@ -1,0 +1,21 @@
+# TLS certificate for the Run:ai domain, issued by cert-manager so no manual
+# runai-backend-tls secret is needed. The default issuer is the NKP platform CA
+# (ClusterIssuer kommander-ca). To use another issuer (for example a public CA),
+# set runaiTlsIssuerName and runaiTlsIssuerKind in the runai-control-plane-config
+# ConfigMap next to runaiDomain.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: runai-backend-tls
+  namespace: runai-backend
+spec:
+  secretName: runai-backend-tls
+  commonName: ${runaiDomain:=localhost}
+  dnsNames:
+  - ${runaiDomain:=localhost}
+  duration: 8760h
+  issuerRef:
+    group: cert-manager.io
+    kind: ${runaiTlsIssuerKind:=ClusterIssuer}
+    name: ${runaiTlsIssuerName:=kommander-ca}
+---

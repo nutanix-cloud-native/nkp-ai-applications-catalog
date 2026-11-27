@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    global:
+      # Trust the control plane CA from the runai-ca-cert secret (key
+      # runai-ca.pem) in the runai namespace. The secret is optional, so with a
+      # public CA (or no secret) everything still starts.
+      customCA:
+        enabled: true
+    clusterConfig:
+      global:
+        ingress:
+          ingressClass: kommander-traefik
+    openShift:
+      mode: Disabled
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+---

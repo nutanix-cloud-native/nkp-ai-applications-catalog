@@ -1,0 +1,104 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: NVIDIA Run:ai Cluster
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - scheduling-and-orchestration
+  - accelerated-infrastructure
+description: NVIDIA Run:ai cluster components that add GPU scheduling and workload management to a cluster and connect it to a Run:ai control plane.
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48cGF0aCBkPSJNMTE5LjA4IDExNy42NzF2LTE0LjQzM2w0LjI1NS0uMjJjMzkuNDY5LTEuMjM5IDY1LjM1OCAzMy45MTUgNjUuMzU4IDMzLjkxNXMtMjcuOTY0IDM4Ljg0Mi01Ny45NDggMzguODQyYy00LjMxNiAwLTguMTg2LS42OTktMTEuNjY1LTEuODY2VjEzMC4xNWMxNS4zNjQgMS44NTUgMTguNDUyIDguNjQyIDI3LjY4OSAyNC4wMzlsMjAuNTQ0LTE3LjMyM3MtMTQuOTk1LTE5LjY2OC00MC4yNzMtMTkuNjY4Yy0yLjc1MiAwLTUuMzg0LjE5My03Ljk2LjQ3M20wLTQ3LjY3MXYyMS41NTdhOTAuMTY1IDkwLjE2NSAwIDAgMSA0LjI1NS0uMjUzYzU0Ljg4OC0xLjg1IDkwLjY0MSA0NS4wMDcgOTAuNjQxIDQ1LjAwN3MtNDEuMDcxIDQ5Ljk0NS04My44NTkgNDkuOTQ1Yy0zLjkxOSAwLTcuNTkxLS4zNjMtMTEuMDM3LS45NzR2MTMuMzI3YzIuOTQ1LjM3NCA2LjAwNi41OTQgOS4xOTMuNTk0IDM5LjgxNiAwIDY4LjYxMS0yMC4zMzUgOTYuNDk4LTQ0LjQwMSA0LjYxOCAzLjcwNSAyMy41NDQgMTIuNzA1IDI3LjQ0MSAxNi42NTItMjYuNTE2IDIyLjE5NS04OC4zMDIgNDAuMDg2LTEyMy4zMjggNDAuMDg2LTMuMzc0IDAtNi42MjItLjIwNC05LjgwNC0uNTEydjE4LjcyN2gxNTEuMzM3VjcwSDExOS4wOHptMCAxMDMuOTA4djExLjM3M2MtMzYuODMyLTYuNTYyLTQ3LjA1NS00NC44NDctNDcuMDU1LTQ0Ljg0N3MxNy42ODctMTkuNTkxIDQ3LjA1NS0yMi43NjJ2MTIuNDc5Yy0uMDI3IDAtLjAzOC0uMDA2LS4wNjEtLjAwNi0xNS40MDgtMS44NS0yNy40NTIgMTIuNTQ1LTI3LjQ1MiAxMi41NDVzNi43NDkgMjQuMjQzIDI3LjUxMyAzMS4yMTdtLTY1LjQxMy0zNS4xMzFzMjEuODI2LTMyLjIwOCA2NS40MTMtMzUuNTM5di0xMS42OEM3MC44MDMgOTUuNDI3IDI5IDEzNi4zMSAyOSAxMzYuMzFzMjMuNjc2IDY4LjQ1MiA5MC4wOCA3NC43MTZ2LTEyLjQxOWMtNDguNzI4LTYuMTMyLTY1LjQxMy01OS44MzEtNjUuNDEzLTU5LjgzMSIgZmlsbD0iIzc3YjkwMCIvPjwvc3ZnPg==
+licensing:
+  - Pro
+  - Ultimate
+overview: |
+  **Overview**
+
+  NVIDIA Run:ai is a GPU orchestration and workload management platform for AI.
+  This application installs the Run:ai **cluster** components (operator,
+  scheduler, and workload controllers) into the `runai` namespace and connects
+  the cluster to a Run:ai control plane. The control plane can run on the same
+  cluster (install **NVIDIA Run:ai Control Plane** first) or remotely.
+
+  **Key capabilities**
+
+  - GPU-aware scheduling with quotas, fair share, and over-quota borrowing
+  - Fractional GPU and dynamic GPU memory sharing
+  - Training, distributed training, inference, and interactive workspaces
+  - Cluster metrics and workload telemetry reported to the control plane
+
+  **Dependencies**
+
+  Requires the NKP `nvidia-gpu-operator` (GPU Operator 25.10 to 26.3),
+  `kube-prometheus-stack`, and `traefik` platform apps. Install `knative`
+  (Serving 1.19 to 1.21) to enable standard inference workloads.
+
+  This app bundles its own KAI Scheduler and installs the same CRDs as the
+  **KAI Scheduler** catalog app. Do not deploy both on the same cluster.
+
+  **Prerequisites**
+
+  1. In the Run:ai UI, create the cluster (Resources > Clusters > New Cluster).
+     The wizard shows the `controlPlane.url`, `controlPlane.bootstrapToken` (or
+     `controlPlane.clientSecret`), `cluster.uid`, and `cluster.url` values for
+     this cluster.
+  2. FQDNs for the control plane and for this cluster that resolve from the
+     cluster (cluster FQDN to the `kommander-traefik` load balancer). For a
+     remote control plane, also create the TLS certificate:
+
+     ```
+     kubectl create namespace runai
+     kubectl create secret tls runai-cluster-domain-tls-secret -n runai \
+       --cert=/path/to/fullchain.pem --key=/path/to/private.pem
+     ```
+
+  3. If the control plane certificate is signed by a private CA (the default
+     for the **NVIDIA Run:ai Control Plane** app), create the CA secret. CA trust
+     is already enabled:
+
+     ```
+     kubectl create secret generic runai-ca-cert -n runai \
+       --from-file=runai-ca.pem=/path/to/ca.pem
+     ```
+
+  4. If images are mirrored to a private registry, create the
+     `runai-reg-creds` pull secret in the `runai` namespace and set
+     `global.image.registry` to the mirror.
+  5. For fractional GPU, GPU nodes need NVIDIA driver r615 or newer, the GPU
+     Operator device plugin enabled, and container toolkit v1.20.1 or newer.
+
+  **Configuration**
+
+  Paste the wizard values into App Config Overrides:
+
+  ```yaml
+  controlPlane:
+    url: runai.mycorp.local
+    bootstrapToken: <bootstrap-token>
+  cluster:
+    uid: <cluster-uid>
+    url: https://runai-cluster.mycorp.local
+  ```
+
+  The ingress class, OpenShift mode, and CA trust are defaults. The bootstrap
+  token expires after about 2 hours and is reused by upgrades, so upgrade with
+  a fresh token, or use `controlPlane.clientSecret` instead. To keep the secret
+  out of the overrides, store it in a secret in the `runai` namespace and set
+  `controlPlane.existingSecret` (key `client-secret`).
+
+  **Resources**
+
+  [Documentation](https://run-ai-docs.nvidia.com/self-hosted/getting-started/installation/install-using-helm/helm-install) · [System requirements](https://run-ai-docs.nvidia.com/self-hosted/getting-started/installation/install-using-helm/system-requirements)
+scope:
+  - workspace
+dependencies:
+  - knative
+  - runai-control-plane
+requiredDependencies:
+  - kube-prometheus-stack
+  - nvidia-gpu-operator
+  - traefik
+nkpVersionSupport: ">=2.21.0"
+supportLink: https://run-ai-docs.nvidia.com/self-hosted
+type: nkp-catalog
+---
