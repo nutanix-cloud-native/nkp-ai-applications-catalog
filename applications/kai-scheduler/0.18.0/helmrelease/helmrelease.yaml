@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 24h
   ref:
-    tag: v0.17.0
+    tag: v0.18.0
   url: oci://ghcr.io/kai-scheduler/kai-scheduler/kai-scheduler
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2

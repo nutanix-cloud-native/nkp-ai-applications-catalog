@@ -16,7 +16,7 @@ releases:
       - name: ollama
         version: 1.72.0
       - name: kai-scheduler
-        version: 0.17.0
+        version: 0.18.0
       - name: jupyterhub
         version: 4.3.2
       - name: kubeflow-pipelines
@@ -24,7 +24,7 @@ releases:
       - name: kai-scheduler
         version: 0.15.2
       - name: kai-scheduler
-        version: 0.17.0
+        version: 0.18.0
       - name: kueue
         version: 0.18.0
       - name: milvus-operator
@@ -46,6 +46,8 @@ releases:
         version: 2.15.0
       - name: kai-scheduler
         version: 0.15.2
+      - name: kai-scheduler
+        version: 0.18.0
       - name: kueue
         version: 0.18.0
       - name: milvus-operator
