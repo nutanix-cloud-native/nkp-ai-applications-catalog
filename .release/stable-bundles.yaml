@@ -31,6 +31,10 @@ releases:
         version: 16.0.0
       - name: ollama
         version: 1.72.0
+      - name: agent-sandbox
+        version: 0.1.7
+      - name: openshell
+        version: 0.1.6
   - tagName: "2.19"
     fileName: nkp-ai-applications-catalog-image-bundle-2.19.tar
     collectionAnnotations:
