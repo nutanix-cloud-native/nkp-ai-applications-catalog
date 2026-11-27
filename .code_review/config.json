@@ -1,0 +1,45 @@
+{
+  "global_rules": {
+    "rule_files": [
+      ".code_review/general.md"
+    ]
+  },
+  "repo_rules": [
+    {
+      "name": "catalog-manifests",
+      "glob": [
+        "applications/**/*.yaml",
+        "applications/**/*.yml"
+      ],
+      "rule_files": [
+        ".code_review/repo_rules/catalog-manifests.md"
+      ]
+    },
+    {
+      "name": "release-and-publishing",
+      "glob": [
+        ".release/**",
+        "justfile",
+        "dev-commands.md"
+      ],
+      "rule_files": [
+        ".code_review/repo_rules/release-and-publishing.md"
+      ]
+    }
+  ],
+  "linters": [
+    {
+      "name": "catalog-structure-lint",
+      "command": [
+        "python3",
+        ".code_review/catalog_structure_lint.py"
+      ],
+      "glob": [
+        "applications/**/*.yaml",
+        "applications/**/*.yml"
+      ],
+      "enabled": true,
+      "timeout_sec": 120
+    }
+  ]
+}
