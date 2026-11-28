@@ -21,6 +21,8 @@ var enabledApps = []string{
 	"open-webui",
 	"kuberay",
 	"ray-cluster",
+	"clearml",
+	"clearml-serving",
 	"agent-sandbox",
 	"openshell",
 }

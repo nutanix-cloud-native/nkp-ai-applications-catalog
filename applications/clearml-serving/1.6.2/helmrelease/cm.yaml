@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    clearml:
+      apiHost: "http://clearml-clearml-apiserver.clearml:8008"
+      filesHost: "http://clearml-clearml-fileserver.clearml:8081"
+      webHost: "http://clearml-clearml-webserver.clearml"
+
+    clearml_serving_statistics:
+      enabled: true
+      image:
+        repository: "clearml/clearml-serving-statistics"
+        tag: "latest"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    clearml_serving_inference:
+      image:
+        repository: "clearml/clearml-serving-inference"
+        tag: "latest"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      # The inference API routes are hardcoded at /serve/<model> with no base-path
+      # support, so it cannot be served under an NKP Traefik subpath. The Service is
+      # ClusterIP; use port-forward or in-cluster DNS.
+
+    clearml_serving_triton:
+      enabled: false
+
+    kafka:
+      enabled: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    prometheus:
+      enabled: false
+
+    grafana:
+      enabled: false
+---

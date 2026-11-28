@@ -1,0 +1,71 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: ClearML Server
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: ClearML Server provides the control plane for MLOps, including experiment tracking, model registry, data management, and a web UI for the full AI lifecycle.
+dependencies: []
+requiredDependencies: []
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiB2aWV3Qm94PSItMTQuNSAwIDE1MCAxNTAiPgogIDxnPgogICAgICA8cGF0aCBkPSJNMTEzLjcyLDI2LjEybDAsMC01LjE2LDUuMjRaIiBmaWxsPSIjMDA4NWZmIi8+CiAgICAgIDxwYXRoIGQ9Ik00NCwzMy4zOWE0NC41Niw0NC41NiwwLDAsMC0uNyw2M2wwLDBMNTEsODguNzlhMzQuMywzNC4zLDAsMCwxLS42Ni00Ny42OEEzMywzMywwLDAsMSw3NC4xMywzMC44MmEzNC43NiwzNC43NiwwLDAsMSwyNSwxMGw3LjI4LTcuMjlBNDQuNTYsNDQuNTYsMCwwLDAsNDQsMzMuMzlaIiBmaWxsPSIjMDA5NmZmIi8+CiAgICAgIDxwYXRoIGQ9Ik03NS4xOCwxMzAuNDdoLS43NUE2NS4yMSw2NS4yMSwwLDAsMSw5LjkzLDY1TDAsNjVhNzUuMTgsNzUuMTgsMCwwLDAsNzUuMTgsNzVoLjIzbDAtOS41NFoiIGZpbGw9IiM4MmRkMjIiLz4KICAgICAgPHBhdGggZD0iTTEwNi40LDMzLjQ5bDIuMTMtMi4xNy0yLjE0LDIuMTZaIiBmaWxsPSIjMDBkNGFjIi8+CiAgICAgIDxwYXRoIGQ9Ik0zNi43NywxMDMuNDZhNTQuMTQsNTQuMTQsMCwwLDAsMzguNDEsMTUuODVoLjE3bDAsMTEuMTVBNjQuNzIsNjQuNzIsMCwwLDAsMTIxLDExMS42NUwxMDYuNDUsOTYuOTNhNDQuMiw0NC4yLDAsMCwxLTMxLjI4LDEyLjg1aC0uNTFBNDQuMjUsNDQuMjUsMCwwLDEsNDMuMzUsOTYuNDJsLTYuODIsNi43OVoiIGZpbGw9IiMxNGFhOGMiLz4KICAgICAgPHBhdGggZD0iTTM1LjI5LDI2LjkzYTUzLjUzLDUzLjUzLDAsMCwxLDM4LjUtMTYuOCw1NS41Niw1NS41NiwwLDAsMSwzOS45LDE1Ljk1bDcuMjMtNy4zNGE2NS4yMyw2NS4yMywwLDAsMC0xMTEsNDUuNzdjMCwuMTcsMCwuMzMsMCwuNWwxMC40NCwwQTU0LjY5LDU0LjY5LDAsMCwxLDM1LjI5LDI2LjkzWiIgZmlsbD0iIzE0YWE4YyIvPgogICAgICA8cGF0aCBkPSJNNzMuNzksMTAuMTNhNTMuNTMsNTMuNTMsMCwwLDAtMzguNSwxNi44QTU0LjY5LDU0LjY5LDAsMCwwLDIwLjM3LDY1YzAsLjE1LDAsLjMsMCwuNDZhNTQuNzUsNTQuNzUsMCwwLDAsMTYsMzhsLjE4LS4xOCw2LjgyLTYuNzksMCwwYTQ0LjU0LDQ0LjU0LDAsMCwxLDYzLjA4LTYyLjlsMi4xNC0yLjE2LDUuMTYtNS4yNEE1NS41Niw1NS41NiwwLDAsMCw3My43OSwxMC4xM1oiIGZpbGw9IiM1MGJlZmYiLz4KICAgICAgPHBhdGggZD0iTTc0LjQzLDEzMC40NmguOTVsMC0xMS4xNWgtLjE3YTU0LjE0LDU0LjE0LDAsMCwxLTM4LjQxLTE1Ljg1bC0uMjQtLjI1LS4xOC4xOGE1NC43NSw1NC43NSwwLDAsMS0xNi0zNy45NWMwLS4xNiwwLS4zMSwwLS40Nkw5LjkzLDY1YTY1LjIxLDY1LjIxLDAsMCwwLDY0LjUsNjUuNDVaIiBmaWxsPSIjYWZlNjFlIi8+CiAgICA8L2c+Cjwvc3ZnPgo=
+licensing:
+  - Pro
+  - Ultimate
+nkpVersionSupport: ">=2.19.0"
+overview: |
+  **Overview**
+  ClearML Server is the backend control plane for the ClearML MLOps platform.
+  It provides experiment tracking, model registry, dataset versioning, and a unified web UI for managing the end-to-end machine learning lifecycle.
+
+  This catalog entry deploys the ClearML server stack, which includes:
+
+  - **Web application** - Unified dashboard for experiments, models, datasets, and pipelines
+  - **API server** - Core backend that serves the web UI and Python SDK (experiments, models, tasks, and metadata)
+  - **File server** - Artifact and model storage served to the UI and clients
+  - Integrated MongoDB, Dragonfly (Redis-compatible), and Elasticsearch (via subcharts)
+
+  **Key capabilities**
+
+  - Track experiments with full hyperparameters, metrics, and source code versioning
+  - Manage model versions from staging to production
+  - Version-controlled datasets with lineage tracking
+  - Pipeline orchestration with visualization
+  - Live cluster dashboard for compute resource monitoring
+
+  **Storage and lifecycle**
+
+  - MongoDB stores experiment metadata and model registry
+  - Elasticsearch stores logs and search indices
+  - The file server stores model artifacts and datasets
+  - PersistentVolumeClaims are configured for all data stores
+
+  **Resource defaults**
+
+  | Component | Request | Limit |
+  |-----------|---------|-------|
+  | API Server | 500m CPU / 1Gi memory | 2 CPU / 4Gi memory |
+  | Web Server | 200m CPU / 256Mi memory | 1 CPU / 1Gi memory |
+  | File Server | 200m CPU / 256Mi memory | 1 CPU / 1Gi memory |
+
+  **Access**
+  Access the UI with port-forward:
+
+  ```bash
+  kubectl -n clearml port-forward svc/clearml-clearml-webserver 8080:80
+  kubectl -n clearml port-forward svc/clearml-clearml-apiserver 8008:8008
+  kubectl -n clearml port-forward svc/clearml-clearml-fileserver 8081:8081
+  ```
+
+  Then open `http://127.0.0.1:8080/`.
+
+  **Resources**
+
+  [Documentation](https://clear.ml/docs) , [Project](https://github.com/clearml/clearml) , [Helm chart](https://github.com/clearml/clearml-helm-charts)
+scope:
+  - workspace
+supportLink: https://clear.ml/docs
+type: nkp-catalog
+---

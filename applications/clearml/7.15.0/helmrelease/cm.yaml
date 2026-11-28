@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${releaseName}-${appVersion}-defaults
+  namespace: ${releaseNamespace}
+data:
+  values.yaml: |
+    ---
+    apiserver:
+      prepopulateEnabled: false
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      service:
+        type: ClusterIP
+        port: 8008
+
+    webserver:
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      service:
+        type: ClusterIP
+        port: 80
+      # The ClearML web UI does not support a URL prefix (root-relative assets and
+      # /api calls), so it cannot share the NKP Traefik origin under a subpath.
+      # ClusterIP + port-forward exposes it at / on its own origin.
+
+    fileserver:
+      image:
+        repository: "clearml/server"
+        tag: "2.4"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      service:
+        type: ClusterIP
+        port: 8081
+
+    mongodb:
+      persistence:
+        enabled: true
+        size: 8Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+
+    dragonfly:
+      storage:
+        enabled: true
+        requests: 5Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "500m"
+          memory: 1Gi
+
+    elasticsearch:
+      esJavaOpts: "-Xms512m -Xmx512m"
+      volumeClaimTemplate:
+        resources:
+          requests:
+            storage: 4Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 4Gi
+---

@@ -1,0 +1,97 @@
+schema: catalog.nkp.nutanix.com/v1/application-metadata
+displayName: ClearML Serving
+appScreens:
+  - ai
+allowMultipleInstances: false
+category:
+  - model-development-and-training
+certifications:
+  - qualified
+description: ClearML Serving provides scalable model serving with automatic deployment, canary rollbacks, multi-model endpoints, and built-in monitoring via Prometheus and Grafana. Includes NVIDIA Triton integration for GPU-optimized inference.
+dependencies: []
+requiredDependencies:
+  - clearml
+dependsOn:
+  - type: Application
+    name: clearml
+    optional: false
+icon: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiB2aWV3Qm94PSItMTQuNSAwIDE1MCAxNTAiPgogIDxnPgogICAgICA8cGF0aCBkPSJNMTEzLjcyLDI2LjEybDAsMC01LjE2LDUuMjRaIiBmaWxsPSIjMDA4NWZmIi8+CiAgICAgIDxwYXRoIGQ9Ik00NCwzMy4zOWE0NC41Niw0NC41NiwwLDAsMC0uNyw2M2wwLDBMNTEsODguNzlhMzQuMywzNC4zLDAsMCwxLS42Ni00Ny42OEEzMywzMywwLDAsMSw3NC4xMywzMC44MmEzNC43NiwzNC43NiwwLDAsMSwyNSwxMGw3LjI4LTcuMjlBNDQuNTYsNDQuNTYsMCwwLDAsNDQsMzMuMzlaIiBmaWxsPSIjMDA5NmZmIi8+CiAgICAgIDxwYXRoIGQ9Ik03NS4xOCwxMzAuNDdoLS43NUE2NS4yMSw2NS4yMSwwLDAsMSw5LjkzLDY1TDAsNjVhNzUuMTgsNzUuMTgsMCwwLDAsNzUuMTgsNzVoLjIzbDAtOS41NFoiIGZpbGw9IiM4MmRkMjIiLz4KICAgICAgPHBhdGggZD0iTTEwNi40LDMzLjQ5bDIuMTMtMi4xNy0yLjE0LDIuMTZaIiBmaWxsPSIjMDBkNGFjIi8+CiAgICAgIDxwYXRoIGQ9Ik0zNi43NywxMDMuNDZhNTQuMTQsNTQuMTQsMCwwLDAsMzguNDEsMTUuODVoLjE3bDAsMTEuMTVBNjQuNzIsNjQuNzIsMCwwLDAsMTIxLDExMS42NUwxMDYuNDUsOTYuOTNhNDQuMiw0NC4yLDAsMCwxLTMxLjI4LDEyLjg1aC0uNTFBNDQuMjUsNDQuMjUsMCwwLDEsNDMuMzUsOTYuNDJsLTYuODIsNi43OVoiIGZpbGw9IiMxNGFhOGMiLz4KICAgICAgPHBhdGggZD0iTTM1LjI5LDI2LjkzYTUzLjUzLDUzLjUzLDAsMCwxLDM4LjUtMTYuOCw1NS41Niw1NS41NiwwLDAsMSwzOS45LDE1Ljk1bDcuMjMtNy4zNGE2NS4yMyw2NS4yMywwLDAsMC0xMTEsNDUuNzdjMCwuMTcsMCwuMzMsMCwuNWwxMC40NCwwQTU0LjY5LDU0LjY5LDAsMCwxLDM1LjI5LDI2LjkzWiIgZmlsbD0iIzE0YWE4YyIvPgogICAgICA8cGF0aCBkPSJNNzMuNzksMTAuMTNhNTMuNTMsNTMuNTMsMCwwLDAtMzguNSwxNi44QTU0LjY5LDU0LjY5LDAsMCwwLDIwLjM3LDY1YzAsLjE1LDAsLjMsMCwuNDZhNTQuNzUsNTQuNzUsMCwwLDAsMTYsMzhsLjE4LS4xOCw2LjgyLTYuNzksMCwwYTQ0LjU0LDQ0LjU0LDAsMCwxLDYzLjA4LTYyLjlsMi4xNC0yLjE2LDUuMTYtNS4yNEE1NS41Niw1NS41NiwwLDAsMCw3My43OSwxMC4xM1oiIGZpbGw9IiM1MGJlZmYiLz4KICAgICAgPHBhdGggZD0iTTc0LjQzLDEzMC40NmguOTVsMC0xMS4xNWgtLjE3YTU0LjE0LDU0LjE0LDAsMCwxLTM4LjQxLTE1Ljg1bC0uMjQtLjI1LS4xOC4xOGE1NC43NSw1NC43NSwwLDAsMS0xNi0zNy45NWMwLS4xNiwwLS4zMSwwLS40Nkw5LjkzLDY1YTY1LjIxLDY1LjIxLDAsMCwwLDY0LjUsNjUuNDVaIiBmaWxsPSIjYWZlNjFlIi8+CiAgICA8L2c+Cjwvc3ZnPgo=
+licensing:
+  - Pro
+  - Ultimate
+nkpVersionSupport: ">=2.19.0"
+overview: |
+  **Overview**
+
+  ClearML Serving is a scalable model serving solution that enables automatic model
+  deployment, A/B testing, canary rollouts, and model performance monitoring. It integrates
+  with the ClearML Server for model registry.
+
+  This catalog entry deploys the ClearML serving stack, including:
+
+  - **Inference service** - Handles model preprocessing and postprocessing logic
+  - **Kafka** - Message queue for inter-service communication
+  - **Statistics service** - Aggregates serving metrics and exposes them on port 9999
+
+  **Key capabilities**
+
+  - Serve any model from the ClearML model registry (scikit-learn, PyTorch, TensorFlow, ONNX)
+  - Automatic model deployment on publish/tag with configurable polling
+  - Canary and A/B testing with weighted traffic splitting
+  - Out-of-the-box node auto-scaling based on load
+
+  **Dependencies**
+
+  This app requires the ClearML Server application to be installed first at the workspace level.
+
+  **Access**
+
+  The inference service is ClusterIP only, because its `/serve/<model>` routes cannot be served under an NKP Traefik subpath. In-cluster, use `http://clearml-serving-clearml-serving-inference.clearml-serving.svc.cluster.local:8080/serve/<model>/<version>`.
+
+  Deploy a model with the ClearML CLI or SDK after registering it in the ClearML model repository.
+
+  To reach it from your workstation, port-forward the service:
+
+  ```bash
+  kubectl port-forward -n clearml-serving svc/clearml-serving-clearml-serving-inference 8082:8080
+  ```
+
+  Then query a model endpoint, for example one deployed as `classifier` version `1`:
+
+  ```bash
+  curl -X POST "http://127.0.0.1:8082/serve/classifier/1" \
+    -H "Content-Type: application/json" \
+    -d '{"x0": 1, "x1": 2}'
+  ```
+
+  **Required configuration**
+
+  - Create an API key pair in the ClearML UI, under Settings -> Workspace.
+  - Create the serving task with clearml-serving create.
+  - Set clearml.apiAccessKey, clearml.apiSecretKey and clearml.servingTaskId through NKP UI cluster config overrides.
+
+  **Important:** the catalog defaults point the serving pods at the in-cluster ClearML Server
+  services. The credentials and Serving Service ID are placeholders, so you must override them.
+  Override these configs in the NKP UI, disable ClearML Serving, wait 2-3 minutes for the pods
+  to terminate, and re-enable the app.
+
+  ```yaml
+  clearml:
+    apiAccessKey: "<access key>"
+    apiSecretKey: "<secret key>"
+    servingTaskId: "<serving service id>"
+  ```
+
+  **Notes**
+
+  - The statistics service exposes Prometheus metrics on port 9999 of clearml-serving-statistics in the clearml-serving namespace
+  - Enabling Triton in an airgapped cluster needs its image mirrored.
+
+  **Resources**
+
+  [Documentation](https://clear.ml/docs/latest/docs/serving/) , [Project](https://github.com/clearml/clearml-serving) , [Helm chart](https://github.com/clearml/clearml-helm-charts)
+scope:
+  - workspace
+supportLink: https://clear.ml/docs/latest/docs/serving/
+type: nkp-catalog
+---
